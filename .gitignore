@@ -4,8 +4,25 @@ Papers
 latex-starting-kit
 bibs
 Meetings
-
+notes
+threg
 
 # Random file types
-.Rproj
+*.Rproj*
+*.Rhistory
 .DS_Store
+
+# LaTeX file types
+*.aux
+*.bcf
+*.bbl
+*.blg
+*.out
+*.fls
+*.fdb_latexmk
+*.log
+*.lof
+*.lot
+*.run.xml
+*.tex.*
+*.toc

@@ -1,0 +1,50 @@
+\chapter{First hitting time regression models}
+\label{sec:fht}
+
+\section{First hitting time models}
+An FHT model has two main components.
+\begin{enumerate}
+    \item A stochastic process $\{Y(t), t\in\setT,y\in\setY\}$, with $Y(0)=y_0$.
+    \item A boundary, or threshold, $B\subset \setY$, where $y_0\notin\setB$
+\end{enumerate}
+The first hitting time is the first time the process reaches the boundary set. Formally, the FHT is a stochastic variable $S$, which is defined as
+\[
+    S = \inf\{t\colon Y(t)\in\setB\}
+\]
+Note that it is possible that $P(S<\infty)<1$.
+
+This framework makes for a flexible model, due to many possible choices for the process and the boundary. We now look at a common choice of the process.
+
+\subsection{Wiener process}
+\label{wiener}
+The Wiener process, also known as the standard Brownian motion process, is a process which is continuous in time and space, and has the properties (\cite[61]{caroni2017}) that
+\begin{itemize}
+    \item $Y(t)$ has independent increments, such that $Y(t_2)-Y(t_1)$ and $Y(t_4)-Y(t_3)$ are independent for any disjoint intervals, and
+    \item for any interval $(t_1, t_2)$,
+    \[
+        Y(t_2)-Y(t-1)\sim N(\mu(t_2-t_1), \sigma^2(t_2-t_1)).
+    \]
+\end{itemize}
+This process may both increase and decrease. However, if we want a monotonic restriction on the movement of the process, we may use a gamma process.
+
+\subsection{Gamma process}
+The gamma process is suitable for modelling something which we would require to be monotonic, typically a physical degradation, i.e. where the damage cannot mend itself. (\cite[59]{caroni2017})
+
+Other choices of processes include Markov chain state models, the Bernoulli process, and the Ornstein-Uhlenbeck process.
+
+\section{First hitting time regression based on underlying Wiener process}
+The first hitting time of the Wiener process (section \ref{wiener}) process follows an inverse Gaussian distribution (derivation in \cite[23-29]{chhikara1988}):
+\begin{equation}
+\label{eq:fht-ig}
+    f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]
+\end{equation}
+If $\mu$ is positive, $Y(t)\leq 0$ is not certain to occur. Note also that this parameterization is over-parameterized, because $Y$ has an arbitrary scale, so we can without loss of generality let $\sigma^2=1$.
+
+While $\mu$ and $y_0$ have simple interpretations in terms of the underlying process, they do not in terms of the lifetime distribution. The mean lifetime is $\frac{y_0}{|\mu|}$, and the variance is $\frac{y_0}{|\mu|^3}$. (\cite[62]{caroni2017}.)
+
+We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$. Suitable models are
+\begin{align}
+    \mu&=\bbeta^\T\u \\
+    \ln y_0&=\bgamma^\T\v
+\end{align}
+where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. $\u$ and $\v$ may be either completely different, partially different, or equal. In the latter case, we use $\bbeta^\T\x$ and $\bgamma^\T\x$ instead, for clarity.
