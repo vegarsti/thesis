@@ -26,3 +26,4 @@ threg
 *.run.xml
 *.tex.*
 *.toc
+.Rproj.user

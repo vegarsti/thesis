@@ -4,24 +4,20 @@
 \usepackage{mymacros}   % Custom defined macros and commands
 \usepackage{kantlipsum} % Dummy text
 
-\title{Working Title}
+\title{Boosting First-Hitting-Time Regression Models}
 \author
 {
-    First Author
-    \and
-    Second Author
+    Vegard Stikbakke
 }
 
 \includeonly
 {
-    %sections/abstract,
-    %sections/acknowledgements,
+    sections/abstract,
+    sections/acknowledgements,
     sections/introduction,
+    sections/chapter1,
     sections/chapter2,
-    %sections/chapter3,
-    %sections/chapter4,
-    %sections/appendixA,
-    %sections/appendixB,
+    sections/appendix
 }
 
 \begin{document}
@@ -46,17 +42,14 @@
 
     \include{sections/introduction}
 
-    \part{The First Part}
+    %\part{The First Part}
 
     \include{sections/chapter2}
-    \include{sections/chapter3}
-    \include{sections/chapter4}
 
     \appendix           % "Chapter" is renamed "Appendix"
     \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.
 
-    \include{sections/appendixA}
-    \include{sections/appendixB}
+    \include{sections/appendix}
 
     \backmatter         % Folios in Arabic numerals, unnumbered chapters.
 

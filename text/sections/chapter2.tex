@@ -1,11 +1,32 @@
 \chapter{First hitting time regression models}
-\label{sec:fht}
 
-\section{First hitting time models}
+\section{Survival analysis and time-to-event models}\label{sec:survival}
+In many fields, it is interesting to consider the lifetime of some entity. A lifetime ends when some event occurs. We are then interested in inferring things about this lifetime, and what it depends upon. In medical fields, this is the field of survival analysis, while in engineering fields, this is reliability analysis. In the first case, we consider e.g. the lifetime of patients with some chronic disease, or the length of a hospital stay after some treatment. In the latter, we consider e.g. the time before some component of a system breaks and must be replaced. It is in both cases natural to imagine that the event happens as some (underlying) process reaches some threshold (for the first time). We will use boundary and threshold interchangeably.
+
+The time-to-event $T$ is a continuous, non-negative random variable $T\sim f(t)$, $t>0$, for some probability density function $f$.
+
+\todo{Define hazard and survival functions.}
+
+\subsection{Data structures}
+Let us say that we have observations from time points $t_0=0, \dots, t_T$. For each entity $i$, we have some characteristic of this entity, $\x_i$, which do not change over time. And we have observations at each time $t_j$, namely, $\delta_{ij}$, which denotes if the event has occurred or not (1 if it has, 0 if not).
+
+\subsection{Proportional hazards}
+\todo[inline]{Write here.}
+
+\subsection{Regression}\label{sec:surv-reg}
+Lifetime regression models are usually fitted by maximum likelihood methods. The likelihood is
+
+\begin{equation}\label{eq:surv-lik}
+    L(\btheta)=\prod_{i=1}^n f(t_i|\x_i,\btheta)^{\delta_i} S(t_i|\x_i,\btheta)^{1-\delta_i}
+\end{equation}
+
+\section{First hitting time models}\label{sec:fht}
+The most widely used models in survival analysis are proportional hazards models. These consider hazard functions over time. Hazard functions say something about the chance of an event happening during some (small) interval. However, as mentioned, it seems natural to imagine the event happening due to some underlying process reaching some threshold. One way to model this is to in fact model the process itself, and look at the time it takes for the process to reach this threshold. We call this the first-hitting-time (FHT) of the process.
+
 An FHT model has two main components.
 \begin{enumerate}
     \item A stochastic process $\{Y(t), t\in\setT,y\in\setY\}$, with $Y(0)=y_0$.
-    \item A boundary, or threshold, $B\subset \setY$, where $y_0\notin\setB$
+    \item A boundary set, $B\subset \setY$, where $y_0\notin\setB$
 \end{enumerate}
 The first hitting time is the first time the process reaches the boundary set. Formally, the FHT is a stochastic variable $S$, which is defined as
 \[
@@ -13,10 +34,11 @@ The first hitting time is the first time the process reaches the boundary set. F
 \]
 Note that it is possible that $P(S<\infty)<1$.
 
+Typically, one will consider a process with boundary $B=0$. The event then occurs if and when the process $\{Ys\}$ reaches 0 at $y(T)$.
+
 This framework makes for a flexible model, due to many possible choices for the process and the boundary. We now look at a common choice of the process.
 
-\subsection{Wiener process}
-\label{wiener}
+\subsection{Wiener process}\label{sec:wiener}
 The Wiener process, also known as the standard Brownian motion process, is a process which is continuous in time and space, and has the properties (\cite[61]{caroni2017}) that
 \begin{itemize}
     \item $Y(t)$ has independent increments, such that $Y(t_2)-Y(t_1)$ and $Y(t_4)-Y(t_3)$ are independent for any disjoint intervals, and
@@ -33,7 +55,7 @@ The gamma process is suitable for modelling something which we would require to 
 Other choices of processes include Markov chain state models, the Bernoulli process, and the Ornstein-Uhlenbeck process.
 
 \section{First hitting time regression based on underlying Wiener process}
-The first hitting time of the Wiener process (section \ref{wiener}) process follows an inverse Gaussian distribution (derivation in \cite[23-29]{chhikara1988}):
+The first hitting time of the Wiener process (section \ref{sec:wiener}) follows an inverse Gaussian distribution (derivation in \cite[23-29]{chhikara1988}\todo{also derive more clearly in appendix?}):
 \begin{equation}
 \label{eq:fht-ig}
     f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]
@@ -42,9 +64,21 @@ If $\mu$ is positive, $Y(t)\leq 0$ is not certain to occur. Note also that this 
 
 While $\mu$ and $y_0$ have simple interpretations in terms of the underlying process, they do not in terms of the lifetime distribution. The mean lifetime is $\frac{y_0}{|\mu|}$, and the variance is $\frac{y_0}{|\mu|^3}$. (\cite[62]{caroni2017}.)
 
+The cumulative distribution function of the FHT is (from \cite[7]{threg})
+\begin{equation}\label{eq:cumulative}
+    F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{(-\frac{y_o+\mu t)}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}
+\end{equation}
+
+\subsection{Regression}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$. Suitable models are
 \begin{align}
     \mu&=\bbeta^\T\u \\
     \ln y_0&=\bgamma^\T\v
 \end{align}
 where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. $\u$ and $\v$ may be either completely different, partially different, or equal. In the latter case, we use $\bbeta^\T\x$ and $\bgamma^\T\x$ instead, for clarity.
+
+\section{Likelihood}\label{sec:lik}
+In section \ref{sec:surv-reg}, we stated the likelihood of lifetime regression models in \eqref{eq:surv-lik}. For an inverse gaussian this then becomes (inserting \eqref{eq:fht-ig} and \eqref{eq:cumulative} into \eqref{eq:surv-lik}, and since $S=1-F$)
+\begin{equation}\label{eq:fht-lik}
+L(\btheta)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]^{\delta_i}\sqb*{1-\Phi\sqb*{(-\frac{y_o+\mu t)}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}}^{1-\delta_i}
+\end{equation}
