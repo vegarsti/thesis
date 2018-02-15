@@ -10,9 +10,9 @@ The time-to-event $T$ is a continuous, non-negative random variable $T\sim f(t)$
 \end{enumerate}
 
 \subsection{Regression}\label{sec:surv-reg}
-To find out anything interesting, we need to be able to do regression on covariates. Given a sample of $n$ independent observations $\{t_i,\x_i, \delta_i,i=1,\cdots,n\}$, where individual $i$ has covariates $\x_i$, lifetime $t_i$ and censoring indicator $delta_i$. From \cite[10]{caroni2017}, the likelihood is
+To find out anything interesting, we need to be able to do regression on covariates. Given a sample of $n$ independent observations $\{t_i,\x_i, \delta_i,i=1,\ldots,n\}$, where individual $i$ has covariates $\x_i$, lifetime $t_i$ and censoring indicator $\delta_i$. From \cite[10]{caroni2017}, the likelihood is given by
 \begin{equation}\label{eq:surv-lik}
-    L(\btheta)=\prod_{i=1}^n f(t_i|\x_i,\btheta)^{\delta_i} S(t_i|\x_i,\btheta)^{1-\delta_i}
+    L(\btheta|\x_1,\ldots,\x_n)=\prod_{i=1}^n f(t_i|\x_i,\btheta)^{\delta_i} S(t_i|\x_i,\btheta)^{1-\delta_i}
 \end{equation}
 
 \subsection{Proportional hazards}
@@ -24,12 +24,10 @@ This property states that at any two time points $t_1$ and $t_2$, the ratio betw
 \begin{equation}
     \frac{h(t_1|x_1)}{h(t_1|x_2)}=\frac{h(t_2|x_1)}{h(t_2|x_2)}
 \end{equation}
-This is a large assumption to make, and it will rarely be the case in practice. (\cite{lee2010}) However, many times Cox regression will work well in practice.
+This is a large assumption to make, and it will rarely be the case in practice (\cite{lee2010}). However, many times Cox regression will work well in practice.
 
 \section{The first hitting time model}\label{sec:fht}
-Revisiting the examples of the two lifetime settings, it may in both cases be natural to imagine that the event happens as a process reaches a threshold. Then one way to model the time-to-event is to model the process itself, and look at the time it takes for the process to reach this threshold, at which point the event we are interested in is triggered.
-
-Excellent reviews of the FHT are \cite{lee2006} and \cite{caroni2017}.
+Revisiting the examples of the two lifetime settings, it may in both cases be natural to imagine that the event happens as a process reaches a threshold. Then one way to model the time-to-event is to model the process itself, and look at the time it takes for the process to reach this threshold, at which point the event is triggered. \cite{lee2006} is a thorough review on the FHT model, and \cite{caroni2017} is a longer book which covers many aspects of it. We continue by describing the FHT model.
 
 An FHT model has two main components.
 \begin{enumerate}
@@ -40,17 +38,11 @@ The first hitting time is the first time the process reaches the boundary set. F
 \[
     S = \inf\{t\colon Y(t)\in\setB\}
 \]
-Note that it is possible that $P(S<\infty)<1$.
+Typically, one will consider a process with boundary $B=0$. The event then occurs if and when the process $\{Y\}$ reaches 0 at $y(S)$. Note that it is possible that $P(S<\infty)<1$.
 
-Typically, one will consider a process with boundary $B=0$. The event then occurs if and when the process $\{Y\}$ reaches 0 at $y(T)$.
+The FHT model is conceptually appealing\todo{justify} and does not require the PH assumption, and is hence more flexible. In fact, the PH model may be obtained by constructing the FHT model in a specific way (\cite{lee2010}).
 
-This framework makes for a flexible model, due to many possible choices for the process and the boundary.
-
-The FHT model is attractive because it is a good model for what happens in the underlying process. Additionally, it is more flexible than the PH model. In fact, the PH model may be obtained by constructing the FHT model in a specific way. (\cite{lee2010}.)
-
-As mentioned, the most widely used models in survival analysis are proportional hazards models. These models consider hazard functions over time. Hazard functions say something about the chance of an event happening during some (small) interval.
-
-We now look at a common choice of the process.
+Different choices of processes lead to different kinds of distributions for the FHT. We now look at a common choice of the process.
 
 \subsection{Wiener process}\label{sec:wiener}
 The Wiener process, also known as the standard Brownian motion process, is a process which is continuous in time and space, and has the properties (\cite[61]{caroni2017}) that
@@ -61,7 +53,7 @@ The Wiener process, also known as the standard Brownian motion process, is a pro
         Y(t_2)-Y(t_1)\sim N(\mu(t_2-t_1), \sigma^2(t_2-t_1)).
     \]
 \end{itemize}
-This process may both increase and decrease. However, if we want a monotonic restriction on the movement of the process, we may use a gamma process.
+This is a process which will both increase and decrease. However, if we want a monotonic restriction on the movement of the process, we may use a gamma process.
 
 \subsection{Gamma process}
 The gamma process is suitable for modelling a process which we would require to be monotonic, typically a physical degradation, i.e. where the damage cannot mend itself, unlike a patient's health. The first-hitting-time that arises from the gamma process is inverse gamma. (\cite[503]{lee2006}.)
@@ -101,18 +93,18 @@ where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. If we deem 
 In section \ref{sec:surv-reg}, we stated the likelihood of lifetime regression models in \eqref{eq:surv-lik}. For an inverse gaussian FHT this then becomes (inserting \eqref{eq:fht-ig} and \eqref{eq:cumulative} into \eqref{eq:surv-lik}, and since $S(t)=1-F(t)$)
 \begin{align}\label{eq:fht-lik}
 \begin{split}
-L(\btheta)&=\p*{\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]}^{\delta_i}\\
+L(\btheta|\x_1,\ldots,\x_n)&=\p*{\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]}^{\delta_i}\\
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu t}{\sqrt{\sigma^2t}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}}^{1-\delta_i}
 \end{split}
 \end{align}
 Since we let $\sigma^2=1$, this simplifies to
 \begin{align}
 \begin{split}
-L(\btheta)&=\p*{\frac{y_0}{\sqrt{2\pi t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2t}\right]}^{\delta_i}\\
+L(\btheta|\x_1,\ldots,\x_n)&=\p*{\frac{y_0}{\sqrt{2\pi t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2t}\right]}^{\delta_i}\\
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu t}{\sqrt{t}}}-\exp\p*{-2y_0\mu}\Phi\p*{\frac{\mu t-y_0}{\sqrt{t}}}}^{1-\delta_i}
 \end{split}
 \end{align}
-We can now substitute \eqref{eq:coeffs} into this. This is often fitted with numerical maximum likelihood methods.
+We can now substitute the covariates in \eqref{eq:coeffs} into this. This is often fitted with numerical maximum likelihood methods.
 
 \section{The \texttt{threg} package}
 There exists an R package \texttt{threg} for fitting regression with inverse gaussian FHT, described in \cite{threg}. We provide a small example here, which is the one described in the help pages of the package.
@@ -138,6 +130,8 @@ lny0: f.treatment21 -1.2739233 0.2441633 -5.217504 1.8e-07
 
 Log likelihood =-104.64, AIC =217.28
 \end{verbatim}
-Here we fit an inverse gaussian FHT model where both $y_0$ and $\mu$ have an intercept term and an indicator term for treatment 2.
-
-$\mathds{123}$
+Here we fit an inverse gaussian FHT model where
+\[
+    \ln y_0=\mu=\beta_0+\beta_1\text{I}(\text{treatment2 = 1})
+\]
+\todo[inline]{Write more about package and show how it fits the model.}
