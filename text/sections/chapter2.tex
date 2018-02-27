@@ -1,16 +1,16 @@
 \chapter{First hitting time regression models}
 
 \section{Survival analysis and time-to-event models}\label{sec:survival}
-In many fields, it is interesting to consider the lifetime of some entity. A lifetime ends when some event occurs. We are then interested in inferring things about this lifetime, and what it depends upon. In medical fields, this is the field of survival analysis, while in engineering fields, the field is called reliability analysis. In the first case, we consider e.g. the lifetime of patients with some chronic disease, or the length of a hospital stay after some treatment. In the latter, we consider e.g. the time before some component of a system breaks and must be replaced.
+In many fields, it is interesting to consider the lifetime of some entity. A lifetime ends when an event occurs. We are usually interested in inferring things about this lifetime, and what it depends upon. In medical fields, this is called survival analysis, while in engineering it is called reliability analysis. In the former case, we consider the lifetime of patients or the length of a hospital stay after some treatment. In the latter, we consider, e.g., the time before a component of a system breaks and must be replaced.
 
 The time-to-event $T$ is a continuous, non-negative random variable $T\sim f(t)$, $t>0$, for some probability density function $f$. We are particularly interested in two things related to $T$:
 \begin{enumerate}
 \item{}The survival function $S(t)$ -- the probability of an individual having survived until time $t$. Note that $S(t)=1-F(t)$, where $F$ is the cumulative density function of $f$.
-\item{}The hazard function $h(t)$ -- the probability of the event happening during some (small) interval. Note that this is conditional on surviving until time $t$, and is defined as $h(t)=\frac{f(t)}{S(t)}$.
+\item{}The hazard function $h(t)$ -- the probability of the event happening at time $t$. Note that this is conditional on surviving until time $t$, and is defined as $h(t)=\frac{f(t)}{S(t)}$.
 \end{enumerate}
 
 \subsection{Regression}\label{sec:surv-reg}
-To find out anything interesting, we need to be able to do regression on covariates. Given a sample of $n$ independent observations $\{t_i,\x_i, \delta_i,i=1,\ldots,n\}$, where individual $i$ has covariates $\x_i$, lifetime $t_i$ and censoring indicator $\delta_i$. From \cite[10]{caroni2017}, the likelihood is given by
+To find out anything interesting, we need to be able to do regression on covariates. Given a sample of $n$ independent observations $\{t_i,\x_i, \delta_i,i=1,\ldots,n\}$, where individual $i$ has covariates $\x_i$, lifetime $t_i$ and censoring indicator $\delta_i, i=1,\ldots, n$, which is 1 if the event has happened, and 0 if not. From \cite[10]{caroni2017}, the likelihood is given by
 \begin{equation}\label{eq:surv-lik}
     L(\btheta|\x_1,\ldots,\x_n)=\prod_{i=1}^n f(t_i|\x_i,\btheta)^{\delta_i} S(t_i|\x_i,\btheta)^{1-\delta_i}
 \end{equation}
@@ -18,31 +18,31 @@ To find out anything interesting, we need to be able to do regression on covaria
 \subsection{Proportional hazards}
 The most used method for doing regression on survival data is the Cox proportional hazards (PH) regression. It is based on an assumption that is often called the PH property or the PH assumption, namely that
 \begin{equation}
-    h(t|x)=h_0(t)g(\x).
+    h(t|x)=h_0(t)g(\x),
 \end{equation}
-This property states that at any two time points $t_1$ and $t_2$, the ratio between the hazard functions of any two $\x_1$ and $\x_2$ will be the same:
+where $h_0(t)$ is a baseline hazard function. \todo[inline]{more about baseline hazard?} This property states that at any two time points $t_1$ and $t_2$, the ratio between the hazard functions of any two $\x_1$ and $\x_2$ will be the same:
 \begin{equation}
     \frac{h(t_1|x_1)}{h(t_1|x_2)}=\frac{h(t_2|x_1)}{h(t_2|x_2)}
 \end{equation}
-This is a large assumption to make, and it will rarely be the case in practice (\cite{lee2010}). However, many times Cox regression will work well in practice.
+This is a strong assumption to make, and it will rarely be the case in practice (\cite{lee2010})\todo{how to rephrase?}. However, many times Cox regression will work well in practice. \todo{really? or argue why!}
 
 \section{The first hitting time model}\label{sec:fht}
-Revisiting the examples of the two lifetime settings, it may in both cases be natural to imagine that the event happens as a process reaches a threshold. Then one way to model the time-to-event is to model the process itself, and look at the time it takes for the process to reach this threshold, at which point the event is triggered. \cite{lee2006} is a thorough review on the FHT model, and \cite{caroni2017} is a longer book which covers many aspects of it. We continue by describing the FHT model.
+Revisiting the examples of the two lifetime settings, it may in both cases be natural to imagine that the event happens as a process reaches a threshold. Then one way to model the time-to-event is to model the process itself, and look at the time it takes for the process to reach this threshold, at which point the event is triggered. \cite{lee2006} is a thorough review on the first hitting time model, and \cite{caroni2017} is a book which covers many aspects of it. We continue by describing the first hitting time model.
 
-An FHT model has two main components.
+An first hitting time model has two main components.
 \begin{enumerate}
     \item A stochastic process $\{Y(t), t\in\setT,y\in\setY\}$, with $Y(0)=y_0$.
     \item A boundary set, $B\subset \setY$, where $y_0\notin\setB$
 \end{enumerate}
-The first hitting time is the first time the process reaches the boundary set. Formally, the FHT is a stochastic variable $S$, which is defined as
+The first hitting time is the first time the process reaches the boundary set. Formally, the first hitting time is a stochastic variable $S$\todo{what did you say about this again?}, which is defined as
 \[
     S = \inf\{t\colon Y(t)\in\setB\}
 \]
 Typically, one will consider a process with boundary $B=0$. The event then occurs if and when the process $\{Y\}$ reaches 0 at $y(S)$. Note that it is possible that $P(S<\infty)<1$.
 
-The FHT model is conceptually appealing\todo{justify} and does not require the PH assumption, and is hence more flexible. In fact, the PH model may be obtained by constructing the FHT model in a specific way (\cite{lee2010}).
+The first hitting time model is conceptually appealing \todo{justify} and does not require the PH assumption, and is hence more flexible. In fact, the PH model may be obtained by constructing the first hitting time model in a specific way (\cite{lee2010}).
 
-Different choices of processes lead to different kinds of distributions for the FHT. We now look at a common choice of the process.
+Different choices of processes lead to different kinds of distributions for the first hitting time. We now look at a common choice of the process.
 
 \subsection{Wiener process}\label{sec:wiener}
 The Wiener process, also known as the standard Brownian motion process, is a process which is continuous in time and space, and has the properties (\cite[61]{caroni2017}) that
@@ -58,6 +58,8 @@ This is a process which will both increase and decrease. However, if we want a m
 \subsection{Gamma process}
 The gamma process is suitable for modelling a process which we would require to be monotonic, typically a physical degradation, i.e. where the damage cannot mend itself, unlike a patient's health. The first-hitting-time that arises from the gamma process is inverse gamma. (\cite[503]{lee2006}.)
 
+\todo{inline}[make this into a separate section?]
+
 Other choices of processes include Markov chain state models, the Bernoulli process, and the Ornstein-Uhlenbeck process.
 
 \section{First hitting time regression based on underlying Wiener process}
@@ -66,7 +68,7 @@ The first hitting time of the Wiener process (section \ref{sec:wiener}) follows 
 \label{eq:fht-ig}
     f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right]
 \end{equation}
-If $\mu$ is positive, $Y(t)\leq 0$ is not certain to occur. Note also that this parameterization is over-parameterized, because $Y$ has an arbitrary scale, so we can without loss of generality let $\sigma^2=1$.
+If $\mu$ is positive, $Y(t)\leq 0$ is not certain to occur. Note also that this model is over-parameterized, because $Y$ has an arbitrary scale, so we can without loss of generality set $\sigma^2=1$.\todo[inline]{more!}
 
 While $\mu$ and $y_0$ have simple interpretations in terms of the underlying process, they do not in terms of the lifetime distribution. The mean lifetime is $\frac{y_0}{|\mu|}$, and the variance is $\frac{y_0}{|\mu|^3}$. (\cite[62]{caroni2017}.)
 
@@ -84,10 +86,10 @@ We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend o
 \begin{align}\label{eq:coeffs}
 \begin{split}
     \mu=\bbeta^\T\x \\
-    \ln y_0=\bgamma^\T\x
+    \ln y_0=\bgamma^\T\z
 \end{split}
 \end{align}
-where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. If we deem suitable, we let elements in $\bbeta$ and $\bgamma$ be zero, e.g. if we think some elements in $\x$ are relevant for $y_0$ but not $\mu$ or vice versa.
+where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements.
 
 \section{Likelihood}\label{sec:lik}
 In section \ref{sec:surv-reg}, we stated the likelihood of lifetime regression models in \eqref{eq:surv-lik}. For an inverse gaussian FHT this then becomes (inserting \eqref{eq:fht-ig} and \eqref{eq:cumulative} into \eqref{eq:surv-lik}, and since $S(t)=1-F(t)$)
@@ -104,18 +106,18 @@ L(\btheta|\x_1,\ldots,\x_n)&=\p*{\frac{y_0}{\sqrt{2\pi t^3}}\exp\left[-\frac{(y_
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu t}{\sqrt{t}}}-\exp\p*{-2y_0\mu}\Phi\p*{\frac{\mu t-y_0}{\sqrt{t}}}}^{1-\delta_i}
 \end{split}
 \end{align}
-We can now substitute the covariates in \eqref{eq:coeffs} into this. This is often fitted with numerical maximum likelihood methods.
+We can now substitute the covariates in \eqref{eq:coeffs} into this. To find optimal parameters, we use numerical maximum likelihood methods. However, this is only feasible in the low-dimensional case, since it will optimize the entire parameter space at once. \todo{is this correct?} Therefore it is necessary to develop methods which can deal with high-dimensional cases. That is what we intend to do in the main part of the thesis.
 
 \section{The \texttt{threg} package}
 There exists an R package \texttt{threg} for fitting regression with inverse gaussian FHT, described in \cite{threg}. We provide a small example here, which is the one described in the help pages of the package.
-\begin{verbatim}
+\begin{lstlisting}
 library(threg)
 data("lkr")
 lkr$f.treatment2=factor(lkr$treatment2)
 # head(lkr)
 fit <- threg(Surv(weeks, relapse) ~ f.treatment2|f.treatment2, data=lkr)
 fit
-\end{verbatim}
+\end{lstlisting}
 Which provides the following output
 \begin{verbatim}
 Call:
@@ -134,4 +136,11 @@ Here we fit an inverse gaussian FHT model where
 \[
     \ln y_0=\mu=\beta_0+\beta_1\text{I}(\text{treatment2 = 1})
 \]
-\todo[inline]{Write more about package and show how it fits the model.}
+
+What the \verb|threg| function in the package of the same name does, is essentially to set up the log likelihood and use the numerical optimization function \verb|nlm| to find the optimal parameters.
+
+\subsection{Recreating}
+We recreate the above example in plain \verb|R| code.
+
+\lstinputlisting{../code/recreating_threg_example.R}
+We can also inspect the parameters we found and see that we did indeed find the optimal parameters.
