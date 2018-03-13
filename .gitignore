@@ -27,3 +27,10 @@ threg
 *.tex.*
 *.toc
 .Rproj.user
+
+
+# Symbolic link to Thesis
+Thesis
+
+todo*
+TODO*

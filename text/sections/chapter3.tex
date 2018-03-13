@@ -1,0 +1,40 @@
+\chapter{Statistical boosting}
+\subsection{Boosting}
+Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) The history of boosting started in 1994 with the question of whether any ``weak'' classifier could be transformed to become also a strong learner. (\cite{kearns}) Weak is here, in the binary case, defined to be a classifier which is only slightly better than random choice. The answer to the original question is yes, and Schapire and Freund showed this with the AdaBoost algorithm, which constructs a binary classifier. (\cite{adaboost}) The algorithm works by iteratively reweighting observations, giving more weight to misclassified observations, and training a new base learner on all observations, using the updated weights. The resulting AdaBoost classifier is simply the sum of these base classifiers. This classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
+
+\section{Statistical boosting}\label{sec:sboost}
+In statistics, however, we are interested in models which are interpretable. We want to estimate the relation between observed predictor variables and the expectation of the response,
+\begin{align}
+    \E(Y|X=x)=f(x).
+\end{align}
+In addition to using boosting for classification, like in the original AdaBoost, we would also like to use it in more general settings. We therefore extend our discussion to the more general regression scheme, where the outcome variable $Y$ can be continuous. To evaluate a candidate $\fh(x)$, we need to see how well it estimates $f(x)$. This is typically done by choosing a loss function,
+\begin{align}\label{eq:loss}
+    \loss(Y, f(X)),
+\end{align}
+and calculating the empirical risk, i.e., the average in-sample error over some observed test data set. A typical loss function for regression is the $L_2$ loss,
+\begin{align}
+    \loss(Y, f(X))=(Y-f(X))^2
+\end{align}
+The empirical risk is then
+\begin{align}
+    \frac{1}{n}\sum_{i=1}^n (y_i-\fh(x_i))^2
+\end{align}
+A possible model for $f(x)$ is the generalized additive model (GAM), in which different effects of single predictors are added,
+\begin{equation}\label{eq:gam}
+    f(x)=\beta_0+\sum_{i=1}^p h_p(x_p).
+\end{equation}
+In 2000, Friedman showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. (\cite{friedman2000}) This provided a way of viewing the successful boosting regime through a statistical lens.
+
+\subsection{Gradient boosting}
+Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM. (\cite{friedman2001}) From a numerical optimization perspective, the regression function $\fh(x)$ which minimizes \eqref{eq:loss} is the solution to
+\begin{align}
+    \hat{f}(x)&=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
+\end{align}
+Gradient boosting does a gradient descent search in function space to find this $\fh(x)$. The original AdaBoost algorithm iteratively reweights observations. The other key point of gradient boosting, however, is to iteratively fit the base-learner to the negative gradient vector $\u^{[m]}$ of the loss function, evaluated at the previous iteration,
+\begin{align}
+    \u^{[m]}=\p*{-\frac{\pd}{\pd f}\loss(y_i,f)\at_{f=\fh(\cdot)^{[m-1]}}}_{i=1,\dots,n}.
+\end{align}
+
+If the base learners are one dimensional, we get 
+
+\subsection{Likelihood-based boosting}
