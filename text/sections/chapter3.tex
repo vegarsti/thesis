@@ -26,15 +26,27 @@ A possible model for $f(x)$ is the generalized additive model (GAM), in which di
 In 2000, Friedman showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. (\cite{friedman2000}) This provided a way of viewing the successful boosting regime through a statistical lens.
 
 \subsection{Gradient boosting}
-Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM. (\cite{friedman2001}) From a numerical optimization perspective, the regression function $\fh(x)$ which minimizes \eqref{eq:loss} is the solution to
+Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM. (\cite{friedman2001}) In general, we are interested in finding the function $f(\cdot)$ which minimizes the loss \eqref{eq:loss}. From a numerical optimization perspective, this can be seen as
 \begin{align}
     \hat{f}(x)&=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
 \end{align}
-Gradient boosting does a gradient descent search in function space to find this $\fh(x)$. The original AdaBoost algorithm iteratively reweights observations. The other key point of gradient boosting, however, is to iteratively fit the base-learner to the negative gradient vector $\u^{[m]}$ of the loss function, evaluated at the previous iteration,
+Gradient boosting does a gradient descent search in function space to find this $\fh(\cdot)$. While the original AdaBoost algorithm iteratively reweights observations, gradient boosting iteratively fits the base-learner to the negative gradient vector $\u^{[m]}$ of the loss function, evaluated at the previous iteration,
 \begin{align}
-    \u^{[m]}=\p*{-\frac{\pd}{\pd f}\loss(y_i,f)\at_{f=\fh(\cdot)^{[m-1]}}}_{i=1,\dots,n}.
+    \u^{[m]}=\p*{-\frac{\pd}{\pd f}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}.
 \end{align}
-
-If the base learners are one dimensional, we get 
+This is the other key point of gradient boosting. Further, often the base learners are one dimensional. Hence,
+\begin{align}
+    \u^{[m]}=\p*{u_1^{[m]},\cdots,u_p^{[m]}},
+\end{align}
+where each component is
+\begin{align}
+    u_j^{[m]}=-\p*{\frac{\pd}{\pd f_j}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}
+\end{align}
+Call $k$ the component which is most negative, i.e.,
+\begin{align}
+    k=\argmin{\u^{[m]}},
+\end{align}
+such that $u_k^{[m]}$ is the component in which the gradient of $f$ is steepest. We can then take a gradient descent step in this direction. This gives rise to the component-wise gradient boosting algorithm.
 
 \subsection{Likelihood-based boosting}
+To do!
