@@ -1,24 +1,24 @@
 \chapter{Statistical boosting}
 \subsection{Boosting}
-Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) The history of boosting started in 1994 with the question of whether any ``weak'' classifier could be transformed to become also a strong learner. (\cite{kearns}) Weak is here, in the binary case, defined to be a classifier which is only slightly better than random choice. The answer to the original question is yes, and Schapire and Freund showed this with the AdaBoost algorithm, which constructs a binary classifier. (\cite{adaboost}) The algorithm works by iteratively reweighting observations, giving more weight to misclassified observations, and training a new base learner on all observations, using the updated weights. The resulting AdaBoost classifier is simply the sum of these base classifiers. This classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
+Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) The history of boosting with the question posed in 1989 by Kearns and Valiant of whether any weak learner could be transformed to become also a strong learner. (\cite{kearnsvaliant}) A weak classifier is in general defined to be one which is only slightly better than random choice. For regression, it is a bit harder to give a specific definition, but a weak regressor is simple and low dimensional, and does not pick up much of the underlying signal. The answer to the original question is yes, and Schapire and Freund showed this with the AdaBoost algorithm, which constructs a binary classifier. (\cite{adaboost}) The algorithm works by iteratively reweighting observations, giving more weight to misclassified observations, and training a new base learner on all observations, using the updated weights. The resulting AdaBoost classifier is a linear combination of these base classifiers. In its original formulation, the classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
 
 \section{Statistical boosting}\label{sec:sboost}
 In statistics, however, we are interested in models which are interpretable. We want to estimate the relation between observed predictor variables and the expectation of the response,
-\begin{align}
+\begin{equation*}
     \E(Y|X=x)=f(x).
-\end{align}
+\end{equation*}
 In addition to using boosting for classification, like in the original AdaBoost, we would also like to use it in more general settings. We therefore extend our discussion to the more general regression scheme, where the outcome variable $Y$ can be continuous. To evaluate a candidate $\fh(x)$, we need to see how well it estimates $f(x)$. This is typically done by choosing a loss function,
-\begin{align}\label{eq:loss}
+\begin{equation}\label{eq:loss}
     \loss(Y, f(X)),
-\end{align}
+\end{equation}
 and calculating the empirical risk, i.e., the average in-sample error over some observed test data set. A typical loss function for regression is the $L_2$ loss,
-\begin{align}
+\begin{equation*}
     \loss(Y, f(X))=(Y-f(X))^2
-\end{align}
+\end{equation*}
 The empirical risk is then
-\begin{align}
+\begin{equation*}
     \frac{1}{n}\sum_{i=1}^n (y_i-\fh(x_i))^2
-\end{align}
+\end{equation*}
 A possible model for $f(x)$ is the generalized additive model (GAM), in which different effects of single predictors are added,
 \begin{equation}\label{eq:gam}
     f(x)=\beta_0+\sum_{i=1}^p h_p(x_p).
@@ -27,25 +27,25 @@ In 2000, Friedman showed that AdaBoost fits a GAM with a forward stagewise algor
 
 \subsection{Gradient boosting}
 Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM. (\cite{friedman2001}) In general, we are interested in finding the function $f(\cdot)$ which minimizes the loss \eqref{eq:loss}. From a numerical optimization perspective, this can be seen as
-\begin{align}
-    \hat{f}(x)&=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
-\end{align}
+\begin{equation*}
+    \hat{f}(x)=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
+\end{equation*}
 Gradient boosting does a gradient descent search in function space to find this $\fh(\cdot)$. While the original AdaBoost algorithm iteratively reweights observations, gradient boosting iteratively fits the base-learner to the negative gradient vector $\u^{[m]}$ of the loss function, evaluated at the previous iteration,
-\begin{align}
+\begin{equation*}
     \u^{[m]}=\p*{-\frac{\pd}{\pd f}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}.
-\end{align}
+\end{equation*}
 This is the other key point of gradient boosting. Further, often the base learners are one dimensional. Hence,
-\begin{align}
+\begin{equation*}
     \u^{[m]}=\p*{u_1^{[m]},\cdots,u_p^{[m]}},
-\end{align}
+\end{equation*}
 where each component is
-\begin{align}
+\begin{equation*}
     u_j^{[m]}=-\p*{\frac{\pd}{\pd f_j}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}
-\end{align}
+\end{equation*}
 Call $k$ the component which is most negative, i.e.,
-\begin{align}
+\begin{equation*}
     k=\argmin{\u^{[m]}},
-\end{align}
+\end{equation*}
 such that $u_k^{[m]}$ is the component in which the gradient of $f$ is steepest. We can then take a gradient descent step in this direction. This gives rise to the component-wise gradient boosting algorithm.
 
 \subsection{Likelihood-based boosting}
