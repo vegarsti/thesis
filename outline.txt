@@ -1,0 +1,10 @@
+2 First Hitting Time
+
+3 Boosting
+- Boosting idea
+- AdaBoost
+- GAM
+- (Boosting is) Forward Stagewise Additive Modelling
+- Gradient Descent in Function Space
+- Gradient Boosting (general
+- Componentwise Gradient Boosting
