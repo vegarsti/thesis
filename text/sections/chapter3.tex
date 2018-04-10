@@ -1,6 +1,6 @@
 \chapter{Statistical boosting}
 \subsection{Boosting}
-Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) The history of boosting with the question posed in 1989 by Kearns and Valiant of whether any weak learner could be transformed to become also a strong learner. (\cite{kearnsvaliant}) A weak classifier is in general defined to be one which is only slightly better than random choice. For regression, it is a bit harder to give a specific definition, but a weak regressor is simple and low dimensional, and does not pick up much of the underlying signal. The answer to the original question is yes, and Schapire and Freund showed this with the AdaBoost algorithm, which constructs a binary classifier. (\cite{adaboost}) The algorithm works by iteratively reweighting observations, giving more weight to misclassified observations, and training a new base learner on all observations, using the updated weights. The resulting AdaBoost classifier is a linear combination of these base classifiers. In its original formulation, the classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
+Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) The history of boosting started with the question posed in 1989 by Kearns and Valiant, working on computational learning theory, of whether any weak learner could be transformed to become also a strong learner. (\cite{kearnsvaliant}) A weak classifier is in general defined to be one which is only slightly better than random choice. For regression, it is a bit harder to give a specific definition, but a weak regressor is simple and low dimensional, and does not pick up much of the underlying signal. The answer to the original question is yes, and Schapire and Freund showed this with the AdaBoost algorithm, which constructs a binary classifier. (\cite{adaboost}) The algorithm works by iteratively reweighting observations, giving more weight to misclassified observations, and training a new base learner on all observations, using the updated weights. The resulting AdaBoost classifier is a linear combination of these base classifiers. In its original formulation, the classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
 
 \section{Statistical boosting}\label{sec:sboost}
 In statistics, however, we are interested in models which are interpretable. We want to estimate the relation between observed predictor variables and the expectation of the response,
@@ -26,7 +26,7 @@ A possible model for $f(x)$ is the generalized additive model (GAM), in which di
 In 2000, Friedman showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. (\cite{friedman2000}) This provided a way of viewing the successful boosting regime through a statistical lens.
 
 \subsection{Gradient boosting}
-Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM. (\cite{friedman2001}) In general, we are interested in finding the function $f(\cdot)$ which minimizes the loss \eqref{eq:loss}. From a numerical optimization perspective, this can be seen as
+Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM \eqref{eq:gam}. (\cite{friedman2001}) In general, we are interested in finding the function $f(\cdot)$ which minimizes the loss \eqref{eq:loss}. From a numerical optimization perspective, this can be seen as
 \begin{equation*}
     \hat{f}(x)=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
 \end{equation*}
@@ -50,3 +50,41 @@ such that $u_k^{[m]}$ is the component in which the gradient of $f$ is steepest.
 
 \subsection{Likelihood-based boosting}
 To do!
+
+
+\subsection*{Gradient boosting (re-do)}
+Gradient boosting was proposed in 2001 (\cite{friedman2001}), and further refined by \cite{buhlmann-yu} in 2003. We will here present the gradient boosting framework, first a general algorithm.
+We have data $X$, $Y$, from
+\begin{equation}\label{eq:gam2}
+    Y=\beta_0+\sum_{i=1}^p \beta_p h_p(x_p)+\epsilon,
+\end{equation}
+for which we wish to minimize the expected loss,
+\begin{equation}\label{eq:min-loss}
+    \min\E_{Y,X}[L(Y,f(X;\bbeta))]
+\end{equation}
+To do this we typically choose a parameterized model and optimize its parameters, finding
+\begin{equation}\label{eq:min-loss-param}
+    \bbeta^*=\underset{\bbeta}{\min}\E_{Y,X}[L(Y,f(X;\bbeta))].
+\end{equation}
+A method which is often used to find the solution $\bbeta^*$ to \eqref{eq:min-loss-param} is steepest gradient descent in parameter space. We start with an initial guess $\bbeta_0$, e.g.$\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bgamma_m$ which improve our existing solution $\bbeta_{m-1}$. We continue until some stopping criterion, e.g. when $\bbeta$ reaches convergence. The resulting solution $\bbeta^*$ is a sum of individual incremental changes $\bgamma_m$,
+\begin{equation}
+    \bbeta^*=\sum_{m=0}^M\bgamma_m
+\end{equation}
+At each step we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
+\begin{equation}
+    \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\beta_j}\E_{Y,X}[L(Y,f(X;\bbeta_{m-1}))]\right\}_{j=1}^{p}.
+\end{equation}
+We then do a so-called line search to find the optimal step length,
+\begin{equation}
+    \rho_m=\underset{\rho}{\argmin}\E_{Y,X}[L(Y,f(X;\bbeta_{m-1}+\rho\bbeta_m))]
+\end{equation}
+Update $\bbeta_m$ with the new step.
+
+Instead of optimizing a parametric function in parameter space, we can also view the optimization problem \eqref{eq:min-loss} from a non-parametric perspective. We are then optimizing in functional space, i.e., finding
+\begin{equation}\label{eq:min-loss-func}
+    f^*=\underset{f}{\min}\E_{Y,X}[L(Y,f(X;\bbeta))].
+\end{equation}
+In function space there are in theory an infinite number of such $f$. But in data sets there are only a finite number. We can also here use steepest gradient descent. Following the numerical optimization paradigm as above, we take the solution $f^*$ to \eqref{eq:min-loss-func} to be
+\begin{equation}
+    f^*=\sum_{m=0}^Mh.
+\end{equation}
