@@ -54,37 +54,43 @@ To do!
 
 \subsection*{Gradient boosting (re-do)}
 Gradient boosting was proposed in 2001 (\cite{friedman2001}), and further refined by \cite{buhlmann-yu} in 2003. We will here present the gradient boosting framework, first a general algorithm.
-We have data $X$, $Y$, from
-\begin{equation}\label{eq:gam2}
-    Y=\beta_0+\sum_{i=1}^p \beta_p h_p(x_p)+\epsilon,
-\end{equation}
-for which we wish to minimize the expected loss,
+Assume we have data $\X\in\R^p$ and $Y\in\R$ with some relation $Y\sim f(\X)$, $f\colon\R^p\to\R$, which we wish to estimate. We have
+\begin{equation*}
+    Y=f(\X)+\epsilon,
+\end{equation*}
+where $\epsilon$ is a random variable with expectation zero. We wish to minimize the expected loss of our distribution,
 \begin{equation}\label{eq:min-loss}
-    \min\E_{Y,X}[L(Y,f(X;\bbeta))]
+    \min\E_{Y,\X}[\loss(Y,f(\X))],
 \end{equation}
-To do this we typically choose a parameterized model and optimize its parameters, finding
+where $\loss$ is some meaningful loss function which measures the difference between $Y$ and $f(\X)$. In particular, a loss function is 0 if $Y$ is exactly equal $f(\X)$, and positive otherwise. To estimate $f$ we typically choose a parameterized model,
+\begin{equation}
+    f(\X)=\bgamma^Th(\X),
+\end{equation}
+where $h(\cdot)$ is some function, and $\bgamma$ are parameters to be estimated. For finite data points $\{\X_i,Y_i\}_{i=1}^N$ and chosen $h$, there exists $\beta_m$ which minimizes \eqref{eq:min-loss},
 \begin{equation}\label{eq:min-loss-param}
-    \bbeta^*=\underset{\bbeta}{\min}\E_{Y,X}[L(Y,f(X;\bbeta))].
+    \bgamma^*=\underset{\bgamma}{\min}\E_{Y,\X}[\loss(Y,\bgamma^Th(\X))],
 \end{equation}
-A method which is often used to find the solution $\bbeta^*$ to \eqref{eq:min-loss-param} is steepest gradient descent in parameter space. We start with an initial guess $\bbeta_0$, e.g.$\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bgamma_m$ which improve our existing solution $\bbeta_{m-1}$. We continue until some stopping criterion, e.g. when $\bbeta$ reaches convergence. The resulting solution $\bbeta^*$ is a sum of individual incremental changes $\bgamma_m$,
+but estimating this is not necessarily easy. An algorithm which is often used to find the solution $\bgamma^*$ to \ref{eq:min-loss-param} is steepest gradient descent. This is a greedy iterative algorithm, which at each step improves the previous solution by going in the direction of the gradient.
+
+Let $\bgamma=\sum_{m=0}^M\bbeta_m$. We start with an initial guess $\bbeta_0$, e.g. $\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bbeta_m$ which improve our existing solution $\bgamma_{m-1}$. We continue until some stopping criterion. At each iteration step in the algorithm, we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
 \begin{equation}
-    \bbeta^*=\sum_{m=0}^M\bgamma_m
-\end{equation}
-At each step we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
-\begin{equation}
-    \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\beta_j}\E_{Y,X}[L(Y,f(X;\bbeta_{m-1}))]\right\}_{j=1}^{p}.
+    \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\beta_j}\E_{Y,\X}[\loss(Y,\bgamma_{m}^Th(\X))]\right\}_{j=1}^{p}.
 \end{equation}
 We then do a so-called line search to find the optimal step length,
 \begin{equation}
-    \rho_m=\underset{\rho}{\argmin}\E_{Y,X}[L(Y,f(X;\bbeta_{m-1}+\rho\bbeta_m))]
+    \rho_m=\underset{\rho}{\argmin}\E_{Y,X}[\loss(Y,(\bgamma_{m-1}+\rho \g_m)^Th(\X))],
 \end{equation}
-Update $\bbeta_m$ with the new step.
+and choose $\beta_m=\rho_m\g_m$.
 
+\subsubsection*{Gradient descent in function space}
 Instead of optimizing a parametric function in parameter space, we can also view the optimization problem \eqref{eq:min-loss} from a non-parametric perspective. We are then optimizing in functional space, i.e., finding
 \begin{equation}\label{eq:min-loss-func}
-    f^*=\underset{f}{\min}\E_{Y,X}[L(Y,f(X;\bbeta))].
+    f^*=\underset{f}{\min}\E_{Y,X}[\loss(Y,f(\X)].
 \end{equation}
 In function space there are in theory an infinite number of such $f$. But in data sets there are only a finite number. We can also here use steepest gradient descent. Following the numerical optimization paradigm as above, we take the solution $f^*$ to \eqref{eq:min-loss-func} to be
 \begin{equation}
     f^*=\sum_{m=0}^Mh.
 \end{equation}
+
+\subsubsection{Steepest descent}
+Steepest descent is a greedy numerical optimization algorithm. At each iteration step, we go in the direction of the gradient, i.e. where the function increases the most. To avoid overshooting, we perform a line search in that direction, finding the best step length. We then continue iterating until we reach convergence.
