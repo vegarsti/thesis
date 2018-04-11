@@ -60,18 +60,26 @@ Assume we have data $\X\in\R^p$ and $Y\in\R$ with some relation $Y\sim f(\X)$, $
 \end{equation*}
 where $\epsilon$ is a random variable with expectation zero. We wish to minimize the expected loss of our distribution,
 \begin{equation}\label{eq:min-loss}
-    \min\E_{Y,\X}[\loss(Y,f(\X))],
+    \min\E_{Y,\X}[\loss(Y,f(\X))]=\min\E_Y\E_\X[\loss(Y,f(\x))|\X=\x],
 \end{equation}
 where $\loss$ is some meaningful loss function which measures the difference between $Y$ and $f(\X)$. In particular, a loss function is 0 if $Y$ is exactly equal $f(\X)$, and positive otherwise. To estimate $f$ we typically choose a parameterized model,
 \begin{equation}
     f(\X)=\bgamma^Th(\X),
 \end{equation}
-where $h(\cdot)$ is some function, and $\bgamma$ are parameters to be estimated. For finite data points $\{\X_i,Y_i\}_{i=1}^N$ and chosen $h$, there exists $\beta_m$ which minimizes \eqref{eq:min-loss},
-\begin{equation}\label{eq:min-loss-param}
-    \bgamma^*=\underset{\bgamma}{\min}\E_{Y,\X}[\loss(Y,\bgamma^Th(\X))],
+where $h(\cdot)$ is some function, and $\bgamma$ are parameters to be estimated. For finite observed data points $\{\x_i,Y_i\}_{i=1}^N$ we must estimate the expected loss by the empirical risk,
+\begin{equation}
+    \frac{1}{N}\sum_{i=1}^NL(Y_i,f(\x_i)).
 \end{equation}
-but estimating this is not necessarily easy. An algorithm which is often used to find the solution $\bgamma^*$ to \ref{eq:min-loss-param} is steepest gradient descent. This is a greedy iterative algorithm, which at each step improves the previous solution by going in the direction of the gradient.
+For finite data points and chosen $h$, there exists $\beta_m$ which minimizes \eqref{eq:min-loss},
+\begin{equation}\label{eq:min-loss-param}
+    \bgamma^*=\underset{\bgamma}{\min}\frac{1}{N}\sum_{i=1}^NL(Y_i,f(\x_i)),
+\end{equation}
+but estimating this is not necessarily easy. An algorithm which is often used to find an approximate solution $\hat{\bgamma}^*$ to \ref{eq:min-loss-param} is gradient descent.
 
+\subsubsection{Gradient descent}
+Gradient descent, or steepest descent, is a greedy iterative numerical optimization algorithm. At each iteration step it improves on the previous solution by going in the direction which improves the loss function the most, which is in the direction of the negative gradient. To avoid overshooting in each step, we perform a line search in the gradient direction, and choose the best step length. The algorithm stops when reaching convergence.
+
+\subsubsection{Gradient descent in parameter space}
 Let $\bgamma=\sum_{m=0}^M\bbeta_m$. We start with an initial guess $\bbeta_0$, e.g. $\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bbeta_m$ which improve our existing solution $\bgamma_{m-1}$. We continue until some stopping criterion. At each iteration step in the algorithm, we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
 \begin{equation}
     \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\beta_j}\E_{Y,\X}[\loss(Y,\bgamma_{m}^Th(\X))]\right\}_{j=1}^{p}.
@@ -91,6 +99,3 @@ In function space there are in theory an infinite number of such $f$. But in dat
 \begin{equation}
     f^*=\sum_{m=0}^Mh.
 \end{equation}
-
-\subsubsection{Steepest descent}
-Steepest descent is a greedy numerical optimization algorithm. At each iteration step, we go in the direction of the gradient, i.e. where the function increases the most. To avoid overshooting, we perform a line search in that direction, finding the best step length. We then continue iterating until we reach convergence.
