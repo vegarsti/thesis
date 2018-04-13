@@ -9,7 +9,7 @@ In statistics, however, we are interested in models which are interpretable. We 
 \end{equation*}
 In addition to using boosting for classification, like in the original AdaBoost, we would also like to use it in more general settings. We therefore extend our discussion to the more general regression scheme, where the outcome variable $Y$ can be continuous. To evaluate a candidate $\fh(x)$, we need to see how well it estimates $f(x)$. This is typically done by choosing a loss function,
 \begin{equation}\label{eq:loss}
-    \loss(Y, f(X)),
+    \loss(Y, F(X)),
 \end{equation}
 and calculating the empirical risk, i.e., the average in-sample error over some observed test data set. A typical loss function for regression is the $L_2$ loss,
 \begin{equation*}
@@ -26,76 +26,59 @@ A possible model for $f(x)$ is the generalized additive model (GAM), in which di
 In 2000, Friedman showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. (\cite{friedman2000}) This provided a way of viewing the successful boosting regime through a statistical lens.
 
 \subsection{Gradient boosting}
-Gradient boosting, proposed in 2001, is a boosting scheme which fits a GAM \eqref{eq:gam}. (\cite{friedman2001}) In general, we are interested in finding the function $f(\cdot)$ which minimizes the loss \eqref{eq:loss}. From a numerical optimization perspective, this can be seen as
-\begin{equation*}
-    \hat{f}(x)=\underset{f}{\argmin}\,{\E_{Y,X}[\loss(Y,f(X))]}.
-\end{equation*}
-Gradient boosting does a gradient descent search in function space to find this $\fh(\cdot)$. While the original AdaBoost algorithm iteratively reweights observations, gradient boosting iteratively fits the base-learner to the negative gradient vector $\u^{[m]}$ of the loss function, evaluated at the previous iteration,
-\begin{equation*}
-    \u^{[m]}=\p*{-\frac{\pd}{\pd f}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}.
-\end{equation*}
-This is the other key point of gradient boosting. Further, often the base learners are one dimensional. Hence,
-\begin{equation*}
-    \u^{[m]}=\p*{u_1^{[m]},\cdots,u_p^{[m]}},
-\end{equation*}
-where each component is
-\begin{equation*}
-    u_j^{[m]}=-\p*{\frac{\pd}{\pd f_j}\loss(Y,f)\at_{f=\fh(\cdot)^{[m-1]}}}
-\end{equation*}
-Call $k$ the component which is most negative, i.e.,
-\begin{equation*}
-    k=\argmin{\u^{[m]}},
-\end{equation*}
-such that $u_k^{[m]}$ is the component in which the gradient of $f$ is steepest. We can then take a gradient descent step in this direction. This gives rise to the component-wise gradient boosting algorithm.
-
-\subsection{Likelihood-based boosting}
-To do!
-
-
-\subsection*{Gradient boosting (re-do)}
-Gradient boosting was proposed in 2001 (\cite{friedman2001}), and further refined by \cite{buhlmann-yu} in 2003. We will here present the gradient boosting framework, first a general algorithm.
-Assume we have data $\X\in\R^p$ and $Y\in\R$ with some relation $Y\sim f(\X)$, $f\colon\R^p\to\R$, which we wish to estimate. We have
-\begin{equation*}
-    Y=f(\X)+\epsilon,
-\end{equation*}
-where $\epsilon$ is a random variable with expectation zero. We wish to minimize the expected loss of our distribution,
-\begin{equation}\label{eq:min-loss}
-    \min\E_{Y,\X}[\loss(Y,f(\X))]=\min\E_Y\E_\X[\loss(Y,f(\x))|\X=\x],
-\end{equation}
-where $\loss$ is some meaningful loss function which measures the difference between $Y$ and $f(\X)$. In particular, a loss function is 0 if $Y$ is exactly equal $f(\X)$, and positive otherwise. To estimate $f$ we typically choose a parameterized model,
-\begin{equation}
-    f(\X)=\bgamma^Th(\X),
-\end{equation}
-where $h(\cdot)$ is some function, and $\bgamma$ are parameters to be estimated. For finite observed data points $\{\x_i,Y_i\}_{i=1}^N$ we must estimate the expected loss by the empirical risk,
-\begin{equation}
-    \frac{1}{N}\sum_{i=1}^NL(Y_i,f(\x_i)).
-\end{equation}
-For finite data points and chosen $h$, there exists $\beta_m$ which minimizes \eqref{eq:min-loss},
-\begin{equation}\label{eq:min-loss-param}
-    \bgamma^*=\underset{\bgamma}{\min}\frac{1}{N}\sum_{i=1}^NL(Y_i,f(\x_i)),
-\end{equation}
-but estimating this is not necessarily easy. An algorithm which is often used to find an approximate solution $\hat{\bgamma}^*$ to \ref{eq:min-loss-param} is gradient descent.
+Gradient boosting was proposed in 2001 (\cite{friedman2001}), and further refined in 2003 (\cite{buhlmann-yu}). We will here explain the gradient boosting framework, starting with the motivation in the gradient descent algorithm.
 
 \subsubsection{Gradient descent}
-Gradient descent, or steepest descent, is a greedy iterative numerical optimization algorithm. At each iteration step it improves on the previous solution by going in the direction which improves the loss function the most, which is in the direction of the negative gradient. To avoid overshooting in each step, we perform a line search in the gradient direction, and choose the best step length. The algorithm stops when reaching convergence.
+Gradient descent, or steepest descent, is a greedy iterative algorithm for numerically maximizing an objective function $F$. At each iteration step it improves on the previous solution by going in the direction which increases the objective function the most. This is by definition \todo{??} the direction of the gradient. For our purposes, the objective function is the negative loss function, since we are \textit{minimizing} the loss. To avoid going too far, i.e., beyond the closest local optima, we choose a small step size $\nu$, and it has been shown empirically that $\nu=0.1$ is a good choice (\cite{buhlmann-yu}, \cite{buhlmann2006}). The gradient descent search stops when reaching a maximum, possibly a local maximum. The result of the search after $M$ steps is a sequence of improvements, or boosts, on the objective function.
+
+\subsubsection{Setting}
+Assume we have data $\X\in\R^p$ and $Y\in\R$ with some relation $Y=F(\X)$, $F\colon\R^p\to\R$, which we wish to estimate. We have the relationship
+\begin{equation*}
+    Y=F(\X)+\varepsilon,
+\end{equation*}
+where $\varepsilon$ is a random variable with expectation zero. We wish to find a $\hat{F}(\cdot)$ which minimizes the expected loss between it and the distribution $Y=F(\cdot)$,
+\begin{equation}\label{eq:min-loss}
+    F^*=\min\E_{Y,\X}\left[\loss(Y,\hat{F}(\X))\right]=\min\E_Y\left\{\E_\X\left[\loss(Y,\hat{F}(\x))|\X=\x\right]\right\},
+\end{equation}
+where $\loss$ is some meaningful loss function which measures the difference between $Y$ and $F(\X)$. In particular, a loss function is 0 if $Y$ is exactly equal $F(\X)$, and positive otherwise. To estimate $F$ we typically choose a parameterized model,
+\begin{equation}
+    F(\X)=H(\X;\bgamma),
+\end{equation}
+where $H:\R^p\to\R$ is some function of parameters $\bgamma$, which are to be estimated. In other words, we are trying to solve
+\begin{equation}\label{eq:}
+    \bgamma^*=\argmin_{\bgamma}\E_Y\left\{\E_\X\left[\loss(Y,H(\x;\bgamma))|\X=\x\right]\right\}.
+\end{equation}
+In practice, for finite observed data points $\{\x_i,y_i\}_{i=1}^N$, we must estimate the expected loss \eqref{eq:min-loss} by the empirical risk,
+\begin{equation}\label{eq:emp-risk}
+    \hat{L}(y,h(x;\bgamma))=\frac{1}{N}\sum_{i=1}^NL(y_i,H(\x_i;\bgamma)).
+\end{equation}
+For finite data points and a chosen such model $H$, there exists a $\bgamma^*$ which minimizes \eqref{eq:min-loss}\todo{citation needed?},
+\begin{equation}\label{eq:min-loss-param}
+    \bgamma^*=\min_{\bgamma} R(H;\bgamma)=\min_{\bgamma}\frac{1}{N}\sum_{i=1}^NL(y_i,H(\x_i;\bgamma))
+\end{equation}
+but estimating this is not necessarily easy. An algorithm which is often used to find an approximate solution $\hat{\bgamma}$ to \ref{eq:min-loss-param} is gradient descent in parameter space.
 
 \subsubsection{Gradient descent in parameter space}
-Let $\bgamma=\sum_{m=0}^M\bbeta_m$. We start with an initial guess $\bbeta_0$, e.g. $\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bbeta_m$ which improve our existing solution $\bgamma_{m-1}$. We continue until some stopping criterion. At each iteration step in the algorithm, we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
+At iteration step $m$ we find an improvement $\bbeta_m$, and the current solution at this step is $\bgamma_m=\sum_{j=0}^m\bbeta_j$. We start with an initial guess $\bbeta_0$, say $\bbeta_0=0$. We then carry out steps $m=1,\dotsc,M$, where we find increments $\bbeta_m$ which improve our existing solution $\bgamma_{m-1}$, using gradient descent on the parameters. Hence at each iteration, we compute the gradient of the loss with respect to the parameters, evaluated at the current solution,
 \begin{equation}
-    \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\beta_j}\E_{Y,\X}[\loss(Y,\bgamma_{m}^Th(\X))]\right\}_{j=1}^{p}.
+    \mathbf{g}_m=\{g_{jm}\}=\left\{\frac{\partial}{\partial\gamma_{m-i,j}}\frac{1}{N}\sum_{i=1}^NL(y_i,H(\x_i;\bgamma_{m-1}))\right\}_{j=1}^{p}.
 \end{equation}
-We then do a so-called line search to find the optimal step length,
-\begin{equation}
-    \rho_m=\underset{\rho}{\argmin}\E_{Y,X}[\loss(Y,(\bgamma_{m-1}+\rho \g_m)^Th(\X))],
-\end{equation}
-and choose $\beta_m=\rho_m\g_m$.
+We choose $\bbeta_m=\nu\g_m$, for step size $\nu$, and iterate.
 
 \subsubsection*{Gradient descent in function space}
-Instead of optimizing a parametric function in parameter space, we can also view the optimization problem \eqref{eq:min-loss} from a non-parametric perspective. We are then optimizing in functional space, i.e., finding
+We have until now viewed the function estimating problem as the problem of minimizing a function by optimizing its parameters, i.e., doing gradient descent in parameter space. We can instead view the optimization problem \eqref{eq:min-loss} from a non-parametric perspective, by considering $F(\x)$ at each point $x$ as a parameter. We seek to find
 \begin{equation}\label{eq:min-loss-func}
-    f^*=\underset{f}{\min}\E_{Y,X}[\loss(Y,f(\X)].
+    F^*=\argmin_{F}\E_Y\left\{\E_\X\left[\loss(Y,F(\x))|\X=\x\right]\right\}
 \end{equation}
-In function space there are in theory an infinite number of such $f$. But in data sets there are only a finite number. We can also here use steepest gradient descent. Following the numerical optimization paradigm as above, we take the solution $f^*$ to \eqref{eq:min-loss-func} to be
+In function space there are in theory an infinite number of such $F$. But in data sets there are only a finite number of possibilities $F(x_i)$. We can also here use gradient descent.
+
+\subsubsection{Additive basis expansion}
+However, we would like to estimate function values at other values of $\x$ than that which we have observed. We can then assume a parameterized form such as
 \begin{equation}
-    f^*=\sum_{m=0}^Mh.
+    F(\x;\left\{\bbeta_m\right\}_{m=1}^M)=\sum_{m=1}\bbeta_mH(\x;\bbeta_m)
+\end{equation}
+Minimizing this may be infeasible. In such situations one can try a stagewise approach, at each iteration $m$ choosing $\H(\x;\bbeta)$ such that it gives the best improvement. 
+Following the numerical optimization paradigm as above, we take the solution $F^*$ to \eqref{eq:min-loss-func} to be the sum of a sequence of improvements, or boosts,
+\begin{equation}
+    F^*=\sum_{m=0}^MH_m.
 \end{equation}
