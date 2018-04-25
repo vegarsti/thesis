@@ -15,9 +15,9 @@ where $\alpha\in\R$ is an offset and $x_j$ is the j-th component of $\x$. $F(\x)
 
 \section{Finding a solution}
 We wish to estimate/approximate/find $F(\X)$ in \eqref{eq:exp-f}, so we are interested in solving
-\begin{equation}
+\begin{equation*}
     \argmin_{F}\E\left[\loss(Y,F(\X))\right],
-\end{equation}
+\end{equation*}
 where $\loss$ is an appropriate loss function. But as discussed in chapter \ref{ch:learning-theory} on \nameref{ch:learning-theory}, we have in practice observed a dataset $\{\x_i,y_i\}_{i=1}^N$. Therefore we substitute the loss expected with the expected risk \eqref{eq:empirical-risk}, and so we want a solution to
 \begin{equation}\label{eq:argmin-risk}
     \argmin_{F}\err(F).
@@ -42,68 +42,83 @@ There is another possible way to use gradient descent, and that is the important
     F(\X;\{\bbeta\}_{m=1}^M)=\sum_{m=1}^M\nu H(\X;\bbeta_m),
 \end{equation}
 where $H(\X;\bbeta)$ is also a function on the GAM form \eqref{eq:gam}, but typically simpler, i.e., a base learner as discussed previously. We would like to minimize a data based estimate of the loss, i.e. the empirical risk, and so would choose $\{\bbeta_m\}$ as the minimizers of 
-\begin{equation}
+\begin{equation*}
     \argmin_{\{\bbeta_m\}_{m=1}^M}\err(H(\x;\{\bbeta_m\})).
-\end{equation}
+\end{equation*}
 However, estimating these simultaneously may be infeasible. We can then use a greedy stagewise approach, where we at each step $m$ choose the $\bbeta_m$ which gives the best improvement, while not changing any of the previous $\{\bbeta\}_{k=1}^{m-1}$. Hence at each step $m$ the current solution is
-\begin{equation}
+\begin{equation*}
     F_{m}=F_{m-1}+\nu H(\x;\bbeta_m),
-\end{equation}
+\end{equation*}
 where the parameters $\bbeta_m$ are those in $H$ minimizing the empirical risk when added to the fixed part $F_{m-1}$:
-\begin{equation}
+\begin{equation*}
     \bbeta_m=\argmin_{\bbeta}\err(H(\x;\bbeta_k)+H(\x;\bbeta)).
-\end{equation}
+\end{equation*}
 The final model is then the sum of these terms, like in \eqref{eq:gradboost}. To find $\bbeta_m$ in each step here, we use gradient descent. We have outlined a generic functional gradient descent algorithm. It can be stated more formally as follows.
 \begin{enumerate}
     \item Initialize $F_0(\x)$, e.g., by setting it to zero for all components. Select a base learner $H$.
     \item Compute the negative gradient vector,
-        \begin{equation}
-            U_i=-\frac{\partial \loss(y_i,F_{m-1}(\cdot))}{\partial F_{m-1}(\cdot)}, i=1,\dotsc,N.
-        \end{equation}
-    \item Estimate $\hat{H}_m$ by fitting $(\X_i,U_i)$ using the base learner $H$:
-        \begin{equation}
-            \bbeta_m=\argmin{\bbeta}\sum_{i=1}^N\loss(u_i,H(\x_i;\bbeta))
-        \end{equation}
-        Note that $\hat{H}(\cdot;\bbeta_m)$ is then an estimate of the negative gradient vector.
+        \begin{equation*}
+            U_i=-\frac{\partial \loss(y_i,F_{m-1}(\cdot))}{\partial F_{m-1}(\cdot)},\quad i=1,\dotsc,N.
+        \end{equation*}
+    \item Estimate $\hat{H}_m$ by fitting $(\X_i,U_i)$ using the base learner $H$ (like in the previous algorithm):
+        \begin{equation*}
+            \bbeta_m=\argmin_{\bbeta}\sum_{i=1}^N\loss(u_i,H(\x_i;\bbeta))
+        \end{equation*}
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
     \item Repeat steps from 2 until convergence.
 \end{enumerate}
 Note that while we call this functional gradient descent, this is exactly the gradient boosting algorithm.
 \section{L2Boost}
 In 2003, Buhlmann and Yu improve upon Friedman's work, and develop the L2Boost algorithm for which they also prove some important theoretical results (\cite{buhlmann-yu}). It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss to be the loss function,
-\begin{equation}
+\begin{equation*}
     \loss(y,F(\x))=\frac{1}{2}\left(y-F(\x)\right)^2.
-\end{equation}
+\end{equation*}
 The negative gradient vector of the loss then becomes the residual vector,
-\begin{equation}
-    \frac{\partial\loss(y,F(\x))}{\partial\x}=(y-F(\x)),
-\end{equation}
+\begin{equation*}
+    \frac{\partial\loss(y,F(\x))}{\partial x_i}=(y-F(x_i)),\quad i=1,\dotsc,n,
+\end{equation*}
 and hence the boosting steps become repeated refitting of residuals. (\cite{friedman2001}, \cite{buhlmann-yu}). With $\nu=1$ and $M=2$, this had been proposed already in 1977 by Tukey, who called it ``twicing''. (\cite{tukey}).
-\todo[inline]{Write out steps in algorithm. And give example for $p=2$?}
+\begin{enumerate}
+    \item Initialize $F_0(\x)$, e.g., by setting it to zero for all components. Select a base learner $H$, such as ordinary least squares, stumps, etc.
+    \item Compute the residuals
+        \begin{equation*}
+            U_i=(y_i,F_{m-1}(x_i)),\quad i=1,\dotsc,n
+        \end{equation*}
+    \item Estimate $\hat{H}_m$ by fitting $(\X_i,U_i)$ using the base learner $H$:
+        \begin{equation*}
+            \bbeta_m=\argmin_{\bbeta}\sum_{i=1}^N\loss(u_i,H(\x_i;\bbeta))
+        \end{equation*}
+        Note that $\hat{H}(\cdot;\bbeta_m)$ is then an estimate of the negative gradient vector.
+    \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
+    \item Repeat steps from 2 until convergence.
+\end{enumerate}
 \section{Component-wise gradient boosting}
 In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. It was developed by Yu and Buhlmann (\cite{buhlmann-yu}), and it has further been refined and explored, e.g. by Buhlmann in \cite{buhlmann2006}. The idea of the algorithm is to select $p$ base learners. Each of these is only a function of the corresponding component of the data $\X$, i.e.,
-\begin{equation}
+\begin{equation*}
     h_j(x_j).
-\end{equation}
+\end{equation*}
 In each iteration, we fit all these learners separately, and choose only the one which gives the best improvement to be added in the final model. The resulting model $F_m(\cdot)$ is then a sum of componentwise effects,
-\begin{equation}
+\begin{equation*}
     F_m(\X)=\sum_{j=1}^pf_j(x_j),
-\end{equation}
+\end{equation*}
 where
-\begin{equation}
+\begin{equation*}
     f_j(x_j)=\sum_{m=1}^M\1_{mj}h_j(x_j;\bbeta_m),
-\end{equation}
+\end{equation*}
 where $\1_{mj}$ is an indicator function which is 1 if component $j$ was selected at iteration $m$ and 0 if not.
-This model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently early, we will typically perform variable selection. It is likely that some base learners have never been added to the final model, and as such those components in $\X$ are not added. We now give a presentation of the algorithm.
+Hence this model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently early, we will typically perform variable selection. It is likely that some base learners have never been added to the final model, and as such those components in $\X$ are not added. We now give a presentation of the algorithm.
 \begin{enumerate}
     \item Initialize. $m=0$, e.g. $F_0=\0$.\\
     Specify a set of base learners $h_1(x_1),\dotsc,h_p(x_p)$.
     \item Compute the negative gradient vector $u$.
     \item Fit $u$ separately to every base learner.
     \item Select component $k$ which best fits the negative gradient vector.
-        \begin{equation}
+        \begin{equation*}
             k=\argmin_{j\in[1,p]}\sum_{i=1}^N(u_i-h_j(x_i))^2
-        \end{equation}
+        \end{equation*}
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu h_k(x_k)$
 \end{enumerate}
 In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches (\cite{buhlmann2006}).
+
+\section{The importance of stopping early}
+The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer.
