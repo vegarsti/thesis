@@ -18,7 +18,7 @@ where $(X,Y)$ is drawn randomly from their joint distribution and the training s
 i.e., average over many different test sets.
 In practice, we observe a sample $(\x_i,y_i)_{i=1}^N$. For this sample, we can calculate the training error,
 \begin{equation}\label{eq:empirical-risk}
-    \err=\frac{1}{N}\sum_{i=1}^N\loss(y_i, \hat{F}(\x_i)),
+    \err(F)=\frac{1}{N}\sum_{i=1}^N\loss(y_i, \hat{F}(\x_i)),
 \end{equation}
 also known as the empirical risk. To estimate $\text{err}$ \eqref{eq:err}, one can do two things. First, if the observed sample is large enough, one can choose a portion of this, say 20\%, to be used as a hold-out test set. We then train/fit/estimate based on the other 80\%, and estimate $\text{Err}$ by
 \begin{equation}
