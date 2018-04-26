@@ -1,3 +1,5 @@
+library(rpart) # trees
+
 set.seed(1)
 
 # 1D example of L2Boost
@@ -20,6 +22,7 @@ errors <- rep(NA, M+1)
 u <- matrix(nrow = M+1, ncol = N)
 F_ <- matrix(nrow = M+1, ncol = N)
 F_[1, ] <- rep(mean(y), N)
+errors[1] <- sum(y)
 
 F_at <- function(F_, m) {
   # Calculate function values until m
@@ -35,6 +38,7 @@ u[1, ] <- y
 for (m in 2:M) {
   y_hat_m <- F_at(F_, m-1)
   u[m, ] <- (y - y_hat_m)
+  errors[m] <- sum(u[m, ])
   
   # lm 
   h <- lm(u[m, ] ~ x)
@@ -45,6 +49,10 @@ for (m in 2:M) {
   # smoothing spline
   #s <- smooth.spline(u[m, ]~x, df=2.5)
   #F_[m, ] <- predict(s, x)$y
+  
+  # trees (stumps)
+  #stump <- rpart(u[m, ] ~ x, control=rpart.control(maxdepth=1))
+  #F_[m, ] <- predict(stump)
 }
 y_hat_M <- F_at(F_, M)
 points(x, y_hat_M, col='blue')
@@ -52,3 +60,5 @@ points(x, y_hat_M, col='blue')
 a <- smooth.spline(y~x, df=10)
 y_hat <- predict(a, x)$y
 points(x, y_hat, col='yellow')
+
+plot(1:M, errors)
