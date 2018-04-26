@@ -1,16 +1,16 @@
 \chapter{Statistical learning theory}\label{ch:learning-theory}
 Assume we have a joint distribution $(\X, Y)$, $X\in\R^p$ and $Y\in\R$, and $Y=F(\X)+\eps$, $F(\x)=\E(Y|\X=\x)$ We wish to estimate the underlying $F(\X)$. For an estimate $\hat{F}(\cdot)$, we measure the loss, or the difference, with a loss function
-\begin{equation}
+\begin{equation*}
     \loss(Y, \hat{F}(\X)).
-\end{equation}
+\end{equation*}
 A common loss function for regression is the squared loss, also known as the $L_2$ norm,
-\begin{equation}
+\begin{equation*}
     \loss(Y, \hat{F}(\X))=(Y-\hat{F}(\X))^2.
-\end{equation}
+\end{equation*}
 For a $\hat{F}(X)$, we wish to estimate the expected loss, also known as the generalization or test error,
-\begin{equation}
+\begin{equation*}
     \text{Err}_{\tau}=\E[\loss(Y,\hat{F}(\X))|\tau],
-\end{equation}
+\end{equation*}
 where $(X,Y)$ is drawn randomly from their joint distribution and the training set $\tau$ is held fixed. It is infeasible to do effectively in practice \todo{because?} and hence we must instead estimate the expected prediction error,
 \begin{equation}\label{eq:err}
     \text{Err}=\E[\text{Err}_\tau]=\E_\tau\left([\loss(Y,\hat{F}(\X))|\tau]\right),
@@ -21,7 +21,7 @@ In practice, we observe a sample $(\x_i,y_i)_{i=1}^N$. For this sample, we can c
     \err(F)=\frac{1}{N}\sum_{i=1}^N\loss(y_i, \hat{F}(\x_i)),
 \end{equation}
 also known as the empirical risk. To estimate $\text{err}$ \eqref{eq:err}, one can do two things. First, if the observed sample is large enough, one can choose a portion of this, say 20\%, to be used as a hold-out test set. We then train/fit/estimate based on the other 80\%, and estimate $\text{Err}$ by
-\begin{equation}
+\begin{equation*}
     \hat{\text{Err}}=\frac{1}{M}\sum_{i=1}^ML(y_i,\hat{F}(\x_i)),
-\end{equation}
+\end{equation*}
 where $(x_i,y_i)$ here are from the test set.

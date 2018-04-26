@@ -18,7 +18,7 @@ We wish to estimate/approximate/find $F(\X)$ in \eqref{eq:exp-f}, so we are inte
 \begin{equation*}
     \argmin_{F}\E\left[\loss(Y,F(\X))\right],
 \end{equation*}
-where $\loss$ is an appropriate loss function. But as discussed in chapter \ref{ch:learning-theory} on \nameref{ch:learning-theory}, we have in practice observed a dataset $\{\x_i,y_i\}_{i=1}^N$. Therefore we substitute the loss expected with the expected risk \eqref{eq:empirical-risk}, and so we want a solution to
+where $\loss$ is an appropriate loss function. But as discussed in chapter \ref{ch:learning-theory} on \nameref{ch:learning-theory}, we have in practice observed a dataset $\{\x_i,y_i\}_{i=1}^N$, drawn from the joint distribution $(\X,Y)$. Therefore we substitute the loss expected with the expected risk \eqref{eq:empirical-risk}, and so we want a solution to
 \begin{equation}\label{eq:argmin-risk}
     \argmin_{F}\err(F).
 \end{equation}
@@ -31,7 +31,7 @@ Gradient descent is an optimization algorithm for a differentiable multivariate 
     \item Calculate the gradient $\g_{m-1}=-\nabla F(\x_{m-1})$.
     \item Let $\h_m=\nu \g_{m-1}$, where $\nu$ is a small step length.
     \item Let $\x_m=\x_{m-1}+\h_{m-1}$
-    \item Increase $m$, and go to step 2. Repeat until convergence.
+    \item Increase $m$, and go to step 2. Repeat until $m=M$.
     \item The resulting final guess is $\x_M=\x_0+\sum_{m=1}^M\h_m(\x_m)$
 \end{enumerate}
 Back to our goal of finding an $F$ to minimize \eqref{eq:argmin-risk}. Often we choose a parameterized model $F(\X;\bbeta)$. Finding the optimal $\bbeta$ analytically might be infeasible. The gradient descent algorithm can then be used. In this case, we fix $\X$ and let $F(\X)$ in the algorithm be $F(\bbeta;\X)$. Thus we use gradient descent to find an optimal $\bbeta$. We would then say we are doing gradient descent in parameter space. We are now ready to reveal Friedman's useful insight.
@@ -65,7 +65,7 @@ The final model is then the sum of these terms, like in \eqref{eq:gradboost}. To
             \bbeta_m=\argmin_{\bbeta}\sum_{i=1}^N\loss(u_i,H(\x_i;\bbeta))
         \end{equation*}
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
-    \item Repeat steps from 2 until convergence.
+    \item Repeat steps from 2 until $m=M$.
 \end{enumerate}
 Note that while we call this functional gradient descent, this is exactly the gradient boosting algorithm.
 \section{L2Boost}
@@ -84,18 +84,18 @@ and hence the boosting steps become repeated refitting of residuals. (\cite{frie
         \begin{equation*}
             U_i=(y_i,F_{m-1}(x_i)),\quad i=1,\dotsc,n
         \end{equation*}
-    \item Estimate $\hat{H}_m$ by fitting $(\X_i,U_i)$ using the base learner $H$:
+    \item Estimate $\hat{H}_m$ by fitting $(\X_i,U_i)_{i=1}^N$ using the base learner $H$:
         \begin{equation*}
             \bbeta_m=\argmin_{\bbeta}\sum_{i=1}^N\loss(u_i,H(\x_i;\bbeta))
         \end{equation*}
         Note that $\hat{H}(\cdot;\bbeta_m)$ is then an estimate of the negative gradient vector.
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
-    \item Repeat steps from 2 until convergence.
+    \item Repeat steps from 2 until $m=M$..
 \end{enumerate}
 \section{Component-wise gradient boosting}
 In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. It was developed by Yu and Buhlmann (\cite{buhlmann-yu}), and it has further been refined and explored, e.g. by Buhlmann in \cite{buhlmann2006}. The idea of the algorithm is to select $p$ base learners. Each of these is only a function of the corresponding component of the data $\X$, i.e.,
 \begin{equation*}
-    h_j(x_j).
+    h_j(\x)=h_j(x_j).
 \end{equation*}
 In each iteration, we fit all these learners separately, and choose only the one which gives the best improvement to be added in the final model. The resulting model $F_m(\cdot)$ is then a sum of componentwise effects,
 \begin{equation*}
@@ -108,13 +108,13 @@ where
 where $\1_{mj}$ is an indicator function which is 1 if component $j$ was selected at iteration $m$ and 0 if not.
 Hence this model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently early, we will typically perform variable selection. It is likely that some base learners have never been added to the final model, and as such those components in $\X$ are not added. We now give a presentation of the algorithm.
 \begin{enumerate}
-    \item Initialize. $m=0$, e.g. $F_0=\0$.\\
-    Specify a set of base learners $h_1(x_1),\dotsc,h_p(x_p)$.
-    \item Compute the negative gradient vector $u$.
-    \item Fit $u$ separately to every base learner.
-    \item Select component $k$ which best fits the negative gradient vector.
+    \item Start with an initial guess, e.g. $F_0=\0$.\\
+    Specify a set of base learners $h_1(\cdot),\dotsc,h_p(\cdot)$.
+    \item Compute the negative gradient vector $\U$.
+    \item Fit $(\X_i,U_i)_{i=1}^N$ separately to every base learner to get $\hat{h}_1(x_1),\dotsc,\hat{h}_p(x_p)$.
+    \item Select the component $k$ which best fits the negative gradient vector.
         \begin{equation*}
-            k=\argmin_{j\in[1,p]}\sum_{i=1}^N(u_i-h_j(x_i))^2
+            k=\argmin_{j\in[1,p]}\sum_{i=1}^N(u_i-\hat{h}_j(\x_i))^2
         \end{equation*}
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu h_k(x_k)$
 \end{enumerate}
