@@ -1,2 +1,72 @@
-\chapter{Appendix}
-\todo[inline]{Write.}
+\chapter{Appendix 1: Differentiating the IG FHT}
+First we have the likelihood,
+\begin{align}\label{eq:fht-loglik}
+\begin{split}
+L(\btheta)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
+&\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di},
+\end{split}
+\end{align}
+with respect to parameters $\mu$, and $y_0$. First, note that for any cumulative distribution function $F$ that is symmetric around 0, and for $x\in\R$,
+\begin{equation}
+    F(x)=1-(1-F(x))=1-F(-x),
+\end{equation}
+and so in particular,
+\begin{equation}
+    \Phi(x)=1-(1-\Phi(x))=1-\Phi(-x),
+\end{equation}
+and thus we can rewrite \eqref{eq:fht-loglik} as
+\begin{align}\label{eq:fht-loglik-proper}
+\begin{split}
+L(\btheta)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
+&\times\sqb*{\Phi\p*{\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di}.
+\end{split}
+\end{align}
+It is easier to work with the log likelihood, so we take the log of \eqref{eq:fht-loglik-proper} and get
+\begin{align}
+\begin{split}
+    l(\btheta)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
+    &+
+    (1-\di)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}
+\end{split}
+\end{align}
+To make things easier, let us introduce some intermediate functions here. Let
+\begin{equation}
+f_i(\btheta)=\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}
+\end{equation}
+and
+\begin{equation}
+g_i(\btheta)=\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}.
+\end{equation}
+Thus we see that the partial derivatives are
+\begin{equation}
+    \frac{\partial}{\partial y_0}l(\btheta)=\sum_{i=1}^n\di \frac{\partial}{\partial y_0}f_i(\btheta)+(1-\di)\frac{\frac{\partial}{\partial y_0}g_i(\btheta)}{g_i(\btheta)}
+\end{equation}
+and
+\begin{equation}
+    \frac{\partial}{\partial \mu}l(\btheta)=\sum_{i=1}^n\di \frac{\partial}{\partial \mu}f_i(\btheta)+(1-\di)\frac{\frac{\partial}{\partial \mu}g_i(\btheta)}{g_i(\btheta)}.
+\end{equation}
+
+\begin{align}
+\begin{split}
+    \frac{\partial}{\partial y_0}g_i(\btheta)&=\frac{1}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2\mu}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
+    &+
+    \frac{1}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
+\end{split}
+\end{align}
+
+
+\begin{equation}
+    \frac{\partial}{\partial y_0}f_i(\btheta)=\frac{1}{y_0}-\frac{y_0+\mu\ti}{\sigma^2\ti}
+\end{equation}
+
+\begin{equation}
+    \frac{\partial}{\partial \mu}f_i(\btheta)=-\frac{y_0+\mu\ti}{\sigma^2}
+\end{equation}
+
+\begin{align}
+\begin{split}
+    \frac{\partial}{\partial \mu}g_i(\btheta)&=\frac{\ti}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2y_0}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
+    &-
+    \frac{\ti}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
+\end{split}
+\end{align}
