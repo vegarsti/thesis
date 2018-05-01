@@ -11,6 +11,8 @@ names(tbl)[names(tbl) == "lkr.weeks"] <- "weeks"
 names(tbl)[names(tbl) == "lkr.relapse"] <- "relapse"
 names(tbl)[names(tbl) == "lkr.f.treatment2"] <- "f.treatment2"
 
+n <- dim(tbl)[1]
+
 to_optimize <- function(params) {
   total_loglikelihood <- 0
   

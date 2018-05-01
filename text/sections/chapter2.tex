@@ -81,7 +81,7 @@ We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend o
     \ln y_0=\bgamma^\T\z
 \end{split}
 \end{align}
-where $\bbeta$ and $\bgamma$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements.
+where $\bbeta$ and $\bgamma$ are vectors of regression coefficients, and where we use the identity and the logarithm as link functions, respectively. Note that we may let $\x$ and $\z$ share none, some, or all elements.
 
 \section{Likelihood}\label{sec:lik}
 In section \ref{sec:survival}, we stated the likelihood of lifetime regression models in \eqref{eq:surv-lik}. For an inverse gaussian FHT this then becomes (inserting \eqref{eq:fht-ig} and \eqref{eq:cumulative} into \eqref{eq:surv-lik}, and since $S(t)=1-F(t)$)
@@ -91,4 +91,15 @@ L(\btheta)&=\p*{\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu t}{\sqrt{\sigma^2t}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}}^{1-\delta_i}
 \end{split}
 \end{align}
-We can now substitute the covariates in \eqref{eq:coeffs} into this. Until now, mainly numerical maximum likelihood methods have been used to find optimal parameters. Finding a closed-form solution for the maximum likelihood is not possible. It is only feasible to do numerical optimization of the maximum likelihood in the low-dimensional case, since it will optimize the entire parameter space at once. Therefore it is necessary to develop methods which can deal with high-dimensional cases. That is what we intend to do in the main part of the thesis.
+We can now substitute the covariates in \eqref{eq:coeffs} into this.
+
+\subsection{Optimization}
+Until now, mainly numerical maximum likelihood methods have been used to find optimal parameters, via direct maximization of the likelihood. Finding a closed-form solution for the maximum likelihood is not possible. It is only feasible to do numerical optimization of the maximum likelihood in the low-dimensional case, since it will optimize the entire parameter space at once. Therefore it is necessary to develop methods which can deal with high-dimensional cases. That is what we intend to do in the main part of the thesis. For our purposes, we need to differentiate the logarithm with respect to the parameters $\mu$ and $y_0$. Note first that $1-\Phi(-x)=\Phi(x)$, where $\Phi(x)$ is the cumulative distribution function for the standard normal distribution. Secondly, since the logarithm is monotone, it preserves optimality, and hence we can take the logarithm of \eqref{eq:fht-lik}, and we get
+\begin{align}\label{eq:loglik}
+\begin{split}
+    l(\btheta)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
+    &+
+    (1-\di)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}
+\end{split}
+\end{align}
+See the appendix \ref{appendix} for the full derivation.
