@@ -9,18 +9,6 @@
     Vegard Stikbakke
 }
 
-\includeonly
-{
-    %sections/abstract,
-    %sections/acknowledgements,
-    sections/introduction,
-    sections/chapter1,
-    sections/chapter2,
-    sections/chapter3,
-    sections/chapter4,
-    sections/appendix
-}
-
 \begin{document}
 
     \frontmatter        % Folios in Roman numerals, unnumbered chapters.
@@ -29,8 +17,8 @@
         \maketitle
     \end{titlingpage}
 
-    \include{sections/abstract}
-    \include{sections/acknowledgements}
+    \input{sections/abstract}
+    \input{sections/acknowledgements}
 
     \cleartorecto
     \tableofcontents    % Or \tableofcontents*
@@ -41,23 +29,25 @@
 
     \mainmatter         % Folios in Arabic numerals, numbered chapters.
 
-    \include{sections/introduction}
+    \input{sections/introduction}
 
     %\part{The First Part}
 
-    \include{sections/chapter2}
+    \input{sections/chapter2}
 
-    \include{sections/chapter3}
+    \input{sections/chapter3}
 
-    \include{sections/chapter4}
+    \input{sections/chapter4}
 
     \appendix           % "Chapter" is renamed "Appendix"
     \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.
 
-    \include{sections/appendix}
+    \input{sections/appendix}
 
     \backmatter         % Folios in Arabic numerals, unnumbered chapters.
 
-    \printbibliography
+    \bibliographystyle{apalike}
+    \bibliography{bibliography}
+    %\printbibliography
 
 \end{document}

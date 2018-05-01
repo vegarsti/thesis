@@ -1,6 +1,6 @@
 \chapter{Statistical boosting}
 \subsection{The inception of boosting}
-Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades. (\cite{mayr14a}) Boosting originated in the fields of computational learning theory and machine learning. In 1989 Kearns and Valiant, working on computational learning theory, posed a question: Could any weak learner be transformed to become also a strong learner. (\cite{kearnsvaliant}) A weak learner, sometimes also simple or base learner, means one which has a low signal-to-noise ratio, and which in general performs poorly. For classification purposes it is easy to give a good example: A weak learner is one which performs only slightly better than random uniform chance. Freund and Schapire invented the AdaBoost algorithm in 2006 for binary classification. (\cite{adaboost}) It was evidence that the answer to the original question was positive. The AdaBoost algorithm performs iterative reweighting of original observations. For each iteration, it gives more weight to misclassified observations, and then trains a new weak learner based on all weighted observations. It then adds the new weak learner to the final classifier. The resulting AdaBoost classifier is then a linear combination of these weak classifiers, i.e., a weighted majority vote. In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm. In statistics, however, we are interested in models which are interpretable.
+Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades \citep{mayr14a}). Boosting originated in the fields of computational learning theory and machine learning. In 1989 Kearns and Valiant, working on computational learning theory, posed a question: Could any weak learner be transformed to become also a strong learner \citep{kearnsvaliant}. A weak learner, sometimes also simple or base learner, means one which has a low signal-to-noise ratio, and which in general performs poorly. For classification purposes it is easy to give a good example: A weak learner is one which performs only slightly better than random uniform chance. Freund and Schapire invented the AdaBoost algorithm in 2006 for binary classification \citep{adaboost}. It was evidence that the answer to the original question was positive. The AdaBoost algorithm performs iterative reweighting of original observations. For each iteration, it gives more weight to misclassified observations, and then trains a new weak learner based on all weighted observations. It then adds the new weak learner to the final classifier. The resulting AdaBoost classifier is then a linear combination of these weak classifiers, i.e., a weighted majority vote. In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm. In statistics, however, we are interested in models which are interpretable.
 
 \section{Statistical boosting}\label{sec:sboost}
 In statistics, we are not just interested in prediction accuracy. We also want to estimate the relation between observed predictor variables and the expectation of the response,
@@ -11,7 +11,7 @@ In addition to using boosting for classification, like in the original AdaBoost,
 \begin{equation}\label{eq:gam}
     F(\x)=\alpha+\sum_{j=1}^pf_j(x_j),
 \end{equation}
-where $\alpha\in\R$ is an offset and $x_j$ is the j-th component of $\x$. $F(\x)$ is a sum of component-wise functions $f_j$, and as such a GAM contains interpretable additive predictors. In 2000, Friedman et al. showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. (\cite{friedman2000}) This provided a way of viewing the successful boosting regime through a statistical lens. A year later, Friedman himself made a powerful insight for boosting. However, we must first discuss how we find an approximate solution for $F(\X)$ in \eqref{eq:exp-f}.
+where $\alpha\in\R$ is an offset and $x_j$ is the j-th component of $\x$. $F(\x)$ is a sum of component-wise functions $f_j$, and as such a GAM contains interpretable additive predictors. In 2000, Friedman et al. showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function \citep{friedman2000}. This provided a way of viewing the successful boosting regime through a statistical lens. A year later, Friedman himself made a powerful insight for boosting. However, we must first discuss how we find an approximate solution for $F(\X)$ in \eqref{eq:exp-f}.
 
 \section{Finding a solution}
 We wish to estimate/approximate/find $F(\X)$ in \eqref{eq:exp-f}, so we are interested in solving
@@ -37,7 +37,7 @@ Gradient descent is an optimization algorithm for a differentiable multivariate 
 Back to our goal of finding an $F$ to minimize \eqref{eq:argmin-risk}. Often we choose a parameterized model $F(\X;\bbeta)$. Finding the optimal $\bbeta$ analytically might be infeasible. The gradient descent algorithm can then be used. In this case, we fix $\X$ and let $F(\X)$ in the algorithm be $F(\bbeta;\X)$. Thus we use gradient descent to find an optimal $\bbeta$. We would then say we are doing gradient descent in parameter space. We are now ready to reveal Friedman's useful insight.
 
 \section{Gradient boosting: Functional gradient descent}
-There is another possible way to use gradient descent, and that is the important insight by Friedman in 2001. (\cite{friedman2001}) He showed that instead of doing gradient descent in parameter space, one could do gradient descent in function space. Briefly, we first describe a naive way of doing this. Consider the function value at each $\x$ directly as a parameter, and use gradient descent directly on these parameters. However, this does not generalize to unobserved values $\X$, and we are after all interested in the population minimizer of \eqref{eq:exp-f}. We can instead assume a parameterized form for $F$, e.g.,
+There is another possible way to use gradient descent, and that is the important insight by Friedman in 2001 \citep{friedman2001}. He showed that instead of doing gradient descent in parameter space, one could do gradient descent in function space. Briefly, we first describe a naive way of doing this. Consider the function value at each $\x$ directly as a parameter, and use gradient descent directly on these parameters. However, this does not generalize to unobserved values $\X$, and we are after all interested in the population minimizer of \eqref{eq:exp-f}. We can instead assume a parameterized form for $F$, e.g.,
 \begin{equation}\label{eq:gradboost}
     F(\X;\{\bbeta\}_{m=1}^M)=\sum_{m=1}^M\nu H(\X;\bbeta_m),
 \end{equation}
@@ -69,7 +69,7 @@ The final model is then the sum of these terms, like in \eqref{eq:gradboost}. To
 \end{enumerate}
 Note that while we call this functional gradient descent, this is exactly the gradient boosting algorithm.
 \section{L2Boost}
-In 2003, Buhlmann and Yu improve upon Friedman's work, and develop the L2Boost algorithm for which they also prove some important theoretical results (\cite{buhlmann-yu}). It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss to be the loss function,
+In 2003, Buhlmann and Yu improve upon Friedman's work, and develop the L2Boost algorithm for which they also prove some important theoretical results \citep{buhlmann-yu}. It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss to be the loss function,
 \begin{equation*}
     \loss(y,F(\x))=\frac{1}{2}\left(y-F(\x)\right)^2.
 \end{equation*}
@@ -77,7 +77,7 @@ The negative gradient vector of the loss then becomes the residual vector,
 \begin{equation*}
     \frac{\partial\loss(y,F(\x))}{\partial x_i}=(y-F(x_i)),\quad i=1,\dotsc,n,
 \end{equation*}
-and hence the boosting steps become repeated refitting of residuals. (\cite{friedman2001}, \cite{buhlmann-yu}). With $\nu=1$ and $M=2$, this had been proposed already in 1977 by Tukey, who called it ``twicing''. (\cite{tukey}).
+and hence the boosting steps become repeated refitting of residuals \citep{friedman2001,buhlmann-yu}. With $\nu=1$ and $M=2$, this had been proposed already in \citeyear{tukey} by \citeauthor{tukey}, who called it ``twicing'' \citep{tukey}.
 \begin{enumerate}
     \item Initialize $F_0(\x)$, e.g., by setting it to zero for all components. Select a base learner $H$, such as ordinary least squares, stumps, etc.
     \item Compute the residuals
@@ -93,7 +93,7 @@ and hence the boosting steps become repeated refitting of residuals. (\cite{frie
     \item Repeat steps from 2 until $m=M$..
 \end{enumerate}
 \section{Component-wise gradient boosting}
-In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. It was developed by Yu and Buhlmann (\cite{buhlmann-yu}), and it has further been refined and explored, e.g. by Buhlmann in \cite{buhlmann2006}. The idea of the algorithm is to select $p$ base learners. Each of these is only a function of the corresponding component of the data $\X$, i.e.,
+In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. It was developed by Yu and Buhlmann \citep{buhlmann-yu}, and it has further been refined and explored, e.g. by \citeauthor{buhlmann2006} in \citeyear{buhlmann2006} \citep{buhlmann2006}. The idea of the algorithm is to select $p$ base learners. Each of these is only a function of the corresponding component of the data $\X$, i.e.,
 \begin{equation*}
     h_j(\x)=h_j(x_j).
 \end{equation*}
@@ -118,7 +118,7 @@ Hence this model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently ear
         \end{equation*}
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu h_k(x_k)$
 \end{enumerate}
-In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches (\cite{buhlmann2006}).
+In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches \citep{buhlmann2006}.
 
 \section{The importance of stopping early}
 The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer.

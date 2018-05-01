@@ -90,17 +90,19 @@
 
 
 %% Bibliography
-\RequirePackage[backend    = biber,
-                sortcites  = true,
-                giveninits = true,
-                doi        = false,
-                isbn       = false,
-                url        = false,
-                citestyle  = authoryear]{biblatex}
-\DeclareNameAlias{sortname}{family-given}
-\DeclareNameAlias{default}{family-given}
-\addbibresource{bibliography.bib}
+%\RequirePackage[backend    = biber,
+%                sortcites  = true,
+%                giveninits = true,
+%                doi        = false,
+%                isbn       = false,
+%                url        = false,
+%                citestyle  = authoryear]{biblatex}
+%\DeclareNameAlias{sortname}{family-given}
+%\DeclareNameAlias{default}{family-given}
+%\addbibresource{bibliography.bib}
 
+%% Bibliography
+\RequirePackage[round]{natbib}
 
 %% Cross references
 \RequirePackage{varioref}
@@ -112,79 +114,78 @@
 
 
 %% Title page
-\pretitle{\begin{center}\huge\sffamily\bfseries}
-
+%\pretitle{\begin{center}\huge\sffamily\bfseries}
 
 %% Book
-\renewcommand*{\printbooktitle}[1]
-{
-    \hrule\vskip\onelineskip
-    \centering\booktitlefont #1
-    \vskip\onelineskip\hrule
-}
-\renewcommand*{\afterbookskip}{\par}
-\renewcommand*{\booktitlefont}{\Huge\bfseries\sffamily}
-\renewcommand*{\booknamefont}{\normalfont\huge\bfseries\MakeUppercase}
+%\renewcommand*{\printbooktitle}[1]
+%{
+%    \hrule\vskip\onelineskip
+%    \centering\booktitlefont #1
+%    \vskip\onelineskip\hrule
+%}
+%\renewcommand*{\afterbookskip}{\par}
+%\renewcommand*{\booktitlefont}{\Huge\bfseries\sffamily}
+%\renewcommand*{\booknamefont}{\normalfont\huge\bfseries\MakeUppercase}
 
 
 %% Part
-\renewcommand*{\printparttitle}[1]
-{
-    \hrule\vskip\onelineskip
-    \centering\parttitlefont #1
-    \vskip\onelineskip\hrule
-}
-\renewcommand*{\afterpartskip}{\par}
-\renewcommand*{\parttitlefont}{\Huge\bfseries\sffamily}
-\renewcommand*{\partnamefont}{\normalfont\huge\bfseries\MakeUppercase}
+%\renewcommand*{\printparttitle}[1]
+%{
+%    \hrule\vskip\onelineskip
+%    \centering\parttitlefont #1
+%    \vskip\onelineskip\hrule
+%}
+%\renewcommand*{\afterpartskip}{\par}
+%\renewcommand*{\parttitlefont}{\Huge\bfseries\sffamily}
+%\renewcommand*{\partnamefont}{\normalfont\huge\bfseries\MakeUppercase}
 
 
 %% Chapter
-\chapterstyle{demo2}
-\renewcommand*{\printchaptername}
-{
-    \centering\chapnamefont\MakeUppercase{\@chapapp}
-}
-\renewcommand*{\printchapternum}{\chapnumfont\thechapter\space}
-\renewcommand*{\chaptitlefont}{\Huge\bfseries\sffamily\center}
+%\chapterstyle{demo2}
+%\renewcommand*{\printchaptername}
+%{
+%    \centering\chapnamefont\MakeUppercase{\@chapapp}
+%}
+%\renewcommand*{\printchapternum}{\chapnumfont\thechapter\space}
+%\renewcommand*{\chaptitlefont}{\Huge\bfseries\sffamily\center}
 
 
 %% Lower level sections
-\setsecheadstyle{\Large\bfseries\sffamily\raggedright}
-\setsubsecheadstyle{\large\bfseries\sffamily\raggedright}
-\setsubsubsecheadstyle{\normalsize\bfseries\sffamily\raggedright}
-\setparaheadstyle{\normalsize\bfseries\sffamily\raggedright}
-\setsubparaheadstyle{\normalsize\bfseries\sffamily\raggedright}
+%\setsecheadstyle{\Large\bfseries\sffamily\raggedright}
+%\setsubsecheadstyle{\large\bfseries\sffamily\raggedright}
+%\setsubsubsecheadstyle{\normalsize\bfseries\sffamily\raggedright}
+%\setparaheadstyle{\normalsize\bfseries\sffamily\raggedright}
+%\setsubparaheadstyle{\normalsize\bfseries\sffamily\raggedright}
 
 
 %% Abstract
-\renewcommand{\abstractnamefont}{\sffamily\bfseries}
-\renewcommand{\abstracttextfont}{\normalfont\small\noindent\ignorespaces}
+%\renewcommand{\abstractnamefont}{\sffamily\bfseries}
+%\renewcommand{\abstracttextfont}{\normalfont\small\noindent\ignorespaces}
 
 
 %% Table of contents
-\setrmarg{3em}
-\setpnumwidth{2em}
-\addtolength{\cftbooknumwidth}{0.5em}
-\addtolength{\cftpartnumwidth}{0.5em}
-\addtolength{\cftchapternumwidth}{0.5em}
-\addtolength{\cftsectionindent}{0.5em}
-\addtolength{\cftsubsectionindent}{0.5em}
-\addtolength{\cftsubsubsectionindent}{0.5em}
-\addtolength{\cftparagraphindent}{0.5em}
-\addtolength{\cftsubparagraphindent}{0.5em}
+%\setrmarg{3em}
+%\setpnumwidth{2em}
+%\addtolength{\cftbooknumwidth}{0.5em}
+%\addtolength{\cftpartnumwidth}{0.5em}
+%\addtolength{\cftchapternumwidth}{0.5em}
+%\addtolength{\cftsectionindent}{0.5em}
+%\addtolength{\cftsubsectionindent}{0.5em}
+%\addtolength{\cftsubsubsectionindent}{0.5em}
+%\addtolength{\cftparagraphindent}{0.5em}
+%\addtolength{\cftsubparagraphindent}{0.5em}
 
 
 %% Header and footer
-\pagestyle{ruled}
-\makeevenhead{ruled}{\sffamily\leftmark}{}{}
-\makeoddhead {ruled}{}{}{\sffamily\rightmark}
-\makeevenfoot{ruled}{\sffamily\thepage}{}{}
-\makeoddfoot{ruled}{}{}{\sffamily\thepage}
+%\pagestyle{ruled}
+%\makeevenhead{ruled}{\sffamily\leftmark}{}{}
+%\makeoddhead {ruled}{}{}{\sffamily\rightmark}
+%\makeevenfoot{ruled}{\sffamily\thepage}{}{}
+%\makeoddfoot{ruled}{}{}{\sffamily\thepage}
 
-\makepagestyle{chapter}
-\makeevenfoot{chapter}{\sffamily\thepage}{}{}
-\makeoddfoot{chapter}{}{}{\sffamily\thepage}
+%\makepagestyle{chapter}
+%\makeevenfoot{chapter}{\sffamily\thepage}{}{}
+%\makeoddfoot{chapter}{}{}{\sffamily\thepage}
 
 
 %% Trim marks
