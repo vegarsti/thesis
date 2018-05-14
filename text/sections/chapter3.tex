@@ -29,36 +29,40 @@ also known as the empirical risk. To estimate $\text{err}$ \eqref{eq:err}, one c
 where $(x_i,y_i)$ here are from the test set.
 
 \section{The history of boosting}\label{history}
-Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades \citep{mayr14a}). Boosting originated in the fields of computational learning theory and machine learning. In 1989 Kearns and Valiant, working on computational learning theory, posed a question: Could any weak learner be transformed to become also a strong learner \citep{kearnsvaliant}. A weak learner, sometimes also simple or base learner, means one which has a low signal-to-noise ratio, and which in general performs poorly. For classification purposes it is easy to give a good example: A weak learner is one which performs only slightly better than random uniform chance. Freund and Schapire invented the AdaBoost algorithm in 2006 for binary classification \citep{adaboost}. It was evidence that the answer to the original question was positive. The AdaBoost algorithm performs iterative reweighting of original observations. For each iteration, it gives more weight to misclassified observations, and then trains a new weak learner based on all weighted observations. It then adds the new weak learner to the final classifier. The resulting AdaBoost classifier is then a linear combination of these weak classifiers, i.e., a weighted majority vote. In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm. In statistics, however, we are interested in models which are interpretable.
+Boosting is one of the most promising methodological approaches for data analysis developed in the last two decades \citep{mayr14a}. Boosting originated in the fields of computational learning theory and machine learning. \cite{kearnsvaliant}, working on computational learning theory, posed a question: Could any weak learner be transformed to become a strong learner? A weak learner, sometimes also simple or base learner, means one which has a low signal-to-noise ratio, and which in general performs poorly. For classification purposes it is easy to give a good example: A weak learner is one which performs only slightly better than random uniform chance. \cite{adaboost} then invented the AdaBoost algorithm for constructing a binary classifier. It was evidence that the answer to the original question was positive. The AdaBoost algorithm performs iterative reweighting of original observations. For each iteration, it gives more weight to misclassified observations, and then trains a new weak learner based on all weighted observations. It then adds the new weak learner to the final classifier. The resulting AdaBoost classifier is then a linear combination of these weak classifiers, i.e., a weighted majority vote. In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm. In statistics, however, we are interested in models which are interpretable.
+\todo[inline]{``something to connect the sentences''???? how! new section on AdaBoost? also rephrase weak learner part!}
 
 \section{Statistical boosting}\label{sec:sboost}
-In statistics, we are not just interested in prediction accuracy. We also want to estimate the relation between observed predictor variables and the expectation of the response,
+In statistics, we are not just interested in prediction accuracy. \todo{rephrase!} We also want to estimate the relation between observed predictor variables and the expectation of the response,
 \begin{equation}\label{eq:exp-f}
     \E(Y|\X=\x)=F(\x).
 \end{equation}
-In addition to using boosting for classification, like in the original AdaBoost, we would also like to use it in more general settings, and we therefore extend our discussion to a more general regression scheme where the outcome variable $Y$ can be continuous. We are interested in interpreting the effects of the different covariates of $\X$ on the function $F(\cdot)$. A model for $F(\X)$ which is amenable to such interpretation is the generalized additive model (GAM),
+In addition to using boosting for classification, like in the original AdaBoost, we would also like to use it in more general settings, and we therefore extend our discussion to a more general regression scheme where the outcome variable $Y$ can be continuous. We are interested in interpreting how the different covariates of $\X$ affect $\E(\cdot)$. A choice for $F(\X)$ which is amenable to such interpretation is the generalized additive model (GAM),
 \begin{equation}\label{eq:gam}
     F(\x)=\alpha+\sum_{j=1}^pf_j(x_j),
 \end{equation}
-where $\alpha\in\R$ is an offset and $x_j$ is the j-th component of $\x$. $F(\x)$ is a sum of component-wise functions $f_j$, and as such a GAM contains interpretable additive predictors. In 2000, Friedman et al. showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function \citep{friedman2000}. This provided a way of viewing the successful boosting regime through a statistical lens. A year later, Friedman himself made a powerful insight for boosting. However, we must first discuss how we find an approximate solution for $F(\X)$ in \eqref{eq:exp-f}.
+where $\alpha\in\R$ is an offset and $x_j$ is the j-th component of $\x$. $F(\x)$ is a sum of component-wise functions $f_j$, and as such a GAM contains interpretable additive predictors. \cite{friedman2000} showed that AdaBoost fits a GAM with a forward stagewise algorithm, for a particular exponential loss function. This provided a way of viewing boosting through a statistical lens. \cite{friedman2001} further investigated the topic, providing exceptional insight into boosting. However, we must first discuss how we find an approximate solution for $F(\X)$ in \eqref{eq:exp-f}.
 
 \section{Finding a solution}
-We wish to estimate/approximate/find $F(\X)$ in \eqref{eq:exp-f}, so we are interested in solving
+We wish to find $F(\X)$ in \eqref{eq:exp-f}, so we are interested in solving
 \begin{equation*}
     \argmin_{F}\E\left[\loss(Y,F(\X))\right],
 \end{equation*}
-where $\loss$ is an appropriate loss function. But as discussed in chapter \ref{sec:learning-theory} on \nameref{ch:learning-theory}, we have in practice observed a dataset $\{\x_i,y_i\}_{i=1}^N$, drawn from the joint distribution $(\X,Y)$. Therefore we substitute the loss expected with the expected risk \eqref{eq:empirical-risk}, and so we want a solution to
+where $\loss$ is an appropriate loss function. But as discussed in chapter \ref{sec:learning-theory}, we have in practice observed a dataset $\{\x_i,y_i\}_{i=1}^N$, drawn from the joint distribution of $(\X,Y)$. Therefore we substitute the expected loss with the expected risk \eqref{eq:empirical-risk}, and so we want a solution to
 \begin{equation}\label{eq:argmin-risk}
     \argmin_{F}\err(F).
 \end{equation}
-Finding such an $F$ is not easy. We will now discuss a general optimization algorithm often used for this purpose.
+Finding $F$ is not easy. We will now discuss a general optimization algorithm used in boosting.
 
-\subsection{Gradient descent}
-Gradient descent is an optimization algorithm for a differentiable multivariate function $F$. The motivation behind the gradient descent algorithm is that in a small interval around a point $\x$, $F$ is increasing in the direction of the negative gradient at $\x$. Therefore, by moving slightly in that direction, $F$ will increase. Indeed, with a sufficiently small step length, gradient descent will always converge, albeit to a local optimum. More formally, the algorithm is
+\section{Gradient descent}
+Gradient descent is an optimization algorithm for minimizing a differentiable multivariate function $F$. The motivation behind the gradient descent algorithm is that in a small interval around a point $\x$, $F$ is decreasing in the direction of the negative gradient at $\x$. Therefore, by moving slightly in that direction, $F$ will decrease. Indeed, with a sufficiently small step length, gradient descent will always converge, albeit to a local minimum. More formally, the algorithm is
 \begin{enumerate}
     \item Start with an initial guess $\x_0$, e.g. $\x_0=\0$. Let $m=1$.
-    \item Calculate the gradient $\g_{m-1}=-\nabla F(\x_{m-1})$.
-    \item Let $\h_m=\nu \g_{m-1}$, where $\nu$ is a small step length.
+    \item Calculate the direction to step in, $\g_{m-1}=-\nabla F(\x_{m-1})$.
+    \item Let $\h_m=\nu \g_{m-1}$, where $\nu$ is the best step length, found by
+        \begin{equation*}
+            \nu=\argmin_{\nu}\x_{m-1}+\nu \g_{m-1}
+        \end{equation*}
     \item Let $\x_m=\x_{m-1}+\h_{m-1}$
     \item Increase $m$, and go to step 2. Repeat until $m=M$.
     \item The resulting final guess is $\x_M=\x_0+\sum_{m=1}^M\h_m(\x_m)$
@@ -66,7 +70,8 @@ Gradient descent is an optimization algorithm for a differentiable multivariate 
 Back to our goal of finding an $F$ to minimize \eqref{eq:argmin-risk}. Often we choose a parameterized model $F(\X;\bbeta)$. Finding the optimal $\bbeta$ analytically might be infeasible. The gradient descent algorithm can then be used. In this case, we fix $\X$ and let $F(\X)$ in the algorithm be $F(\bbeta;\X)$. Thus we use gradient descent to find an optimal $\bbeta$. We would then say we are doing gradient descent in parameter space. We are now ready to reveal Friedman's useful insight.
 
 \section{Gradient boosting: Functional gradient descent}
-There is another possible way to use gradient descent, and that is the important insight by Friedman in 2001 \citep{friedman2001}. He showed that instead of doing gradient descent in parameter space, one could do gradient descent in function space. Briefly, we first describe a naive way of doing this. Consider the function value at each $\x$ directly as a parameter, and use gradient descent directly on these parameters. However, this does not generalize to unobserved values $\X$, and we are after all interested in the population minimizer of \eqref{eq:exp-f}. We can instead assume a parameterized form for $F$, e.g.,
+There is another possible way to use gradient descent, and that is the important insight by Friedman in 2001 \citep{friedman2001}. He showed that boosting can be viewed as an optimization procedure in functional space. Briefly, we first describe a naive way of doing this. Consider the function value at each $\x$ directly as a parameter, and use gradient descent directly on these parameters. However, this does not generalize to unobserved values $\X$, and we are after all interested in the population minimizer of \eqref{eq:exp-f}. We can instead assume a parameterized form for $F$, e.g.,
+\todo[inline]{needs work!}
 \begin{equation}\label{eq:gradboost}
     F(\X;\{\bbeta\}_{m=1}^M)=\sum_{m=1}^M\nu H(\X;\bbeta_m),
 \end{equation}
@@ -96,9 +101,9 @@ The final model is then the sum of these terms, like in \eqref{eq:gradboost}. To
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
     \item Repeat steps from 2 until $m=M$.
 \end{enumerate}
-Note that while we call this functional gradient descent, this is exactly the gradient boosting algorithm.
+Note that while we call this functional gradient descent (FGD), this is exactly the gradient boosting algorithm.
 \section{L2Boost}
-In 2003, Buhlmann and Yu improve upon Friedman's work, and develop the L2Boost algorithm for which they also prove some important theoretical results \citep{buhlmann-yu}. It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss to be the loss function,
+Based on \cite{friedman2001}'s results, \cite{buhlmann-yu} developed the L2Boost algorithm. It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss to be the loss function,
 \begin{equation*}
     \loss(y,F(\x))=\frac{1}{2}\left(y-F(\x)\right)^2.
 \end{equation*}
@@ -106,7 +111,7 @@ The negative gradient vector of the loss then becomes the residual vector,
 \begin{equation*}
     \frac{\partial\loss(y,F(\x))}{\partial x_i}=(y-F(x_i)),\quad i=1,\dotsc,n,
 \end{equation*}
-and hence the boosting steps become repeated refitting of residuals \citep{friedman2001,buhlmann-yu}. With $\nu=1$ and $M=2$, this had been proposed already in \citeyear{tukey} by \citeauthor{tukey}, who called it ``twicing'' \citep{tukey}.
+and hence the boosting steps become repeated refitting of residuals \citep{friedman2001,buhlmann-yu}. With $\nu=1$ and $M=2$, this had been proposed already by \citep{tukey}, who called it ``twicing''.
 \begin{enumerate}
     \item Initialize $F_0(\x)$, e.g., by setting it to zero for all components. Select a base learner $H$, such as ordinary least squares, stumps, etc.
     \item Compute the residuals
@@ -121,12 +126,14 @@ and hence the boosting steps become repeated refitting of residuals \citep{fried
     \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu H(\cdot;\bbeta_m)$.
     \item Repeat steps from 2 until $m=M$..
 \end{enumerate}
+They also prove some important theoretical results for L2Boost.
+\todo[inline]{more on L2Boost!!}
 \section{Component-wise gradient boosting}
-In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. It was developed by Yu and Buhlmann \citep{buhlmann-yu}, and it has further been refined and explored, e.g. in \cite{buhlmann2006}. The idea of the algorithm is to select $p$ base learners. Each of these is only a function of the corresponding component of the data $\X$, i.e.,
+In high-dimensional settings, it might often be infeasible, if not impossible, to use a base learner $H$ which incorporates all $p$ dimensions. Indeed, using least squares base learners, it is impossible, since the matrix which must be inverted is singular when $p>N$. Component-wise gradient boosting is a technique/algorithm which does work in these settings. First developed by \cite{buhlmann-yu}, and it has further been refined and explored, see e.g. \cite{buhlmann2006}. The idea of the algorithm is to select a set of base learners, the most important property of which being that they are univariate: Each base learner is only a function of one component $x_j$ of the data $\X$, i.e.,
 \begin{equation*}
     h_j(\x)=h_j(x_j).
 \end{equation*}
-In each iteration, we fit all these learners separately, and choose only the one which gives the best improvement to be added in the final model. The resulting model $F_m(\cdot)$ is then a sum of componentwise effects,
+In each iteration, we fit the learners separately, and choose only the one which gives the best improvement to be added in the final model. The resulting model $F_m(\cdot)$ is then a sum of componentwise effects,
 \begin{equation*}
     F_m(\X)=\sum_{j=1}^pf_j(x_j),
 \end{equation*}
@@ -134,8 +141,10 @@ where
 \begin{equation*}
     f_j(x_j)=\sum_{m=1}^M\1_{mj}h_j(x_j;\bbeta_m),
 \end{equation*}
+\todo{better notation??!}
 where $\1_{mj}$ is an indicator function which is 1 if component $j$ was selected at iteration $m$ and 0 if not.
 Hence this model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently early, we will typically perform variable selection. It is likely that some base learners have never been added to the final model, and as such those components in $\X$ are not added. We now give a presentation of the algorithm.
+\todo[inline]{more about variable selection!!}
 \begin{enumerate}
     \item Start with an initial guess, e.g. $F_0=\0$.\\
     Specify a set of base learners $h_1(\cdot),\dotsc,h_p(\cdot)$.
