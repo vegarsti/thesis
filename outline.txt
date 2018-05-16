@@ -1,10 +1,43 @@
+1 Introduction
+
+2 Survival analysis and data
+- Problem setting/motivation
+- Data structures
+- Regression
+- Proportional hazards: Cox model
+- Problem with proportional hazards, esp. in high dims
+- Examples
+
 2 First Hitting Time
+- General model
+- Choices of processes
+- Wiener --> IG FHT
+- Regression here: Likelihood
+- Examples
+- Model checking?
+- Collinearity problems
 
 3 Boosting
 - Boosting idea
 - AdaBoost
-- GAM
-- (Boosting is) Forward Stagewise Additive Modelling
-- Gradient Descent in Function Space
-- Gradient Boosting (general
+- Boosting / Forward Stagewise Additive Modelling
+- Gradient descent
+- Gradient boosting: Gradient Descent in Function Space
 - Componentwise Gradient Boosting
+- Componentwise GB with several loss functions
+- When to stop: CV vs AIC
+
+4 Boosting for FHT
+- Algorithms
+- 1: m from 1 to M; boost both in same iteration
+- 2: two boosting loops
+- Comparison
+
+5 Implementation of boosting algorithms
+- Numerical tricks 
+
+6 Comparison with CoxBoost
+
+7 Application on cancer data
+
+8 Conclusions
