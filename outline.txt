@@ -23,6 +23,7 @@
 - Boosting / Forward Stagewise Additive Modelling
 - Gradient descent
 - Gradient boosting: Gradient Descent in Function Space
+- L2Boost (& asymptotic results on consistency)
 - Componentwise Gradient Boosting
 - Componentwise GB with several loss functions
 - When to stop: CV vs AIC
@@ -30,7 +31,10 @@
 4 Boosting for FHT
 - Algorithms
 - 1: m from 1 to M; boost both in same iteration
-- 2: two boosting loops
+    * first m from 1 to min(M_1, M_2)
+    * then  m from min(M_1,M_2) to max(M_1, M_2)
+        only boost latter
+- 2: two boosting loops??
 - Comparison
 
 5 Implementation of boosting algorithms
@@ -40,4 +44,11 @@
 
 7 Application on cancer data
 
-8 Conclusions
+8 Conclusion/discussion/further work
+
+Appendix:
+- derivation of pdf/cdf of wiener FHT
+    * laplace transform of pdf?
+- derivation of loss functions
+
+Briar score
