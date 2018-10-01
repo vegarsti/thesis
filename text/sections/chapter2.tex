@@ -11,7 +11,7 @@ is the probability of the event having happened before time $t$. We define the s
 \end{equation*}
 Hence, $S(t)$ denotes the probability that the event has not yet happened at time $t$. If the cumulative distribution function is differentiable, we define the probability density function of $T$ to be $f(t)$. Another much studied property of lifetime distributions is the hazard function $h(t)$. Somewhat informally, it denotes the probability of the event happening at some time $t$, assuming it has not happened yet. More formally, it is the limit of the conditional probability that the event will occur in a small interval $[t,t+\Delta t)$, conditional on the event not having happened yet,
 \begin{equation*}%\label{eq:hazard}
-    h(t)=\lim_{\Delta t\to 0}\frac{\Pr(t\leq T<t+\Delta t|T\geq t)}{\Delta t}=\frac{f(t)}{F(t)}.
+    h(t)=\lim_{\Delta t\to 0}\frac{\Pr(t\leq T<t+\Delta t|T\geq t)}{\Delta t}=\frac{f(t)}{S(t)}.
 \end{equation*}
 \subsection{Censored data}
 In theory, a lifetime will always end. In the real world, however, we are constrained with finite time. Thus, when we observe lifetime data, it is not necessarily the case that the lifetime has ended yet. For example, some cancer patients survive, and die of old age. Similarly, some marriages do not end in divorce. In these cases, it is likely that the lifetime has not ended at the time we stop observing data. Here we cannot say anything about the lifetime itself. We can only say that this lifetime lasted at least until now. We call these observations censored observations. Specifically, these are right-censored observations, since they are censored at the right end of the time scale.
@@ -120,3 +120,19 @@ Until now, mainly numerical maximum likelihood methods have been used to find op
 \end{split}
 \end{align}
 See the appendix \ref{appendix} for the full derivation.
+
+
+
+\subsection{Parametrizations of inverse Gaussian}
+The standard parametrization of the Inverse Gaussian is
+
+\begin{equation*}
+    f(x;\mu,\lambda)=
+    \frac{\sqrt{\lambda}}{\sqrt{2\pi x^3}}\exp\left(-\frac{1}{2}\frac{\lambda(x-\mu)}{2\mu^2x}\right)
+\end{equation*}
+
+From \citet{chhikara1988} we know that if the underlying Brownian motion with initial level $y_0>0$ has negative drift $\nu$, i.e., drifts toward the barrier 0, then it is Inverse Gaussian with the above parameterization, with
+\begin{align*}
+    \mu&=\frac{y_0}{-\nu} \\
+    \lambda&=\frac{y_0^2}{\sigma^2}
+\end{align*}
