@@ -6,6 +6,7 @@ bibs
 Meetings
 notes
 threg
+fhtboost
 
 # Random file types
 *.Rproj*
@@ -38,3 +39,7 @@ TODO*
 new
 
 recreates.txt
+
+
+# the package
+code/FHT-IG-R-package/
