@@ -1,0 +1,22 @@
+\chapter{First hitting time boost}
+In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
+
+\section{Algorithm}
+We apply the component-wise boosting meta-algorithm with loss function $L=-\log$, which depends on both $\mu$ and $\y_0$. We differentiate the loss function with respect to these two and get .... For more details, see \ref{appendix}.
+
+\begin{algorithm}
+\caption{Component-wise FHT boosting}
+\label{algo:fhtboost}
+\begin{enumerate}
+    \item Select $\mstop$ by carrying out repeated cross-validation on the following steps, and let $\mstop$ be the minimizing $m$.
+    \item Initialise $\beta_0$ and $\gamma_0$. Specify base learners $h_j(x_j)=\eta_jx_j$. For $m=1,\ldots,\mstop$, repeat the steps below.
+    \item Compute the negative gradient vector $\u$, which is just the derivative of the log likelihood.
+    \item Fit $(\X_i,U_i)_{i=1}^N$ separately to every base learner to get $\hat{h}_1(x_1),\dotsc,\hat{h}_p(x_p)$.
+    \item Select the component $k$ which best fits the negative gradient vector.
+        \begin{equation*}
+            k=\argmin_{j\in[1,p]}\sum_{i=1}^N(u_i-\hat{h}_j(\x_i))^2
+        \end{equation*}
+    \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu h_k(x_k)$
+    \item The resulting model is $F_{\mstop}$.
+\end{enumerate}
+\end{algorithm}
