@@ -296,7 +296,7 @@
 }
 
 
-@article{cite-key,
+@article{mayr-hofner,
   Author = {Mayr, A. and Hofner, B. and Schmid, M.},
   Date-Added = {2018-04-12 10:50:36 +0000},
   Date-Modified = {2018-04-12 10:50:36 +0000},
@@ -441,4 +441,97 @@
   number = {2},
   url = {http:https://doi.org/10.1002/bimj.201000048},
   abstract = {Survival prediction from high-dimensional genomic data is dependent on a proper regularization method. With an increasing number of such methods proposed in the literature, comparative studies are called for and some have been performed. However, there is currently no consensus on which prediction assessment criterion should be used for time-to-event data. Without a firm knowledge about whether the choice of evaluation criterion may affect the conclusions made as to which regularization method performs best, these comparative studies may be of limited value. In this paper, four evaluation criteria are investigated: the log-rank test for two groups, the area under the time-dependent ROC curve (AUC), an R2-measure based on the Cox partial likelihood, and an R2-measure based on the Brier score. The criteria are compared according to how they rank six widely used regularization methods that are based on the Cox regression model, namely univariate selection, principal components regression (PCR), supervised PCR, partial least squares regression, ridge regression, and the lasso. Based on our application to three microarray gene expression data sets, we find that the results obtained from the widely used log-rank test deviate from the other three criteria studied. For future studies, where one also might want to include non-likelihood or non-model-based regularization methods, we argue in favor of AUC and the R2-measure based on the Brier score, as these do not suffer from the arbitrary splitting into two groups nor depend on the Cox partial likelihood.}
+}
+
+
+@misc{seibold,
+          author = {Heidi Seibold and Christoph Bernau and Anne-Laure Boulesteix and Riccardo De Bin},
+           title = {On the choice and influence of the number of boosting steps},
+          volume = {188},
+            year = {2016},
+        abstract = {In biomedical research, boosting-based regression approaches have gained much attention in the last decade. Their intrinsic variable selection procedure and their ability to shrink the estimates of the regression coefficients toward 0 make these techniques appropriate to fit prediction models in the case of high-dimensional data, e.g. gene expressions. Their prediction performance, however, highly depends on specific tuning parameters, in particular on the number of boosting iterations to perform. This crucial parameter is usually selected via cross-validation. The cross-validation procedure may highly depend on a completely random component, namely the considered fold partition. We empirically study how much this randomness affects the results of the boosting techniques, in terms of selected predictors and prediction ability of the related models. We use four publicly available data sets related to four different diseases. In these studies the goal is to predict survival end-points when a large number of continuous candidate predictors are available. We focus on two well known boosting approaches implemented in the R-packages Cox-Boost and mboost, assuming the validity of the proportional hazards assumption. Finally, we empirically show how the variability in selected predictors and prediction ability of the model is reduced by averaging over several repetitions of cross-validation in the selection of the tuning parameters.},
+         keyword = {Boosting; Cross-validation; Parameter tuning; High dimensional data; Survival analysis},
+          series = {tech},
+             url = {http://nbn-resolving.de/urn/resolver.pl?urn=nbn:de:bvb:19-epub-26724-1}
+}
+
+
+@article{hastie2007,
+  author = "Hastie, Trevor",
+  doi = "10.1214/07-STS242A",
+  fjournal = "Statistical Science",
+  journal = "Statist. Sci.",
+  month = "11",
+  number = "4",
+  pages = "513--515",
+  publisher = "The Institute of Mathematical Statistics",
+  title = "Comment: Boosting Algorithms: Regularization, Prediction and Model Fitting",
+  url = "https://doi.org/10.1214/07-STS242A",
+  volume = "22",
+  year = "2007"
+}
+
+@article{buhlmann2007,
+author = "Bühlmann, Peter and Hothorn, Torsten",
+doi = "10.1214/07-STS242",
+fjournal = "Statistical Science",
+journal = "Statist. Sci.",
+month = "11",
+number = "4",
+pages = "477--505",
+publisher = "The Institute of Mathematical Statistics",
+title = "Boosting Algorithms: Regularization, Prediction and Model Fitting",
+url = "https://doi.org/10.1214/07-STS242",
+volume = "22",
+year = "2007"
+}
+
+
+@article{inversegauss,
+ ISSN = {01621459},
+ URL = {http://www.jstor.org/stable/2285899},
+ abstract = {This note deals with a method of evaluating the distribution function of the Inverse Gaussian Distribution, from the Standard Normal Distribution.},
+ author = {Jonathan Shuster},
+ journal = {Journal of the American Statistical Association},
+ number = {324},
+ pages = {1514--1516},
+ publisher = {[American Statistical Association, Taylor & Francis, Ltd.]},
+ title = {On the Inverse Gaussian Distribution Function},
+ volume = {63},
+ year = {1968}
+}
+
+
+
+@Article{bin2014,
+author="Bin, Riccardo De
+and Herold, Tobias
+and Boulesteix, Anne-Laure",
+title="Added predictive value of omics data: specific issues related to validation illustrated by two case studies",
+journal="BMC Medical Research Methodology",
+year="2014",
+month="Oct",
+day="28",
+volume="14",
+number="1",
+pages="117",
+abstract="In the last years, the importance of independent validation of the prediction ability of a new gene signature has been largely recognized. Recently, with the development of gene signatures which integrate rather than replace the clinical predictors in the prediction rule, the focus has been moved to the validation of the added predictive value of a gene signature, i.e. to the verification that the inclusion of the new gene signature in a prediction model is able to improve its prediction ability.",
+issn="1471-2288",
+doi="10.1186/1471-2288-14-117",
+url="https://doi.org/10.1186/1471-2288-14-117"
+}
+
+
+@article{chang2010,
+  title = "Early stopping in L2Boosting",
+  journal = "Computational Statistics & Data Analysis",
+  volume = "54",
+  number = "10",
+  pages = "2203 - 2213",
+  year = "2010",
+  issn = "0167-9473",
+  doi = "https://doi.org/10.1016/j.csda.2010.03.024",
+  url = "http://www.sciencedirect.com/science/article/pii/S016794731000126X",
+  author = "Yuan-Chin Ivan Chang and Yufen Huang and Yu-Pai Huang",
+  keywords = ", BIC, gMDL, Change point detection method, Boosting, LogitBoost, Stopping rule"
 }

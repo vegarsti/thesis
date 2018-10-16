@@ -1,14 +1,37 @@
-- Intro: Motivation for the thesis work
-    + FHT has no high-dim regression
-    + Survival analysis needs non-Cox (non-PH) high-dim modelling
-- Survival analysis intro/setting
-- Proportional hazards problems
-- Why PH property does not work in variable selection
+# Chapter 1: Introduction
+Motivation. Why?
+    - FHT has no high-dim regression
+    - Survival analysis needs non-Cox (non-PH) high-dim modelling
+
+
+# Chapter 2: Survival analysis, FHT IG model
+- Survival analysis setting
+- Simulation of survival times
+- Cox / proportional hazard (PH)
+- PH problems (variable selection)
 - FHT model
-- Boosting: Origin
-- Component-wise Boosting
-- Component-wise boosting of FHT
-- Evaluation of FHTBoost
-- Simulation of data
-- Cross validation
-- Actual data
+- Illustration
+
+
+# Chapter 3: Boosting
+- Statistical learning theory
+- AdaBoost to L2Boost
+- Component-wise boosting (L2Boost, I guess)
+- Illustration of boosting -- & variable selection
+- Choosing m_stop
+- CV and repeated CV
+- Joint boosting
+
+
+# Chapter 4: FHT Boost
+- Explanation of algorithm
+- Illustration
+
+
+# Chapter 5: Comparison on PH simulated data with CoxBoost
+
+
+# Chapter 6: Comparison on actual data with CoxBoost
+
+
+# Chapter 7: Conclusion and future work
