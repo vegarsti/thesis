@@ -11,6 +11,7 @@ Motivation. Why?
 - PH problems (variable selection)
 - FHT model
 - Illustration
+- Simulation of Cox data
 
 
 # Chapter 3: Boosting
@@ -26,12 +27,12 @@ Motivation. Why?
 # Chapter 4: FHT Boost
 - Explanation of algorithm
 - Illustration
+- Improvements
 
 
-# Chapter 5: Comparison on PH simulated data with CoxBoost
-
-
-# Chapter 6: Comparison on actual data with CoxBoost
+# Chapter 5: Results
+- Comparison on PH simulated data with CoxBoost
+- Comparison on actual data with CoxBoost
 
 
 # Chapter 7: Conclusion and future work

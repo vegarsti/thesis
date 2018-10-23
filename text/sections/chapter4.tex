@@ -2,21 +2,28 @@
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
 
 \section{Algorithm}
-We apply the component-wise boosting meta-algorithm with loss function $L=-\log$, which depends on both $\mu$ and $\y_0$. We differentiate the loss function with respect to these two and get .... For more details, see \ref{appendix}.
+We apply the component-wise boosting algorithm \ref{algo:fhtboost} with loss function $\rho(\mu,\y0)=-\log\loss{y_0,\mu}$. We differentiate the loss function with respect to these two and get .... For more details on the derivation, see \ref{appendix}. \todo{Maybe use $b$ instead of $y_0$, to not get subscript chaos?}
 
 \begin{algorithm}
-\caption{Component-wise FHT boosting}
+\caption{FHT Boost with twodimensional loss function}
 \label{algo:fhtboost}
 \begin{enumerate}
-    \item Select $\mstop$ by carrying out repeated cross-validation on the following steps, and let $\mstop$ be the minimizing $m$.
-    \item Initialise $\beta_0$ and $\gamma_0$. Specify base learners $h_j(x_j)=\eta_jx_j$. For $m=1,\ldots,\mstop$, repeat the steps below.
-    \item Compute the negative gradient vector $\u$, which is just the derivative of the log likelihood.
-    \item Fit $(\X_i,U_i)_{i=1}^N$ separately to every base learner to get $\hat{h}_1(x_1),\dotsc,\hat{h}_p(x_p)$.
-    \item Select the component $k$ which best fits the negative gradient vector.
-        \begin{equation*}
-            k=\argmin_{j\in[1,p]}\sum_{i=1}^N(u_i-\hat{h}_j(\x_i))^2
-        \end{equation*}
-    \item Update $F_m(\cdot)=F_{m-1}(\cdot)+\nu h_k(x_k)$
-    \item The resulting model is $F_{\mstop}$.
+    \item Initialize the $n$-dimensional vectors $\hat{y}_0^{[0]},\hat{\mu}^{[0]}$, with offset values, e.g. with $\hat{y}_0^{[0]}=\0,\ldots,\hat{\mu}^{[0]}=\0$. Alternatively, one can use the maximum likelihood estimates as offset values.
+    \item For both components of the loss function, specify base learners, in particular, a component-wise base learner which can be used for each of the $p$ variables used in $\X$ corresponding to $y_0$ and the $d$ variables in $\Z$ corresponding to $\mu$. Like earlier, the base learner takes one input variable and has one output variable. Examples include least squares linear regression.
+    \item Set $m=0$ and $\nu=0.1$.
+    \item Increase $m$ by 1.
+    \begin{enumerate}
+        \item If $m>m_{\text{stop},y_0}$, proceed to step 4 e). If not, compute the negative partial derivative $-\frac{\partial\rho}{\partial y_0}$ and evaluate at $\hat{f}^{[m-1]}(X_i,Z_i)=\left(\hat{y}_0^{[m-1]}(X_i),\hat{\mu}^{[m-1]}(Z_i)\right)_{i=1,\ldots,n}$. This yields the negative gradient vector $U_{y_0}^{[m-1]}=\left(U_{i,y_0}^{[m-1]}\right)_{i=1,\ldots,n}:=\left(-\frac{\partial}{\partial y_0}\rho\left(Y_i,\hat{f}^{[m-1]}(X_i,Z_i)\right)\right)_{i=1,\ldots,n}$.
+        \item Fit the negative gradient vector $U_{y_0}^{[m-1]}$ to each of the $p$ components of $\X$ separately (i.e. to each predictor variable) using the base learners specified in step 2. This yields $p$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $U_{y_0}^{[m-1]}$.
+        \item Select the component of $\X$ which best fits $U_{y_0}{[m-1]}$ according to $R^2$. Set $\hat{U}_{y_0}^{[m-1]}$ equal to the fitted values of the corresponding best model fitted in the previous step.
+        \item Update $\hat{y}_0^{[m-1]}\gets\hat{y}_0^{[m-1]}+\nu\hat{U}_{y_0}^{[m-1]}$.
+        \item If $m>m_{\text{stop},\mu}$, proceed to step 4 j). If not, compute the negative partial derivative $-\frac{\partial\rho}{\partial \mu}$ and evaluate at $\hat{f}^{[m-1]}(X_i,Z_i)=\left(\hat{y}_0^{[m-1]}(X_i),\hat{\mu}^{[m-1]}(Z_i)\right)_{i=1,\ldots,n}$. This yields the negative gradient vector $U_{\mu}^{[m-1]}=\left(U_{i,\mu}^{[m-1]}\right)_{i=1,\ldots,n}:=\left(-\frac{\partial}{\partial \mu}\rho\left(Y_i,\hat{f}^{[m-1]}(X_i,Z_i)\right)\right)_{i=1,\ldots,n}$.
+        \item Fit the negative gradient vector $U_{\mu}^{[m-1]}$ to each of the $p$ components of $\Z$ separately (i.e. to each predictor variable) using the base learners specified in step 2. This yields $d$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $U_{\mu}^{[m-1]}$.
+        \item Select the component of $\Z$ which best fits $U_{\mu}{[m-1]}$ according to $R^2$. Set $\hat{U}_{\mu}^{[m-1]}$ equal to the fitted values of the corresponding best model fitted in the previous step.
+        \item Update $\hat{\mu}^{[m-1]}\gets\hat{\mu}^{[m-1]}+\nu\hat{U}_{\mu}^{[m-1]}$.
+        \item Update $\hat{f}^{[m]}\gets\hat{f}^{[m-1]}$.
+        \item If $m>\max(m_{\text{stop},y_0},m_{\text{stop},\mu})$, go to step 5. If not, repeat step 4.
+    \end{enumerate}
+    \item Return $\hat{f}^{[m]}$.
 \end{enumerate}
 \end{algorithm}

@@ -177,8 +177,31 @@ Hence this model is a GAM \eqref{eq:gam}. Crucially, if we stop sufficiently ear
 \end{algorithm}
 In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches \citep{buhlmann2006}.
 
-\section{Joint boosting: Boosting with several loss functions}
-For some purposes, one might want to optimize several parameters at once.
+\section{Multidimensional boosting: Component-wise boosting of a multivariate loss function}
+The above methods consider a loss function depending on one parameter: $\loss(\beta)$. In the boosting steps, one uses a gradient descent step with the loss function differentiated with respect to this one parameter.
+There are however many models which use loss functions of several variables. \cite{schmid} extend the gradient boosting algorithm \citep{friedman2001} to such a setting. In this method, we take the partial derivative of the multivariate loss function with respect to each variable. They propose doing a boosting step in each dimension at a time, and repeat this for all dimensions. We also find an $\mstop$ for each dimension. The algorithm proposed in \cite{schmid} does an additional cycle through of nuisance parameters after having cycled through all dimensions, in each boosting step. The algorithm is as follows.
+\begin{algorithm}
+\caption{K-dimensional component-wise gradient boosting}
+\label{algo:multidim-boost}
+\begin{enumerate}
+    \item Initialize the $n$-dimensional vectors $f_1^{[0]},\ldots,f_K^{[0]}$, with offset values, e.g. with $f_1^{[0]}=\0,\ldots,f_K^{[0]}=\0$. Alternatively, one can use the maximum likelihood estimates as offset values.
+    \item For each component $k=1,\ldots,K$, specify a base learner to use for each of the $p$ components. The base learner takes one input variable and has one output variable. Examples include.
+    \item Set $m=0$.
+    \item Increase $m$ by 1.
+    \begin{enumerate}
+        \item Set $k=0$.
+        \item Increase $k$ by 1. If $m>m_{\text{stop},k}$, proceed to step 4 f). If not, compute the negative partial derivative $-\frac{\partial\rho}{\partial f_k}$ and evaluate at $\hat{f}^{[m-1]}(X_i)=\left(\hat{f}_1^{[m-1]}(X_i),\ldots,\hat{f}_K^{[m-1]}(X_i)\right),i=1,\ldots,n$. This yields the negative gradient vector $U_k^{[m-1]}=\left(U_{i,k}^{[m-1]}\right)_{i=1,\ldots,n}
+        \newline:=\left(-\frac{\partial}{\partial f_k}\rho\left(Y_i,\hat{f}^{[m-1]}(X_i)\right)\right)_{i=1,\ldots,n}$.
+        \item Fit the negative gradient vector $U_k^{[m-1]}$ to each of the $p$ components of $\X$ separately (i.e. to each predictor variable) using the base learners specified in step 2. This yields $p$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $U_k^{[m-1]}$.
+        \item Select the component of $\X$ which best fits $U_k{[m-1]}$ best according to a pre-specified goodness-of-fit criterion. For continuous variables, the $R^2$ measure should (?) be used. Set $\hat{U}_k^{[m-1]}$ equal to the fitted values of the corresponding best model fitted in the previous step.
+        \item Update $\hat{f}_k{[m-1]}\gets\hat{f}_k^{[m-1]}+\nu\hat{U}_k^{[m-1]},$ where $\nu$ is a real-valued step-length factor.
+        \item For $k=2,\ldots,K$, repeat steps. Finally, update $\hat{f}^{[m]}\gets\hat{f}^{[m-1]}$.
+    \end{enumerate}
+    \item Iterate step 4 until $m>\max(m_{\text{stop},k})$ for all $k\in\{1,\ldots,K\}$.
+\end{enumerate}
+\end{algorithm}
+
+
 
 \section{The importance of stopping early}
 The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer.
