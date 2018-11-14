@@ -27,3 +27,7 @@ We apply the component-wise boosting algorithm \ref{algo:fhtboost} with loss fun
     \item Return $\hat{f}^{[m]}$.
 \end{enumerate}
 \end{algorithm}
+We might call this cyclical boosting.
+
+\subsection{Boost in same}
+Another way to do this is to only boost one component in each iteration. The component might be corresponding to $X$, or it might be corresponding to $Z$.
