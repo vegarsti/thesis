@@ -2,7 +2,7 @@
 First we have the likelihood,
 \begin{align}\label{eq:fht-loglik}
 \begin{split}
-L(y_0,\mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
+L(\btheta)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di},
 \end{split}
 \end{align}
@@ -17,55 +17,55 @@ and so in particular,
 and thus we can rewrite \eqref{eq:fht-loglik} as
 \begin{align}\label{eq:fht-loglik-proper}
 \begin{split}
-L(y_0,\mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
+L(\btheta)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
 &\times\sqb*{\Phi\p*{\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di}.
 \end{split}
 \end{align}
 It is easier to work with the log likelihood, so we take the log of \eqref{eq:fht-loglik-proper} and get
 \begin{align}
 \begin{split}
-    l(y_0,\mu)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
+    l(\btheta)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
     &+
     (1-\di)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}
 \end{split}
 \end{align}
 To make things easier, let us introduce some intermediate functions here. Let
 \begin{equation}
-f_i(y_0,\mu)=\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}
+f_i(\btheta)=\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}
 \end{equation}
 and
 \begin{equation}
-g_i(y_0,\mu)=\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}.
+g_i(\btheta)=\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}.
 \end{equation}
 So we get
 \begin{align}
-    l(y_0,\mu)&=\sum_{i=1}^n\di f_i(y_0,\mu)+(1-\di)\ln{g_i(y_0,\mu)}
+    l(\btheta)&=\sum_{i=1}^n\di f_i(\btheta)+(1-\di)\ln{g_i(\btheta)}
 \end{align}
 Thus we see that the partial derivatives are
 \begin{equation}
-    \frac{\partial}{\partial y_0}l(y_0,\mu)=\sum_{i=1}^n\di \frac{\partial}{\partial y_0}f_i(y_0,\mu)+(1-\di)\frac{\frac{\partial}{\partial y_0}g_i(y_0,\mu)}{g_i(\theta)}
+    \frac{\partial}{\partial y_0}l(\btheta)=\sum_{i=1}^n\di \frac{\partial}{\partial y_0}f_i(\btheta)+(1-\di)\frac{\frac{\partial}{\partial y_0}g_i(\btheta)}{g_i(\theta)}
 \end{equation}
 and
 \begin{equation}
-    \frac{\partial}{\partial \mu}l(y_0,\mu)=\sum_{i=1}^n\di \frac{\partial}{\partial \mu}f_i(y_0,\mu)+(1-\di)\frac{\frac{\partial}{\partial \mu}g_i(y_0,\mu)}{g_i(\theta)}
+    \frac{\partial}{\partial \mu}l(\btheta)=\sum_{i=1}^n\di \frac{\partial}{\partial \mu}f_i(\btheta)+(1-\di)\frac{\frac{\partial}{\partial \mu}g_i(\btheta)}{g_i(\theta)}
 \end{equation}
 We take these one by one
 \begin{equation}
-    \frac{\partial}{\partial y_0}f_i(y_0,\mu)=\frac{1}{y_0}-\frac{y_0+\mu\ti}{2(\sigma^2\ti)^2}
+    \frac{\partial}{\partial y_0}f_i(\btheta)=\frac{1}{y_0}-\frac{y_0+\mu\ti}{\sigma^2\ti}
 \end{equation}
 \begin{equation}
-    \frac{\partial}{\partial \mu}f_i(y_0,\mu)=-\frac{y_0+\mu\ti}{2(\sigma^2)^2}
+    \frac{\partial}{\partial \mu}f_i(\btheta)=-\frac{y_0+\mu\ti}{\sigma^2}
 \end{equation}
 \begin{align}
 \begin{split}
-    \frac{\partial}{\partial y_0}g_i(y_0,\mu)&=\frac{1}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2\mu}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
+    \frac{\partial}{\partial y_0}g_i(\btheta)&=\frac{1}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2\mu}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
     &+
     \frac{1}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
 \end{split}
 \end{align}
 \begin{align}
 \begin{split}
-    \frac{\partial}{\partial \mu}g_i(y_0,\mu)&=\frac{\ti}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2y_0}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
+    \frac{\partial}{\partial \mu}g_i(\btheta)&=\frac{\ti}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2y_0}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \\
     &-
     \frac{\ti}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
 \end{split}
@@ -74,26 +74,26 @@ Hence
 \begin{align}
 \begin{split}
 \frac{\partial}{\partial y_0}
-l&(y_0,\mu) \\
-=&\sum_{i=1}^n\left(
-\di\p*{\frac{1}{y_0}-\frac{y_0+\mu\ti}{2(\sigma^2\ti)^2}}
+l(\btheta)
+&=\sum_{i=1}^n\left(
+\di\p*{\frac{1}{y_0}-\frac{y_0+\mu\ti}{\sigma^2\ti}}
 +(1-\di)\right.\left[
     \frac{1}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2\mu}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}\right.\\
     &\left.+\left.
     \frac{1}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
-\right]\left[ \Phi\left(\frac{\mu t_i + y_0}{\sqrt{\sigma^2 t_i}}\right)-\exp\left(-\frac{2y_0\mu}{\sigma^2}\right)\Phi\left(\frac{\mu t_i - y_0}{\sqrt{\sigma^2 t_i}}\right)\right]^{-1}\right)
+\right]\left[ \Phi\left(\frac{\mu t_i + y_0}{\sqrt{\sigma^2 t_i}}\right)-\exp(-\frac{2y_0\mu}{\sigma^2}\Phi\left(\frac{\mu t_i - y_0}{\sqrt{\sigma^2 t_i}}\right)\right]^{-1}\right)
 \end{split}
 \end{align}
 and
 \begin{align}
 \begin{split}
 \frac{\partial}{\partial \mu}
-l&(y_0,\mu) \\
-=&\sum_{i=1}^n\left(
-\di\p*{-\frac{y_0+\mu\ti}{2(\sigma^2)^2}}
+l(\btheta)
+&=\sum_{i=1}^n\left(
+\di\p*{-\frac{y_0+\mu\ti}{\sigma^2}}
 +(1-\di)\right.\left[
 \frac{\ti}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2y_0}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \right.\\
 &\left.\left.-\frac{\ti}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
-\right]\left[ \Phi\left(\frac{\mu t_i + y_0}{\sqrt{\sigma^2 t_i}}\right)-\exp\left(-\frac{2y_0\mu}{\sigma^2}\right)\Phi\left(\frac{\mu t_i - y_0}{\sqrt{\sigma^2 t_i}}\right)\right]^{-1}\right)
+\right]\left[ \Phi\left(\frac{\mu t_i + y_0}{\sqrt{\sigma^2 t_i}}\right)-\exp(-\frac{2y_0\mu}{\sigma^2}\Phi\left(\frac{\mu t_i - y_0}{\sqrt{\sigma^2 t_i}}\right)\right]^{-1}\right)
 \end{split}
 \end{align}
