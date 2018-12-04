@@ -1,3 +1,20 @@
+\chapter{Survival analysis}
+
+\section{Intro}
+Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \cite{ABG}. We look at a stochastic variable $T>0$ which is the time to event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\cdots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$.
+
+\subsection{The survival function $S(t)$}
+In survival analysis, one of the things we are interested in is the survival function. The survival function $S(t)$ is the probability of surviving until time $t$,
+\begin{align}
+    S(t)=\Pr(T>t)=1-\Pr(T<t)=1-F(t).
+\end{align}
+Here $F(t)$ is the familiar cumulative distribution function. If the derivative $f(t)$ of $F(t)$ exists, the lifetime $T$ has probability distribution function $f(t)$.
+
+\subsection{The hazard function $\hz(t)$}
+We are also interested in the probability of the event happening in a given interval.
+
+%%%%%%%%%%%
+
 \chapter{First hitting time regression models in survival analysis}
 
 \section{Survival analysis and time-to-event models}\label{sec:survival}
@@ -11,7 +28,7 @@ is the probability of the event having happened before time $t$. We define the s
 \end{equation*}
 Hence, $S(t)$ denotes the probability that the event has not yet happened at time $t$. If the cumulative distribution function is differentiable, we define the probability density function of $T$ to be $f(t)$. Another much studied property of lifetime distributions is the hazard function $h(t)$. Somewhat informally, it denotes the probability of the event happening at some time $t$, assuming it has not happened yet. More formally, it is the limit of the conditional probability that the event will occur in a small interval $[t,t+\Delta t)$, conditional on the event not having happened yet,
 \begin{equation*}%\label{eq:hazard}
-    h(t)=\lim_{\Delta t\to 0}\frac{\Pr(t\leq T<t+\Delta t|T\geq t)}{\Delta t}=\frac{f(t)}{S(t)}.
+    h(t)=\lim_{\Delta t\to 0}\frac{\Pr{(t\leq T<t+\Delta t|T\geq t)}}{\Delta t}=\frac{f(t)}{S(t)}.
 \end{equation*}
 \subsection{Censored data}
 In theory, a lifetime will always end. In the real world, however, we are constrained with finite time. Thus, when we observe lifetime data, it is not necessarily the case that the lifetime has ended yet. For example, some cancer patients survive, and die of old age. Similarly, some marriages do not end in divorce. In these cases, it is likely that the lifetime has not ended at the time we stop observing data. Here we cannot say anything about the lifetime itself. We can only say that this lifetime lasted at least until now. We call these observations censored observations. Specifically, these are right-censored observations, since they are censored at the right end of the time scale.
