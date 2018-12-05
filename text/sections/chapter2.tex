@@ -1,19 +1,137 @@
 \chapter{Survival analysis}
 
-\section{Intro}
-Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \cite{ABG}. We look at a stochastic variable $T>0$ which is the time to event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\cdots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$.
+\section{Survival data}
+Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \citet{ABG}. We look at a stochastic variable $T>0$ which is the time to event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\cdots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$. We also need a censoring indicator, $D=I(\tT=T)$, indicating if we have observed the actual event.
 
 \subsection{The survival function $S(t)$}
 In survival analysis, one of the things we are interested in is the survival function. The survival function $S(t)$ is the probability of surviving until time $t$,
-\begin{align}
+\begin{align*}
     S(t)=\Pr(T>t)=1-\Pr(T<t)=1-F(t).
-\end{align}
+\end{align*}
 Here $F(t)$ is the familiar cumulative distribution function. If the derivative $f(t)$ of $F(t)$ exists, the lifetime $T$ has probability distribution function $f(t)$.
 
 \subsection{The hazard function $\hz(t)$}
-We are also interested in the probability of the event happening in a given interval.
+We are also interested in the hazard function. This is the probability of the event happening in a given small interval at time $t$, conditioned on the event not having happened yet. More formally, the hazard function is defined as a limit of this probability as the size of the interval goes to zero,
+\begin{equation*}
+    \hz(t)=\lim_{\epsilon\to0}\frac{\Pr(T<t+\epsilon|T>t)}{\epsilon}.
+\end{equation*}
+The hazard function $\hz(t)$ is then the chance of the event happening at time $t$, if it has not happened yet. Estimation of the hazard function is hard, and we do not achieve the usual $\sqrt{n}$ convergence.
+
+Note that
+\begin{equation*}
+    \Pr(T<t+\epsilon|T>t)=\frac{\Pr(T<t+\epsilon,T>t)}{\Pr(T>t)}=\frac{F(t+\epsilon)-F(t)}{S(t)},
+\end{equation*}
+and inserting this into the hazard rate yields
+\begin{equation*}
+    \hz(t)=\frac{1}{S(t)}\lim_{\epsilon\to0}\frac{F(t+\epsilon)-F(t)}{\epsilon}=\frac{f(t)}{S(t)}=\frac{-S^\prime(t)}{S(t)},
+\end{equation*}
+where $f(t)$ is again the probability distribution function, and we note that $S^\prime(t)$ is the derivative of $1-F(t)$, which is $-f(t)$. By integrating the hazard from 0 to time $t$, we get the cumulative hazard function $A(t)=\int_0^t\hz(s)\d s$,
+\begin{equation*}
+    A(t)=-\int_0^t\frac{S^\prime(s)}{S(s)}\d s=-\int_0^t\frac{\frac{\d S}{\d f}}{S(s)}\d s=-\int_0^t\frac{1}{S(s)}\d s=-\log(S(t)).
+\end{equation*}
+Given censored survival data $(t_i,d_i),i=1,\cdots,n$, we introduce the at-risk function $Y(t)$, which is equal to the number of individuals still at risk at time $t$,
+\begin{equation*}
+    Y(t)=\#\{t\colon t_i\geq t\}.
+\end{equation*}
+We may then estimate the survival function $S(t)$ by the Kaplan-Meier estimator
+\begin{equation*}
+    \hat{S}(t)=\prod_{t_i\leq t}1-\frac{d_i}{Y(t_i)},
+\end{equation*}
+and the cumulative hazard function $A(t)$ by the Nelson-Aalen estimator
+\begin{equation*}
+    \hat{A}(t)=\sum_{t_i\leq t}\frac{d_i}{Y(t_i)}.
+\end{equation*}
+
+\section{Survival data likelihood regression setup}
+Given survival data with covariates, $(t_i,d_i,\x_i)$, and parameterized functions $S(t|\x_i,\bbeta)$ and $f(t|\x_i,\bbeta)$ corresponding to a survival distribution, where $\bbeta=(\beta_1,\cdots,\beta_p)$ is a regression coefficient, we want to set up a likelihood for the data. We assume that the data is independent and identically distributed. If the event has occurred, the indicator $d_i$ is 1. We can then use the information about the lifetime distribution, such that the single individual $i$ contributes
+\begin{equation}\label{eq:f}
+    f(t_i|\xi)
+\end{equation}
+to the likelihood. If the event has not occurred, the observation is censored, and $d_i$ is 0. Since we do not have the actual lifetime, we cannot use the lifetime distribution. We must use the survival distribution. As such, this observation contributes
+\begin{equation}\label{eq:S}
+    S(t_i|\xi)
+\end{equation}
+to the likelihood. Obviously, since an observation can only be either censored or not censored at the same time, $\di$ is either 0 or 1. If the event has occurred, $d_i$ is 1, and then $1-d_i$ is 0. Similarly, if the event has not occurred and the event is censored, then $d_i$
+ is 0, and then $1-d_i$ is 1. This allows us to take the product of \eqref{eq:f} and \eqref{eq:S} where we take these to the power of $\di$ and $1-\di$, respectively, so that a single observation contributes
+\begin{equation*}
+    f(\ti|\x_i)^{\di}S(\ti|\x_i)^{1-\di}
+\end{equation*}
+to the likelihood. Since we assumed the observations were independent, the likelihood of the observed sample as a whole is the product of the single likelihoods. The complete likelihood becomes
+\begin{equation}\label{eq:surv-lik}
+    L(\bbeta)=\prod_{i=1}^n f(t_i|\x_i,\bbeta)^{d_i} S(t_i|\x_i,\bbeta)^{1-d_i}.
+\end{equation}
+
+
+\section{Proportional hazards regression}
+So far we have not introduced covariates. How may we use a covariate vector $\x$ in modelling, say, the hazard rate? A very common model to choose here is that of a proportional hazards model,
+\begin{equation}\label{PH}
+    \hz(t|x)=\hz_0(t)r(x|\bbeta),
+\end{equation}
+where $\hz_0(t)$ is an \textit{unspecified} baseline hazard function shared between all individuals, and $r(\x|\beta)$ is a so-called relative risk function parameterized with regression coefficient $\bbeta=(\beta_1,\cdots,\beta_p)$. We choose $r(\x)$ such that it is appropriately normalized, meaning $r(\0)=1$. A vital assumption here is that the covariates are fixed in time. With this setup, it turns out that we can do regression without specifying the baseline hazard. This is a major advantage, because we then do not have to think about modelling effects in time. Given data $(t_i,d_i),i=1,\cdots,n$, we may set up a so-called partial likelihood.  For all observations $i=1,\cdots,n$ with $d_i=1$, we know that there is an event at time $t_i$. The probability of the event happening for some individual $j$ is the hazard, i.e., the instantaneous probability of that individual at that time, divided by the sum of all such hazards for those individuals still alive. Assuming that observations are independent and identically distributed, the partial likelihood for the data is then the product of all such ratios,
+\begin{equation*}
+    \pl(\bbeta)=\prod_{d_i=1}\frac{\Pr(\text{event happens to }i\text{ at time }t_i)}{\sum_{j\in R(t_i)}\Pr(\text{event happens to }j\text{ at time }t_i)}=\prod_{d_i=1}\frac{\h_0(t_i)r(\x_i)}{\sum_j \h_0(t_i)r(\x_j)},
+\end{equation*}
+where we see that the baseline hazard cancels out, and we are left with just the relative risk functions.
+
+The most common choice, by far, for $r(\x)$ is the Cox model \citep{cox},
+\begin{equation*}
+    r(\x)=\exp(\x^T\bbeta).
+\end{equation*}
+This is an attractive model because the effect of a unit increase in an element of $\bbeta$ has a good interpretation. Assume we have two covariates $\x_1$ and $\x_2$, and that $\x_2$ is equal to $\x_1$ except for in element $j$, where $x_{2j}=x_{1j}+1$. Then the ratio of the two hazard rates becomes
+\begin{equation*}
+    \frac{\exp(\x_2^T\bbeta)}{\exp(\x_1^T\bbeta)}=\exp((\x_2-\x_1)^T\bbeta)=\exp(\beta_j).
+\end{equation*}
+Cox regression is used a tremendous amount in applied research.
+
+\subsection{Cox regression example}
+Lorem ipsum.
+
+\subsection{The proportional hazards assumption}
+When we say \eqref{PH}, that $\hz(t|\x)=\hz_0(t)r(x|\bbeta)$, we make the proportional hazards (PH) assumption: We assume that the ratio between the hazard function of two individuals is the same \textit{at all times}. This is a very large assumption to make, and in practice, it is very often not the case. One way to test this assumption for a covariate $j=1,\cdots,p$, is to fit a model $r(x_j)=\exp(f(x_j))$, where $f(\cdot)$ is some spline regression function, and plot it against $x_j$.
+
+\subsection{Robustness of Cox when the PH assumption is violated}
+Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo{CITATION NEEDED}
+
+\section{First hitting time models or threshold regression}
+So far we have not thought much about how a time-to-event is generated. Instead, we have modelled the hazard rate directly. We have simply said that we have stochastic lifetimes. At one time, an individual is alive, and at a slightly later time, it is perhaps dead. One way to think about how these times are generated is to imagine that each individual has an underlying stochastic process, a health process $Y(t)$, say. Since the process is a function of time, it has a non-negative domain, $t\geq0$. This health process is not observable, but when it hits a certain boundary set $\mathcal{B}$, the individual dies. $\mathcal{B}$ is also called a barrier or a threshold, depending on what kind of set it is, and what association one wishes to envoke. The lifetime $T$, then, becomes the time it takes for the health process $Y(t)$ to enter the boundary set $\mathcal{B}$. In general, the health process $Y(t)$ takes values in a set $\mathcal{Y}$, with an initial value $y_0=Y(0)$. The barrier is a subset of this set of values, $\mathcal{B}\in\mathcal{Y}$, with the initial health process value $y_0\notin\mathcal{B}$. In other words, the lifetime is
+\begin{equation*}
+    T=\argmin_{t}Y(t)\in\mathcal{B}.
+\end{equation*}
+First hitting time (FHT) models were introduced in \citet{whitmore1986}, and a good reference paper on the topic is \citet{leewhitmore2006}. Note that these authors use the term threshold regression. We have, together with \citet{caroni2017}, chosen to not use this term, as it is also the name of an already established, and quite different, field of econometrics. FHT models have been applied to many different fields, including medicine, engineering, and economics. They may describe the survival time of a transplant patient, the duration time of a strike, the failure time of an engineering system, and so on.
+
+The first hitting time model framework is highly flexible. We have flexibility both in choice of process, boundary and initial value. The most important part is the stochastic process. Examples include Wiener processes, Markov chains, Bernoulli processes, and Gamma processes. We choose to use the Wiener process, because it turns out that it yields a fully parametric regression model.
+
+\subsection{Wiener process}
+Let $W(t)$ be a continuous stochastic process defined for $t\in[0,\infty)$, taking values in $\R$, and with initial value $W(0)=0$. If $W$ has increments that are independent and normally distributed with
+\begin{equation*}
+    E[W(s+t)-W(t)]=0\text{   and   }Var[W(s+t)-W(t)]=s,
+\end{equation*}
+we call $W$ a Wiener process. Its position at time $t$ is always a Gaussian distribution $N(0, t)$ \citep{ABG}. To increase the flexibility of the Wiener process, we can let
+\begin{equation}\label{wiener}
+    Y(t)=y_0-\mu t+\sigma W(t),
+\end{equation}
+which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. Introductions to many aspects of Wiener processes are found in \citet{cox1965}. Figure \todo{there should be a figure here!} shows simulations of some Wiener process paths.
+
+\subsection{FHT with Wiener process leads to Inverse Gaussian}
+If we choose the stochastic process to be a Wiener process like in \eqref{wiener}, and we let the boundary simply be 0, then the lifetime is the time it takes for the process to first reach a non-positive value,
+\begin{equation}
+    T=\argmin{t}Y(t)<0.
+\end{equation}
+
+
+
+The Wiener process, also known as the standard Brownian motion process, is a process which is continuous in time and space. It is so far the most commonly used process in FHT literature. The Wiener process is a fairly simple process which has three parameters: Drift $\mu$, variance $\sigma^2$, and initial value $Y(0)=y_0$. It has independent increments, such that $Y(t_2)-Y(t_1)$ and $Y(t_4)-Y(t_3)$ are independent for any disjoint intervals $(t_1,t_2)$ and $(t_3,t_4)$. Each increment is normally distributed and with both the mean and the standard deviation proportional to the length of the interval, i.e., for any interval $(t_1, t_2)$,
+\begin{equation}
+    Y(t_2)-Y(t_1)\sim N(\mu(t_2-t_1), \sigma^2(t_2-t_1)).
+\end{equation}
+If we consider $Y$ to be a Wiener process in the FHT model, we will typically choose the boundary $\setB$ to be $\setB=(-\infty,0]$, i.e., the event is triggered when $Y\leq0$. Accordingly, we then also assume that the initial level $y_0$ is positive. This is a very conceptually appealing model, because it assumes that individuals might have different initial levels, and that also the drift might be different between individuals. It is also attractive because it has closed-form probability and cumulative density functions, and its likelihood is computationally simple. There are no restrictions on the movements of the process, meaning, it is non-monotonic. If we do want a monotonic restriction on the movement of the process, we may use a gamma process.
+
+
 
 %%%%%%%%%%%
+
+
+
 
 \chapter{First hitting time regression models in survival analysis}
 
@@ -26,9 +144,9 @@ is the probability of the event having happened before time $t$. We define the s
 \begin{equation*}%\label
     S(t)=1-F(t).
 \end{equation*}
-Hence, $S(t)$ denotes the probability that the event has not yet happened at time $t$. If the cumulative distribution function is differentiable, we define the probability density function of $T$ to be $f(t)$. Another much studied property of lifetime distributions is the hazard function $h(t)$. Somewhat informally, it denotes the probability of the event happening at some time $t$, assuming it has not happened yet. More formally, it is the limit of the conditional probability that the event will occur in a small interval $[t,t+\Delta t)$, conditional on the event not having happened yet,
+Hence, $S(t)$ denotes the probability that the event has not yet happened at time $t$. If the cumulative distribution function is differentiable, we define the probability density function of $T$ to be $f(t)$. Another much studied property of lifetime distributions is the hazard function $\h(t)$. Somewhat informally, it denotes the probability of the event happening at some time $t$, assuming it has not happened yet. More formally, it is the limit of the conditional probability that the event will occur in a small interval $[t,t+\Delta t)$, conditional on the event not having happened yet,
 \begin{equation*}%\label{eq:hazard}
-    h(t)=\lim_{\Delta t\to 0}\frac{\Pr{(t\leq T<t+\Delta t|T\geq t)}}{\Delta t}=\frac{f(t)}{S(t)}.
+    \hz(t)=\lim_{\Delta t\to 0}\frac{\Pr{(t\leq T<t+\Delta t|T\geq t)}}{\Delta t}=\frac{f(t)}{S(t)}.
 \end{equation*}
 \subsection{Censored data}
 In theory, a lifetime will always end. In the real world, however, we are constrained with finite time. Thus, when we observe lifetime data, it is not necessarily the case that the lifetime has ended yet. For example, some cancer patients survive, and die of old age. Similarly, some marriages do not end in divorce. In these cases, it is likely that the lifetime has not ended at the time we stop observing data. Here we cannot say anything about the lifetime itself. We can only say that this lifetime lasted at least until now. We call these observations censored observations. Specifically, these are right-censored observations, since they are censored at the right end of the time scale.
@@ -37,14 +155,14 @@ Assume we observe $\ti$, $i=1,\dotsc,n$ independent and identically distributed 
 \begin{equation}\label{eq:f}
     f(\ti|\xi)
 \end{equation}
-to the likelihood. If the event has not (yet) occurred, the observation is censored, and $\di$ is 0. Since we do not have the actual lifetime, we cannot use the lifetime distribution. We must use the survival distribution. As such, this observation contributes
+to the likelihood. If the event has not (yet) occurred, the observation is censored, and $\di$ is 0. Since we do not have the actual lifetime, we cannot use the lifetime distribution, but we must rather use the survival distribution. As such, this observation contributes
 \begin{equation}\label{eq:S}
     S(\ti|\xi)
 \end{equation}
 to the likelihood. Obviously, since an observation can only be either censored or not censored at the same time, $\di$ is either 0 or 1. If the event has occurred, $\di$ is 1, and then $1-\di$ is 0. Similarly, if the event has not occurred and the event is censored, then $\di$
  is 0, and then $1-\di$ is 1. This allows us to take the product of \eqref{eq:f} and \eqref{eq:S} where we take these to the power of $\di$ and $1-\di$, respectively, so that a single observation makes a contribution of
 \begin{equation*}
-    f(\ti|\xi)^{\di}S(\ti|\xi)^{1-\di}
+    f(\ti|\xi,\btheta)^{\di}S(\ti|\xi,\btheta)^{1-\di}
 \end{equation*}
 to the likelihood. Since we assumed the observations were independent, the likelihood of the observed sample as a whole is the product of the single likelihoods. The likelihood becomes
 \begin{equation}\label{eq:surv-lik}
@@ -53,11 +171,11 @@ to the likelihood. Since we assumed the observations were independent, the likel
 \subsection{Proportional hazards}
 The most used method for doing regression on survival data is the Cox proportional hazards (PH) regression. It is based on an assumption that is often called the PH property or the PH assumption, namely that
 \begin{equation}
-    h(t|x)=h_0(t)g(\x),
+    \h(t|x)=\h_0(t)g(\x),
 \end{equation}
-where $h_0(t)$ is a baseline hazard function, which is common for all individuals. This means that at any two time points $t_1$ and $t_2$, the ratio between the hazard functions of any two $\x_1$ and $\x_2$ will be the same:
+where $\h_0(t)$ is a baseline hazard function, which is common for all individuals. This means that at any two time points $t_1$ and $t_2$, the ratio between the hazard functions of any two $\x_1$ and $\x_2$ will be the same:
 \begin{equation}
-    \frac{h(t_1|x_1)}{h(t_1|x_2)}=\frac{h(t_2|x_1)}{h(t_2|x_2)}
+    \frac{\h(t_1|x_1)}{\h(t_1|x_2)}=\frac{\h(t_2|x_1)}{\h(t_2|x_2)}
 \end{equation}
 This is a strong assumption to make, and it will not always be the case in practice \citep{lee2010}. Therefore there is a need for more flexible methods in survival analysis, where this assumption is not necessary.
 
@@ -78,7 +196,7 @@ The Wiener process, also known as the standard Brownian motion process, is a pro
 If we consider $Y$ to be a Wiener process in the FHT model, we will typically choose the boundary $\setB$ to be $\setB=(-\infty,0]$, i.e., the event is triggered when $Y\leq0$. Accordingly, we then also assume that the initial level $y_0$ is positive. This is a very conceptually appealing model, because it assumes that individuals might have different initial levels, and that also the drift might be different between individuals. It is also attractive because it has closed-form probability and cumulative density functions, and its likelihood is computationally simple. There are no restrictions on the movements of the process, meaning, it is non-monotonic. If we do want a monotonic restriction on the movement of the process, we may use a gamma process.
 
 \subsection{Other processes}
-The gamma process is suitable for modelling a process which we would require to be monotonic, typically a physical degradation, i.e. where the damage cannot mend itself, unlike a patient's health. The first hitting time that arises from the gamma process is an inverse gamma first hitting time distribution \citep{leewhitmore2006}. Other choices of processes include Markov chain state models, the Bernoulli process, and the Ornstein-Uhlenbeck process. For a complete review, see \cite{leewhitmore2006}. Due to its simplicity and flexibility, we will in thesis focus on the Wiener process as the choice of process in the FHT model. However, large parts of our results can easily be extended for other processes. For brevity, we will in the sequel say ``the FHT'' when we in fact mean the FHT with the Wiener process.
+The gamma process is suitable for modelling a process which we would require to be monotonic, typically a physical degradation, i.e. where the damage cannot mend itself, unlike a patient's health. The first hitting time that arises from the gamma process is an inverse gamma first hitting time distribution \citep{leewhitmore2006}. Other choices of processes include Markov chain state models, the Bernoulli process, and the Ornstein-Uhlenbeck process. For a complete review, see \citet{leewhitmore2006}. Due to its simplicity and flexibility, we will in thesis focus on the Wiener process as the choice of process in the FHT model. However, large parts of our results can easily be extended for other processes. For brevity, we will in the sequel say ``the FHT'' when we in fact mean the FHT with the Wiener process.
 
 \section{First hitting time regression based on underlying Wiener process}
 It can be shown that the first hitting time of the Wiener process follows an inverse Gaussian distribution \citep{chhikara1988},
