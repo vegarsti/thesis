@@ -428,7 +428,7 @@
 }
 
 @article{bovelstadborgan,
-  author = {Bøvelstad, Hege M. and Borgan, Ørnulf},
+  author = {Bøvelstad, Hege M. and Borgan, {\O}rnulf},
   year = {2011},
   title = {Assessment of evaluation criteria for survival prediction from genomic data},
   journal = {Biometrical Journal},
@@ -681,4 +681,50 @@ url="https://doi.org/10.1007/978-1-4612-4380-9_37"
   address = {Vienna, Austria},
   year = {2013},
   url = {http://www.R-project.org/},
+}
+
+@Article{Thomas2018,
+  author="Thomas, Janek
+  and Mayr, Andreas
+  and Bischl, Bernd
+  and Schmid, Matthias
+  and Smith, Adam
+  and Hofner, Benjamin",
+  title="Gradient boosting for distributional regression: faster tuning and improved variable selection via noncyclical updates",
+  journal="Statistics and Computing",
+  year="2018",
+  month="May",
+  day="01",
+  volume="28",
+  number="3",
+  pages="673--687",
+  abstract="We present a new algorithm for boosting generalized additive models for location, scale and shape (GAMLSS) that allows to incorporate stability selection, an increasingly popular way to obtain stable sets of covariates while controlling the per-family error rate. The model is fitted repeatedly to subsampled data, and variables with high selection frequencies are extracted. To apply stability selection to boosted GAMLSS, we develop a new ``noncyclical'' fitting algorithm that incorporates an additional selection step of the best-fitting distribution parameter in each iteration. This new algorithm has the additional advantage that optimizing the tuning parameters of boosting is reduced from a multi-dimensional to a one-dimensional problem with vastly decreased complexity. The performance of the novel algorithm is evaluated in an extensive simulation study. We apply this new algorithm to a study to estimate abundance of common eider in Massachusetts, USA, featuring excess zeros, overdispersion, nonlinearity and spatiotemporal structures. Eider abundance is estimated via boosted GAMLSS, allowing both mean and overdispersion to be regressed on covariates. Stability selection is used to obtain a sparse set of stable predictors.",
+  issn="1573-1375",
+  doi="10.1007/s11222-017-9754-6",
+  url="https://doi.org/10.1007/s11222-017-9754-6"
+}
+
+@article{gamlss-paper,
+ ISSN = {00359254, 14679876},
+ URL = {http://www.jstor.org/stable/23251131},
+ abstract = {Generalized additive models for location, scale and shape (GAMLSSs) are a popular semiparametric modelling approach that, in contrast with conventional generalized additive models, regress not only the expected mean but also every distribution parameter (e.g. location, scale and shape) to a set of covariates. Current fitting procedures for GAMLSSs are infeasible for high dimensional data set-ups and require variable selection based on (potentially problematic) information criteria. The present work describes a boosting algorithm for high dimensional GAMLSSs that was developed to overcome these limitations. Specifically, the new algorithm was designed to allow the simultaneous estimation of predictor effects and variable selection. The algorithm proposed was applied to Munich rental guide data, which are used by landlords and tenants as a reference for the average rent of a flat depending on its characteristics and spatial features. The net rent predictions that resulted from the high dimensional GAMLSSs were found to be highly competitive and covariate-specific prediction intervals showed a major improvement over classical generalized additive models.},
+ author = {Andreas Mayr and Nora Fenske and Benjamin Hofner and Thomas Kneib and Matthias Schmid},
+ journal = {Journal of the Royal Statistical Society. Series C (Applied Statistics)},
+ number = {3},
+ pages = {403--427},
+ publisher = {Wiley},
+ title = {Generalized additive models for location, scale and shape for high dimensional data—a flexible approach based on boosting},
+ volume = {61},
+ year = {2012}
+}
+
+@book{ESL,
+  title={The Elements of Statistical Learning: Data Mining, Inference, and Prediction},
+  author={Hastie, T. and Tibshirani, R. and Friedman, J.H.},
+  isbn={9780387848846},
+  lccn={2008941148},
+  series={Springer series in statistics},
+  url={https://books.google.no/books?id=eBSgoAEACAAJ},
+  year={2009},
+  publisher={Springer}
 }

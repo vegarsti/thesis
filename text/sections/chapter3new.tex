@@ -1,0 +1,37 @@
+\chapter{Statistical boosting}
+
+\section{Learning theory}
+Let $D=\{x^{(i)},y^{(i)}\}_{i=1,\ldots,n}$ be a learning data set sampled iid from a distribution over the joint space $\setX\times\setY$ with a $p$-dimensional input space $\setX$ and a low-dimensional output space $\setY$. For the majority of applications, the output space $\setY$ is one-dimensional. However in the censored survival data setting, it is two-dimensional, since we have $y^{(i)}=(t_i,d_i)$. The response variable is estimated through an additive model where the expectation given $x$ is \todo{What?}
+\begin{equation}
+    \E[y|x]=F(\eta(x)),
+\end{equation}
+where $F(\cdot)$ is some function and where $\eta\colon\setX\to\R$ is an additive predictor
+\begin{equation}\label{eq:eta}
+    \eta(x)=\beta_0+\sum_{j=1}^Jf_j(x|\beta_j),
+\end{equation}
+with a \textbf{constant intercept coefficient $\beta_0$}, and additive effects $f_j(x|\beta_j)$ derived from the pre-defined set of base learners.
+These base learners are usually relatively simple, regularized (see definition of regularization) parametric effects of $\beta_j$. Typical examples are such as linear least squares, stumps (trees with one split; see \citet{buhlmann2007} and \citet{ESL}), or splines with a few degrees of freedom. In many cases, each base learner is defined on exactly one element $x_j$ of $x$, and thus \eqref{eq:eta} simplifies to
+\begin{equation}\label{eq:eta-componentwise}
+    \eta(x)=\beta_0+\sum_{j=1}^pf_j(x_j|\beta_j).
+\end{equation}
+To estimate the parameters $\beta_1,\ldots,\beta_j$ of the additive predictor, the boosting algorithm minimizes the empirical risk $R$, also called the in-sample error and the training error. $R(D)$ is the loss $\rho\colon\setY\times\R\to\R$ summed over all samples in the learning data set $D$,
+\begin{equation}
+    R(D)=\sum_{i=1}^n\rho(y^{(i)},\eta(x^{(i)})).
+\end{equation}
+The loss function $\rho$ measures the difference, or distance, between the true outcome $y^{(i)}$ and the additive predictor $\eta(x^{(i)})$. Examples of $\rho$ are the absolute loss $|y^{(i)}-\eta(x^{(i)})|$, which leads to a regression model for the median, the quadratic, or $L_2$, loss, which leads to the usual regression model for the mean. In the survival data setting, usual loss functions are ROC and Briar score \citep{bovelstadborgan}. Very often, the loss is derived from the \textbf{negative} log likelihood of the distribution of $\setY$, depending on the desired model. Keep in mind that the negative is used, due to the aim of \textit{minimizing} the loss function.
+\begin{equation}
+    \rho(y^{(i)},\eta(x^{(i)})=-l(y_0(x^{(i)}), \mu(x^{(i)}), t_i, d_i)
+\end{equation}
+Let
+\begin{equation}
+    y_0(x)=\bbeta^T\x=\beta_0+\sum_{j=1}^p \beta_jx_j
+\end{equation}
+and
+\begin{equation}
+    \mu(z)=\bgamma^T\z=\gamma_0+\sum_{j=1}^p \gamma_jz_j
+\end{equation}
+
+The goal is to estimate a function which minimizes the loss of an unseen ``hold-out'' sample, often called the out-of-sample error, the generalization error or the test error.
+\begin{equation}
+    \text{Err}=\min\rho(y,\eta(x)).
+\end{equation}
