@@ -1,6 +1,31 @@
 \chapter{First hitting time boost}
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
 
+\section{Simulation of survival data}
+We wish to simulate survival times $\ti,i=1,\ldots,N$ with censoring. We first draw survival times $\tilde{t}_i$ from some survival time distribution $f(\cdot)$. If this distribution has a closed form probability distribution function, we can draw from it directly. If not, we might use some an inverse sampling method, e.g. by drawing unit exponentials and using a corresponding transformation.
+
+To censor the data, we draw censoring times $W_i\sim f(\cdot),i=1,\ldots,N$, from a more right-tailed distribution, meaning we want to get many, but not all, $W_i$'s to be larger than the $\tilde{t}_i$'s. We let the observed survival times then be $t_i=\min(\tilde{t}_i,W_i)$.
+The corresponding observed indicator, $\di$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<W_i$. We end up with a set of $N$ tuples $(t_i,\delta_i),i=1,\ldots,N$. Note that this scheme incorporates independent censoring: The censoring time is independent of the survival times. This does not pose a problem. Summary of the procedure:
+
+\begin{algorithm}
+\caption{Generate data}
+\label{algo:sim}
+\begin{enumerate}
+    \item Given design matrices $\X$, $\Z$.
+    \item Set $\bbeta$ and $\bgamma$.
+    \item Link covariates and parameters using link functions
+        \begin{align*}
+            \ln y_0&=\bbeta^T\X \\
+            \mu&=\bgamma^T\Z.
+        \end{align*}
+    \item Draw $N$ survival times $(t_i)_{i=1}^N$ from IG$(\mu,y_0)$.
+    \item Draw a censoring time $W$ from some distribution which is independent of the data.
+    \item Right censor data by choosing $\widetilde{t}_i=\min(t_i,W)$. The indicator on whether observation $i$ was observed or not is then $\delta_i=I(\widetilde{t}_i=t_i)$.
+    \item The simulated data set is $(t_i,\delta_i)$.
+\end{enumerate}
+\end{algorithm}
+
+
 \section{Algorithm}
 We apply the component-wise boosting algorithm \ref{algo:fhtboost} with loss function $\rho(\mu,\y0)=-\log\loss{y_0,\mu}$. We differentiate the loss function with respect to these two and get .... For more details on the derivation, see \ref{appendix}. \todo{Maybe use $b$ instead of $y_0$, to not get subscript chaos?}
 
@@ -36,3 +61,14 @@ Another way to do this is to only boost one component in each iteration. The com
 % First tried cyclical boosting.
 % Then tried non-cyclical, with comparing RSS. Doesn't work; not on the same scale.
 % Then tried using non-cyclical, comparing instead the loss function instead of rss.
+
+
+\section{Simulation experiments}
+In this section, I will discuss how I tried validating the boosting method I have developed. To see if the method works, we must see if 1) it converges to the maximum likelihood estimates, and 2) if it does so in a high-dimensional setting as well.
+
+\subsection{Small example}
+Let 
+
+\subsection{Large example with uncorrelated matrices}
+
+\subsection{Large example with correlated matrices}
