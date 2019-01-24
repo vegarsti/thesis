@@ -134,6 +134,19 @@ Note that while we call this functional gradient descent (FGD), this is exactly 
 
 
 \section{$L_2$Boost}
+Friedman laid out the generic functional gradient descent algorithm \citep{friedman2001}, and in it he used a simple boosting algorithm as an example, namely $L_2$Boost. $L_2$Boost is a computationally simple variant of boosting, constructed from a functional gradient descent algorithm of the $L_2$ loss function,
+\begin{equation*}
+    \rho(y, \hat{y})=\frac{1}{2}(y-\hat{y})^2.
+\end{equation*}
+The reason it is simple is that the derivative of the loss function is
+\begin{equation*}
+    \frac{\partial}{\partial\hat{y}}\rho(y, \hat{y})=y-\hat{y},
+\end{equation*}
+that is, the residual. Hence, the $L_2$Boost algorithm becomes repeated refitting of residuals.
+
+Given a data set $D=\{(Y_i,X_i);i=1,\ldots,n\}$, fit a real valued learner 
+
+It can be used on 
 \citet{friedman2001} continued to investigate the topic, providing further insight into boosting. Based on his results, \citet{buhlmann-yu} developed the L2Boost algorithm. It is a special case of the generic functional gradient descent (FGD) algorithm, where we choose the squared error loss as the loss function,
 \begin{equation*}
     \loss(y,F(\x))=\frac{1}{2}\left(y-F(\x)\right)^2.

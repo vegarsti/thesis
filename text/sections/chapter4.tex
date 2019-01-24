@@ -8,11 +8,10 @@ To censor the data, we draw censoring times $W_i\sim f(\cdot),i=1,\ldots,N$, fro
 The corresponding observed indicator, $\di$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<W_i$. We end up with a set of $N$ tuples $(t_i,\delta_i),i=1,\ldots,N$. Note that this scheme incorporates independent censoring: The censoring time is independent of the survival times. This does not pose a problem. Summary of the procedure:
 
 \begin{algorithm}
-\caption{Generate data}
-\label{algo:sim}
+\caption{Generating survival data from Inverse Gaussian distribution}
+\label{algo:FHT-sim}
 \begin{enumerate}
-    \item Given design matrices $\X$, $\Z$.
-    \item Set $\bbeta$ and $\bgamma$.
+    \item Given design matrices $\X$, $\Z$ and true parameter vectors $\bbeta$ and $\bgamma$.
     \item Link covariates and parameters using link functions
         \begin{align*}
             \ln y_0&=\bbeta^T\X \\
@@ -67,8 +66,14 @@ Another way to do this is to only boost one component in each iteration. The com
 In this section, I will discuss how I tried validating the boosting method I have developed. To see if the method works, we must see if 1) it converges to the maximum likelihood estimates, and 2) if it does so in a high-dimensional setting as well.
 
 \subsection{Small example}
-Let 
+Let parameter vectors be two dense $\bbeta=(2,0.1,0.2)$ and $\bgamma=(-1, -0.1, 0.1)$. Let $X$ and $Z$ be such and such, drawn from a beta distribution.
+We simulate data using Algorithm \ref{algo:FHT-sim}, with the censoring time $W$ being drawn from a distribution $\exp(0.1)$. The resulting survival times have the following Kaplan-Meier plot.
+\begin{figure}[H]\centering\includegraphics[scale=0.4]{figures/case1.pdf}\end{figure}
 
 \subsection{Large example with uncorrelated matrices}
+Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
+We also here draw $X$ and $Z$ from a beta distribution. The resulting survival times have the following Kaplan-Meier plot.
+\begin{figure}[H]\centering\includegraphics[scale=0.4]{figures/case2.pdf}\end{figure}
 
 \subsection{Large example with correlated matrices}
+Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
