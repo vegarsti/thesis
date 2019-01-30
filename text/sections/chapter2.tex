@@ -117,11 +117,12 @@ Let $W(t)$ be a continuous stochastic process defined for $t\in[0,\infty)$, taki
 \begin{equation*}
     \E[W(s+t)-W(t)]=0\text{   and   }\Var[W(s+t)-W(t)]=s,
 \end{equation*}
-we call $W$ a Wiener process. Its position at time $t$ is always a Gaussian distribution $N(0, t)$ \citep{ABG}. To increase the flexibility of the Wiener process, we can let
+we call $W$ a Wiener process. In other words, each increment has expectation 0 and has standard deviation proportional to the length of the time interval. The position of the process at time $t$ always follows a Gaussian distribution $N(0, t)$ \citep{ABG}. To increase the flexibility of the Wiener process, we can introduce a new process $Y$,
 \begin{equation}\label{wiener}
     Y(t)=y_0-\mu t+\sigma W(t),
 \end{equation}
-which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. Introductions to many aspects of Wiener processes are found in \citet{cox1965}. Figure \todo{there should be a figure here!} shows simulations of some Wiener process paths.
+which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. Introductions to many aspects of Wiener processes are found in \citet{cox1965}. Figure \ref{plot:wiener} shows simulations of 5 Wiener process paths with initial value $y_0=10$ and negative drift $\mu=1$.
+\begin{figure}[H]\label{plot:wiener}\centering\includegraphics[scale=0.4]{figures/wiener_processes.pdf}\end{figure}
 
 \subsection{FHT with Wiener process leads to Inverse Gaussian}
 If we choose the stochastic process to be a Wiener process like in \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then the lifetime is the time it takes for the process to first reach a non-positive value,
@@ -142,9 +143,9 @@ and cumulative distribution function
 \label{eq:ig-cdf}
     F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{(\mu t+y_0)}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
 \end{equation}
-See Appendix \todo{TO DO!} for the mathematical derivation. Note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is \citep{cox1965}
+See Appendix \todo{TO DO!} for the mathematical derivation. Note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
 \begin{equation*}
-    \Pr{}(T=\infty)=1-\Pr{}(T<\infty)=1-\exp{(-2y_0\mu)}.
+    \Pr{}(T=\infty)=1-\Pr{}(T<\infty)=1-\exp{(-2y_0\mu)} \text{ \citep{cox1965}}.
 \end{equation*}
 Since we in survival analysis prefer working with the survival function $S(t)=1-F(t)$ rather than the cdf $F(t)$, we note that it becomes
 \begin{equation}
@@ -161,9 +162,7 @@ and in \eqref{eq:ig-surv} we used the fact that $1-\Phi(-x)=\Phi(x)$, since the 
 There are three parameters in the inverse Gaussian distribution, namely $y_0, \mu$ and $\sigma$. We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through $\mu/\sigma$ and $y_0/\sigma$. Hence, there are only two free parameters. In other words, we can without loss of generality fix one parameter, for instance set $\sigma$ equal to 1. This is the conventional way to do it \citep{leewhitmore2006}.
 
 \subsection{The shape of the hazard rate}
-The hazard rate is obtained from $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}.
-
-Regardless of initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+As previosly stated, The hazard rate is obtained from $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}. Regardless of initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
 
 \subsection{Comparison of hazard rates}
 Of particular interest might be looking at the ratio between two hazard rates, that is, one hazard divided by the other. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards.
@@ -184,7 +183,7 @@ We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend o
 \end{align}
 Here $\bbeta$ and $\bgamma$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements. We will discuss consequences of this later.
 
-Inserting the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the loglikelihood \eqref{eq:surv-lik}, we get that the loglikelihood of a survival data set with the inverse gaussian FHT model is
+Inserting the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse gaussian FHT model is
 \begin{align}\label{eq:loglik}
 \begin{split}
     l(y_0,\mu,\sigma)=\sum_{i=1}^n&\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
