@@ -1,7 +1,7 @@
 \chapter{Survival analysis}
 
 \section{Survival data}
-Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \citet{ABG}. We look at a stochastic variable $T>0$ which is the time to event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their time of relapse $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$. We also need a censoring indicator, $D=I(\tT=T)$, indicating if we have observed the actual event.
+Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \citet{ABG}. We look at a stochastic variable $T>0$ which is the time to some event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their time of relapse $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$. We also need a censoring indicator, $D=I(\tT=T)$, indicating if we have observed the actual event.
 
 \subsection{The survival function $S(t)$}
 In survival analysis, one of the things we are interested in is the survival function. The survival function $S(t)$ is the probability of surviving until time $t$,
@@ -61,7 +61,7 @@ to the likelihood. Since we assume the observations to be independent, the likel
 \begin{equation}\label{eq:surv-lik}
     L(\bbeta)=\prod_{i=1}^n f(t_i|\x_i,\bbeta)^{d_i} S(t_i|\x_i,\bbeta)^{1-d_i}.
 \end{equation}
-Since it is more convenient to work with the log likelihood, we derive this as well,
+Since it is more convenient to work with the log likelihood, we calculate this as well,
 \begin{align}\label{eq:surv-lik}
 \begin{split}
     l(\bbeta)&=\log L(\bbeta) \\
@@ -92,16 +92,18 @@ This is an attractive model because the effect of a unit increase in an element 
 \begin{equation*}
     \frac{\exp(\x_2^T\bbeta)}{\exp(\x_1^T\bbeta)}=\exp((\x_2-\x_1)^T\bbeta)=\exp(\beta_j).
 \end{equation*}
-Cox regression is used a tremendous amount in applied research.
+Cox regression is used very much in applied research.
 
-\subsection{Cox regression example}
-Lorem ipsum.
+\todo[inline]{add Cox regression example}
+
+%\subsection{Cox regression example}
+%Lorem ipsum.
 
 \subsection{The proportional hazards assumption}
 When we say \eqref{PH}, that $\hz(t|\x)=\hz_0(t)r(x|\bbeta)$, we make the proportional hazards (PH) assumption: We assume that the ratio between the hazard function of two individuals is the same \textit{at all times}. This is a very large assumption to make, and in practice, it is very often not the case. One way to test this assumption for a covariate $j=1,\ldots,p$, is to fit a model $r(x_j)=\exp(f(x_j))$, where $f(\cdot)$ is some spline regression function, and plot it against $x_j$.
 
 \subsection{Robustness of Cox when the PH assumption is violated}
-Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo{CITATION NEEDED}
+Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo[inline]{Need to find a citation here.}
 
 \section{First hitting time models or threshold regression}
 So far we have not thought much about how a time-to-event is generated. Instead, we have modelled the hazard rate directly. We have simply said that we have stochastic lifetimes. At one time, an individual is alive, and at a slightly later time, it is perhaps dead. One way to think about how these times are generated is to imagine that each individual has an underlying stochastic process, a health process $Y(t)$, say. Since the process is a function of time, it has a non-negative domain, $t\geq0$. This health process is not observable, but when it hits a certain boundary set $\mathcal{B}$, the individual dies. $\mathcal{B}$ is also called a barrier or a threshold, depending on what kind of set it is, and what association one wishes to envoke. The lifetime $T$, then, becomes the time it takes for the health process $Y(t)$ to enter the boundary set $\mathcal{B}$. In general, the health process $Y(t)$ takes values in a set $\mathcal{Y}$, with an initial value $y_0=Y(0)$. The barrier is a subset of this set of values, $\mathcal{B}\in\mathcal{Y}$, with the initial health process value $y_0\notin\mathcal{B}$. In other words, the lifetime is
@@ -110,7 +112,7 @@ So far we have not thought much about how a time-to-event is generated. Instead,
 \end{equation*}
 First hitting time (FHT) models were introduced in \citet{whitmore1986}, and a good reference paper on the topic is \citet{leewhitmore2006}. Note that these authors use the term threshold regression. We have, together with \citet{caroni2017}, chosen to not use this term, as it is also the name of an already established, and quite different, field of econometrics. FHT models have been applied to many different fields, including medicine, engineering, and economics. They may describe the survival time of a transplant patient, the duration time of a strike, the failure time of an engineering system, and so on.
 
-The first hitting time model framework is highly flexible. We have flexibility both in choice of process, boundary and initial value. The most important part is the stochastic process. Examples include Wiener processes, Markov chains, Bernoulli processes, and Gamma processes. We choose to use the Wiener process, because it turns out that it yields a fully parametric regression model.
+The first hitting time model framework is highly flexible. We have flexibility both in choice of process, boundary and initial value. The most important part is the stochastic process. Examples include Wiener processes, Markov chains, Bernoulli processes, and Gamma processes. We choose to use the Wiener process, because it has a simple intuition behind it, and it yields a fully parametric regression model.
 
 \subsection{Wiener process}
 Let $W(t)$ be a continuous stochastic process defined for $t\in[0,\infty)$, taking values in $\R$, and with initial value $W(0)=0$. If $W$ has increments that are independent and normally distributed with
@@ -121,10 +123,15 @@ we call $W$ a Wiener process. In other words, each increment has expectation 0 a
 \begin{equation}\label{wiener}
     Y(t)=y_0-\mu t+\sigma W(t),
 \end{equation}
-which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. Introductions to many aspects of Wiener processes are found in \citet{cox1965}. Figure \ref{plot:wiener} shows simulations of 5 Wiener process paths with initial value $y_0=10$ and negative drift $\mu=1$.
-\begin{figure}[H]\label{plot:wiener}\centering\includegraphics[scale=0.4]{figures/wiener_processes.pdf}\end{figure}
+which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. Introductions to many aspects of Wiener processes are found in \citet{cox1965}. Figure \ref{plot:wiener} shows examples of 5 Wiener process paths with initial value $y_0=10$ and negative drift $\mu=1$.
+\begin{figure}[H]
+\label{plot:wiener}
+\caption{Example of 5 Wiener process paths with initial value $y_0=10$ and negative drift $\mu=1$.}
+\centering
+\includegraphics[scale=0.4]{figures/wiener_processes.pdf}
+\end{figure}
 
-\subsection{FHT with Wiener process leads to Inverse Gaussian}
+\subsection{FHT with Wiener process leads to Inverse Gaussian lifetimes}
 If we choose the stochastic process to be a Wiener process like in \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then the lifetime is the time it takes for the process to first reach a non-positive value,
 \begin{equation}
     T=\argmin_{t}Y(t)\leq0.
@@ -143,7 +150,8 @@ and cumulative distribution function
 \label{eq:ig-cdf}
     F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{(\mu t+y_0)}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
 \end{equation}
-See Appendix \todo{TO DO!} for the mathematical derivation. Note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
+%See Appendix \todo{TO DO!} for the mathematical derivation.
+Note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
 \begin{equation*}
     \Pr{}(T=\infty)=1-\Pr{}(T<\infty)=1-\exp{(-2y_0\mu)} \text{ \citep{cox1965}}.
 \end{equation*}
@@ -162,26 +170,26 @@ and in \eqref{eq:ig-surv} we used the fact that $1-\Phi(-x)=\Phi(x)$, since the 
 There are three parameters in the inverse Gaussian distribution, namely $y_0, \mu$ and $\sigma$. We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through $\mu/\sigma$ and $y_0/\sigma$. Hence, there are only two free parameters. In other words, we can without loss of generality fix one parameter, for instance set $\sigma$ equal to 1. This is the conventional way to do it \citep{leewhitmore2006}.
 
 \subsection{The shape of the hazard rate}
-As previosly stated, The hazard rate is obtained from $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}. Regardless of initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+The hazard rate is obtained from $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}. Regardless of initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+
+\todo[inline]{Add plots of hazard rates here.}
 
 \subsection{Comparison of hazard rates}
-Of particular interest might be looking at the ratio between two hazard rates, that is, one hazard divided by the other. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards.
-
-The hazard function converges to
+Of particular interest might be looking at the ratio between two hazard rates, that is, one hazard divided by the other. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards. The hazard function converges to
 \begin{equation}
     \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2
 \end{equation}
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
 
 \subsection{Regression}
-We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$. A simple and much used model is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since it must be positive.
+We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$. A simple and much used model is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since it must be positive in our framework.
 \begin{align}\label{eq:coeffs}
 \begin{split}
-    \mu&=\bbeta^\T\x \\
-    \ln y_0&=\bgamma^\T\z
+    \mu&=\bbeta^\T\x=\sum_{j=1}^p \beta_jx_j \\
+    \ln y_0&=\bgamma^\T\z=\sum_{j=1}^d \gamma_jz_j
 \end{split}
 \end{align}
-Here $\bbeta$ and $\bgamma$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements. We will discuss consequences of this later.
+Here $\bbeta\in\R^p$ and $\bgamma\in\R^d$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements. We will discuss consequences of this later.
 
 Inserting the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse gaussian FHT model is
 \begin{align}\label{eq:loglik}
@@ -193,11 +201,11 @@ Inserting the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv}
 \end{align}
 
 \subsection{Fitting an IG FHT model}
-At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \cite{caroni2017}. A few software packages exist for doing this, and one of these for \verb|R| \cite{Rlang} is the \verb|threg| package \cite{threg}. There does not exist any method to fit a \textit{regularized} model at the moment. \textbf{This is the main focus of my thesis.}
+At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \cite{caroni2017}. A few software packages exist for doing this, and one of these for \verb|R| \cite{Rlang} is the \verb|threg| package \cite{threg}. There does not exist any method to fit a \textit{regularized} model at the moment, nor to do automatic variable selection. \textbf{This is the reason for my thesis.}
 
+\todo[inline]{Add regression example}
 
-\subsection{Example of application}
-Lorem ipsum some example. Just use numerical maximization.
+%\subsection{Example of application}
+%Lorem ipsum some example. Just use numerical maximization.
 
-
-\subsection{Identification problems}
+%\subsection{Identification problems}
