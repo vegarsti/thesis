@@ -110,7 +110,11 @@ In the first formulation, the Brier score looks like a version of an RSS measure
     BS^c(t^*)=\frac{1}{M}\sum_{i=1}^m\left[\frac{\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*,\delta_i=1)}{\hat{G}(t_i)}+\frac{(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)}{\hat{G}(t^*)}\right],
 \end{equation*}
 where $\hat{G}$ is the Kaplan-Meier estimate of the censoring distribution, defined as
-\begin{equation}
-    \hat{G}(t)=\prod_{t_i<t}\left(1-\frac{1-\delta_i}{Y(t_i)}\right),
-\end{equation}
-where $Y(t)$ is the number of individuals in the test set at risk at time $t$.
+\begin{equation*}
+    \hat{G}(t)=\prod_{t_i<t}\left(1-\frac{1-\delta_i}{\sum_{i=1}^NY_i(t)}\right),
+\end{equation*}
+where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$. This score may also be used to define an $R^2$ measure, where one can benchmark the performance of a fitted model to a so-called null model, i.e., one where each regression coefficient is set to zero. A measure of explained variation can be found by calculating the gain in accuracy when adding covariates. Thus we define the Brier $R^2$ measure as
+\begin{equation*}
+    R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
+\end{equation*}
+where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals.
