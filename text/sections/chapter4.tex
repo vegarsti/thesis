@@ -73,9 +73,15 @@ In this section, I will discuss how I tried validating the boosting method I hav
 \subsection{Small example}
 Let parameter vectors be two dense $\bbeta=(2,0.1,0.2)$ and $\bgamma=(-1, -0.1, 0.1)$. Let $X$ and $Z$ be such and such, drawn from a beta distribution.
 We simulate data using Algorithm \ref{algo:FHT-sim}, with the censoring time $W$ being drawn from a distribution $\exp(0.1)$. The resulting survival times have the following Kaplan-Meier plot.
-\begin{figure}[H]\centering\includegraphics[scale=0.4]{figures/case1.pdf}\end{figure}
+\begin{figure}
+\caption{Kaplan-Meier plot of small example}
+\centering\includegraphics[scale=0.4]{figures/case1.pdf}
+\end{figure}
 We use cross validation to find a suitable iteration number $\mstop$, and find it to be 28. We then run our algorithm with that number of iterations. Below is a plot of the negative log likelihood of the data (in-sample loss) as a function of iteration number.
-\begin{figure}[H]\centering\includegraphics[scale=0.4]{figures/case1_loglik.pdf}\end{figure}
+\begin{figure}
+\caption{Log-likelihood}
+\centering\includegraphics[scale=0.4]{figures/case1_loglik.pdf}
+\end{figure}
 The final $\hat{\bbeta}$ is $(1.968, 0.103, 0.180)$, and the final $\hat{\bgamma}$ is $(-0.964, -0.082, 0.062)$. The parameters found by numerically maximizing the joint maximum likelihood are also included. Summarized in the table below.
 
 \begin{tabular}{lrr}
@@ -93,13 +99,19 @@ As we can see, our boosting method recovers the original parameters quite well. 
 \subsection{Large example with uncorrelated matrices}
 Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
 We also here draw $X$ and $Z$ from a beta distribution. The resulting survival times have the following Kaplan-Meier plot.
-\begin{figure}[H]\centering\includegraphics[scale=0.4]{figures/case2.pdf}\end{figure}
+\begin{figure}
+\caption{Kaplan-Meier plot of case 2}
+\centering\includegraphics[scale=0.4]{figures/case2.pdf}
+\end{figure}
 We use cross validation to find a suitable iteration number $\mstop$, and find it to be 80. We then run our algorithm with that number of iterations. We find that elements ... are selected. They are 
 
 \subsection{Large example with correlated matrices}
 Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
 
 \section{Brier scores on survival data}
+In order to assess predictive performance, we need what's called a proper scoring rule: One which is 1 if the actual data is inserted as predictions.
+
+\subsection{Brier scores and $R^2$ measure}
 The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts. While it is also able to handle multiple categories, we will here give the definition for the binary case. We start by assuming that we are in a situation with no censoring, and that we have $m$ individuals in a test set. We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,m$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$. The error made in predicting the event status $I(t>t^*)$ for a patient in the test set can be given as
 \begin{align*}
 BS(t^*)&=\frac{1}{M}\sum_{i=1}^m\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
@@ -117,4 +129,104 @@ where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$.
 \begin{equation*}
     R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
 \end{equation*}
-where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals.
+where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals. One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
+
+\subsection{Deviance}
+The difference in deviance between a fitted model and the null model containing no covariates is given by
+\begin{equation*}
+    d=-2\left(l^{\text{test}}(\beta_{\text{train}})-l^{\text{test}}(0)\right),
+\end{equation*}
+where $l^{\text{test}}(\beta)$ is the likelihood attained with covariate vector $\beta$ on the test set.
+
+\section{Large simulation with uncorrelated matrices}
+Here, $N$ is 500. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
+We here draw $X$ and $Z$ from a simulation algorithm which simulates clinical and gene data. We set all correlations to 0, so this is a completely uncorrelated example. We end up with $N=500$ lifetimes.
+
+To make a test set, we draw $N_{\text{test}}=1000$ lifetimes from a distribution with the same parameters, but of course with a unique seed.
+Here is the Kaplan-Meier plot.
+
+With this exact setup, we run a simulation experiment $B=143$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$. We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above. We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$. Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
+
+\subsection{Variable selection results}
+We here try to summarize how the model selects the informative variables.
+
+\subsection{Boosting with changing the intercept}
+
+\begin{table}\caption{Summary of results}
+\begin{tabular}{l|rrrr}
+Measure &   Mean & Standard deviation &  Minimum &    Maximum \\
+\hline
+Deviance & 95.371 & 76.742 & -7.2 & 1418.1 \\
+$m_{\text{stop}}$   & 15.854 &  6.437 &  2.0 &   39.0
+\end{tabular}
+\end{table}
+
+\begin{table}\caption{Result for $y_0$, $\beta$}
+\begin{tabular}{l|rr}
+Measure &  Mean &    Standard deviation \\
+\hline
+Sensitivity & 0.188 & 0.092 \\
+Specificity & 1.000 & 0.000 \\
+Accuracy    & 0.997 & 0.000 \\
+FPR         & 0.000 & 0.000 \\
+FNR         & 0.812 & 0.092 \\
+FOR         & 0.003 & 0.000 \\
+NPV         & 0.997 & 0.000
+\end{tabular}
+\end{table}
+
+
+\begin{table}\caption{Result for $\mu$, $\gamma$}
+\begin{tabular}{l|rr}
+Measure     & Mean   & Standard deviation     \\
+\hline
+Sensitivity & 0.730 & 0.248 \\
+Specificity & 0.944 & 0.109 \\
+Accuracy    & 0.872 & 0.091 \\
+FPR         & 0.056 & 0.109 \\
+FNR         & 0.270 & 0.248 \\
+FOR         & 0.112 & 0.093 \\
+NPV         & 0.888 & 0.093
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Boosting \textit{without} changing the intercept}
+\begin{table}\caption{Summary of results}
+\begin{tabular}{l|rrrr}
+Measure &    Mean &     Standard deviation &  Minimum & Maximum \\
+\hline
+Deviance & 128.982 & 40.486 & -8.0 & 231.5 \\
+$m_{\text{stop}}$   &  60.072 & 20.568 &  2.0 &  80.0
+\end{tabular}
+\end{table}
+
+\begin{table}\caption{Result for $y_0$, $\beta$}
+\begin{tabular}{l|rr}
+Measure     &  Mean & Standard deviation \\
+\hline
+Sensitivity & 0.445 & 0.156 \\
+Specificity & 0.997 & 0.001 \\
+Accuracy    & 0.995 & 0.001 \\
+FPR         & 0.003 & 0.001 \\
+FNR         & 0.555 & 0.156 \\
+FOR         & 0.002 & 0.001 \\
+NPV         & 0.998 & 0.001
+\end{tabular}
+\end{table}
+
+
+\begin{table}\caption{Result for $\mu$, $\gamma$}
+\begin{tabular}{l|rr}
+Measure &  Mean & Standard deviation \\
+\hline
+Sensitivity & 0.951 & 0.121 \\
+Specificity & 0.652 & 0.282 \\
+Accuracy    & 0.752 & 0.181 \\
+FPR         & 0.348 & 0.282 \\
+FNR         & 0.049 & 0.121 \\
+FOR         &    NA &    NA \\
+NPV         &    NA &    NA
+\end{tabular}
+\end{table}

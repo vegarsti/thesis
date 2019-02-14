@@ -1,6 +1,6 @@
 \chapter{Survival analysis}
 
-\section{Survival data}
+\section{Survival data and basic definitions}
 Survival analysis is the field of studying lifetime and time-to-event data. An overview of modelling survival data is \citet{ABG}. We look at a stochastic variable $T>0$ which is the time to some event. To observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. One example is a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until they relapse. Typically these trials are for a set amount of time, say, until $\tau$. Luckily, not every patient relapses during that time, and so their time of relapse $T_i$ is not observed. We could throw away these observations, but we at least know that they survived until $t=\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data. An observed lifetime $\tT$ is censored if the actual lifetime $T$ is larger than $\tT$. We can say that we have a censoring mechanism which works such that the observed $\tT=\min(T, C)$, where $C$ is a censoring time. In the clinical trial example mentioned, $C=\tau$. We also need a censoring indicator, $D=I(\tT=T)$, indicating if we have observed the actual event.
 
 \subsection{The survival function $S(t)$}
@@ -130,6 +130,7 @@ which is called a Wiener process with initial value $y_0$, drift coefficient $\m
 \centering
 \includegraphics[scale=0.4]{figures/wiener_processes.pdf}
 \end{figure}
+\noindent{}Clearly, for a Wiener process starting in $y_0>0$, with a negative drift, i.e. $\mu>0$, the movement is markedly in the direction of zero. If $\sigma^2$ is small in comparison to the drift, the process will move in almost a straight line, such that $X(t)\approx y_0-\mu t$. The hitting time will then be nearly a deterministic function of $y_0$ and $\mu$, $T\approx y_0/\mu$. For a larger relative $\sigma^2$, the diffusion part is more dominant and the hitting time thus less predictable \citep{ABG}.
 
 \subsection{FHT with Wiener process leads to Inverse Gaussian lifetimes}
 If we choose the stochastic process to be a Wiener process like in \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then the lifetime is the time it takes for the process to first reach a non-positive value,
@@ -148,7 +149,7 @@ It can be shown that the first hitting time of the Wiener process follows an inv
 and cumulative distribution function
 \begin{equation}
 \label{eq:ig-cdf}
-    F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{(\mu t+y_0)}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
+    F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
 \end{equation}
 %See Appendix \todo{TO DO!} for the mathematical derivation.
 Note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
@@ -172,14 +173,17 @@ There are three parameters in the inverse Gaussian distribution, namely $y_0, \m
 \subsection{The shape of the hazard rate}
 The hazard rate is obtained from $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}. Regardless of initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
 
-\todo[inline]{Add plots of hazard rates here.}
+\todo[inline]{Add plots of hazard rates here. see page 401 in ABG} 
 
 \subsection{Comparison of hazard rates}
-Of particular interest might be looking at the ratio between two hazard rates, that is, one hazard divided by the other. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards. The hazard function converges to
+Of particular interest might be looking at the ratio between two hazard rates, that is, one hazard divided by the other. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. This feature is the same phenomenon as that observed in frailty models, where the relative hazards often decline \citep{ABG}.
+
+It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards. The hazard function converges to
 \begin{equation}
     \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2
 \end{equation}
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
+\todo[inline]{Add plot here as well; also here see ABG page 402}
 
 \subsection{Regression}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$. A simple and much used model is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since it must be positive in our framework.
