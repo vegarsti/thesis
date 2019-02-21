@@ -268,7 +268,7 @@ As we mentioned in subsection \ref{subsec:iterations}, the crucial tuning parame
 \subsection{Other selection methods}
 The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer. AIC, etc.
 
-\subsection{K-fold cross-validation}
+\subsection{K-fold cross-validation}\label{subsec:K-fold}
 K-fold cross-validation \citep{lachenbruch}, or simply cross-validation, is a general method commonly used for selection of penalty or tuning parameters. We will use it to approximate the prediction error. In cross-validation, the data is split randomly into K rougly equally sized folds. For a given fold $k$, all folds except $k$ act as the training data in estimating the model. We often say that the $k$-th fold is left out. The resulting model is then evaluated on the unseen data, namely the observations belonging to fold $k$. This procedure is repeated for all $k=1,\ldots,K$. An estimate for the prediction error is obtained by averaging over the test errors evaluated in each left-out fold. Let $\kappa(k)$ be the set of indices for fold $k$. The cross-validated estimate for a given $m$ then becomes
 \begin{equation}
     \CV(m)=\sum_{k=1}^K\sum_{i\in\kappa(k)}\rho(y_i,\hat{y}_i^{-\kappa(k)}).
@@ -296,27 +296,26 @@ As before, we choose $\mstop$ to be the minimizer of this error,
 \end{equation}
 In practice, to ensure we find the minimizing $m$, we let the boosting algorithm run for $m=1$ to $m=M$, where $M$ is a large number that we are sure will result in a overfitted model.
 
-\section{Multidimensional boosting: (Component-wise) boosting of a multivariate loss function}
+\section{Cyclical component-wise multidimensional boosting}
 A limitation of both classical boosting \citep{friedman2001} and $L_1$-penalized estimation such as the lasso method \citep{lasso} is that they are designed for statistical problems involving a one-dimensional prediction/loss function. By only considering such functions, we are restricted to estimating models which only model a single quantity of interest, which is almost always the mean.
-In many applications, modelling only one parameter will not be sufficient. We want to be able to estimate more general models, in which more quantities, e.g. the drift and the threshold of the models described in section \ref{sec:FHT}, can be explained by covariates. Typical examples of multidimensional estimation problems are a) classification with multiple outcome categories and b) regression models for count data. Another example is estimating models in the GAMLSS family \citep{gamlss}. GAMLSS, which refer to ``generalized additive models for location, scale and shape,'' are a modelling technique that relates not only to the mean but all parameters of the outcome distribution to the available covariates. A gradient boosting algorithm called gamboostLSS was developed for boosting such models \citep{gamboostlss-paper}. The gamboostLSS algorithm is an example of that first introduced in \citet{schmid}. We will here explain the algorithm used in this paper.
+In many applications, modelling only one parameter will not be sufficient. We want to be able to estimate more general models, in which more quantities, e.g. the drift and the threshold of the models described in section \ref{sec:FHT}, can be explained by covariates. Typical examples of multidimensional estimation problems are classification with multiple outcome categories and regression models for count data. Another example is estimating models in the GAMLSS family \citep{gamlss}. GAMLSS, which refer to ``generalized additive models for location, scale and shape,'' are a modelling technique that relates not only the mean, but all parameters of the outcome distribution to the available covariates. A gradient boosting algorithm called gamboostLSS was developed for boosting such models \citep{gamboostlss-paper}. The algorithm framework used in gamboostLSS is an example of the multidimensional boosting algorithm first introduced in \citet{schmid}. We will here explain the algorithm used in this paper.
 
-\subsection{Cyclical component-wise multidimensional boosting}
-\citet{schmid} extend the component-wise gradient boosting algorithm \citep{friedman2001} to such a setting where one has a loss function  $\rho$ which takes $K$ parameters:
+\citet{schmid} extend the component-wise gradient boosting algorithm \citep{friedman2001} to such a setting where one has a prediction function $f$ which takes $K$ parameters:
 \begin{equation}
-    \rho(\btheta)=\rho(\theta_1,\theta_2,\ldots,\theta_K).
+    f(\btheta)=f(\theta_1,\theta_2,\ldots,\theta_K).
 \end{equation}
 Like in regular statistical boosting, we must be able to obtain derivatives. Therefore, it is assumed that all partial derivatives
 \begin{equation}
-    \frac{\partial}{\theta_1}\rho(\btheta),\frac{\partial}{\theta_2}\rho(\btheta),\ldots,\frac{\partial}{\theta_K}\rho(\btheta)
+    \frac{\partial}{\theta_1}f(\btheta),\frac{\partial}{\theta_2}f(\btheta),\ldots,\frac{\partial}{\theta_K}f(\btheta)
 \end{equation}
-exist. The main idea of the cyclical multidimensional boosting algorithm, although cyclical was a term coined later \citep{thomas2018}, is to have a boosting step for each component $k=1,2,\ldots,K$ in each iteration. In other words, we cycle through all parameter dimensions in each boosting iteration. The initialization of the algorithm is done analogously to the regular boosting method, by setting each parameter to a constant, typically zero or the constant which maximizes the maximum likelihood. We also specify a base learner for each parameter dimension. In a given boosting iteration $m+1$, the algorithm cycles through the different parameter dimensions $k$. In every dimension $k$, we carry out one boosting iteration. This boosting iteration is essentially the same as in the usual component-wise gradient boosting algorithm \eqref{algo:component-wise}. At this point, the estimated parameter vector is
+exist. The main idea of the cyclical multidimensional boosting algorithm, although cyclical was a term coined later \citep{thomas2018}, is to have a boosting step for each component $k=1,2,\ldots,K$, in each iteration. In other words, we cycle through all parameter dimensions in each boosting iteration. The initialization of the algorithm is done analogously to the regular boosting method, by setting each parameter to a constant, typically zero or the constant which maximizes the maximum likelihood. We also specify a base learner for each parameter dimension. In a given boosting iteration $m+1$, the algorithm cycles through the different parameter dimensions $k$. In every dimension $k$, we carry out one boosting iteration. This boosting iteration is essentially the same as in the usual component-wise gradient boosting algorithm \eqref{algo:component-wise}. At this point, the estimated parameter vector is
 \begin{equation*}
     \hat{\btheta}_{k-1}^{[m+1]}=\left(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\ldots,\hat{\theta}_{k-1}^{[m+1]},\hat{\theta}_{k}^{[m]},\hat{\theta}_{k+1}^{[m]},\ldots,\hat{\theta}_{K}^{[m]}\right),
 \end{equation*}
 meaning all parameter dimensions $1,2,\ldots,k-1$ have been updated in the current iteration $m+1$. The following dimensions $k+1,\ldots,K$ have not, and we are now going to update dimension $k$. We calculate a residual for dimension $k$ by calculating the $k$-th partial derivative and inserting the current estimated parameter vector $\hat{\btheta}_{k-1}^{[m+1]}$, and evaluating it at the observations $x_1,x_2,\ldots,x_N$. This yields residual vector
 \begin{align*}
 \u_k&=(u_{k,1},u_{k,2},\ldots,u_{k,N})\\
-&=\left(-\frac{\partial}{\partial \theta_k}\rho(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\ldots,\hat{\theta}_{k-1}^{[m+1]},\hat{\theta}_{k+1}^{[m]},\ldots,\hat{\theta}_{K}^{[m]})\right)_{i=1}^N.
+&=\left(-\frac{\partial}{\partial \theta_k}f(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\ldots,\hat{\theta}_{k-1}^{[m+1]},\hat{\theta}_{k+1}^{[m]},\ldots,\hat{\theta}_{K}^{[m]})\right)_{i=1}^N.
 \end{align*}
 Again, like in a regular component-wise boosting algorithm, we fit all component-wise base learners separately to this residual vector $\u_k$. Of these learners, select the best fitting component $j^*$ and corresponding estimated learner $\hat{h}_{j^*}(\cdot)$, and update the parameter in dimension $k$ by the usual
 \begin{equation}
@@ -325,26 +324,29 @@ Again, like in a regular component-wise boosting algorithm, we fit all component
 A schematic representation of the updating process using this algorithm in a given iteration $m+1$ looks as follows:
 \begin{align*}
     \frac{\partial}{\theta_1}\rho\left(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m]},\hat{\theta}_3^{[m]},\ldots,\hat{\theta}_{K-1}^{[m]},\hat{\theta}_K^{[m]}\right)
-    \to\u_{1}
-    \to\hat{\theta}_{1}^{[m+1]} \\
+    \xlongrightarrow{\text{calculate}}\u_{1}
+    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{1}^{[m+1]} \\
     \frac{\partial}{\theta_2}\rho\left(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m]},\hat{\theta}_3^{[m]},\ldots,\hat{\theta}_{K-1}^{[m]},\hat{\theta}_K^{[m]}\right)
-    \to \u_{2}
-    \to\hat{\theta}_{2}^{[m+1]} \\
+    \xlongrightarrow{\text{calculate}} \u_{2}
+    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{2}^{[m+1]} \\
     \frac{\partial}{\theta_3}\rho\left(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\hat{\theta}_3^{[m]},\ldots,\hat{\theta}_{K-1}^{[m]},\hat{\theta}_K^{[m]}\right)
-    \to\u_{3}
-    \to\hat{\theta}_{3}^{[m+1]} \\
+    \xlongrightarrow{\text{calculate}}\u_{3}
+    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{3}^{[m+1]} \\
     \ldots\\
     \frac{\partial}{\theta_{K-1}}\rho\left(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\hat{\theta}_3^{[m+1]},\ldots,\hat{\theta}_{K-1}^{[m]},\hat{\theta}_K^{[m]}\right)
-    \to\u_{K-1}
-    \to\hat{\theta}_{K-1}^{[m+1]} \\
+    \xlongrightarrow{\text{calculate}}\u_{K-1}
+    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{K-1}^{[m+1]} \\
     \frac{\partial}{\theta_K}\rho\left(\hat{\theta}_1^{[m+1]},\hat{\theta}_2^{[m+1]},\hat{\theta}_3^{[m+1]},\ldots,\hat{\theta}_{K-1}^{[m+1]},\hat{\theta}_K^{[m]}\right)
-    \to\u_{K}
-    \to\hat{\theta}_{K}^{[m+1]}
+    \xlongrightarrow{\text{calculate}}\u_{K}
+    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{K}^{[m+1]}
 \end{align*}
-See \eqref{algo:multi-cyclical} for a schematic overview of the algorithm. Note that this algorithm resembles the backfitting strategy by Hastie, Tibshirani (1990). In both strategies, components are updated successively by using estimates of the other components as offset values. In backfitting, a completely new estimate of $f^*$ is determined in every iteration, but in gradient boosting, the estimates are only slightly modified in each iteration. After having obtained an update of the parameters, the algorithm cycles through the scale/nuisance parameters, and maximizes these numerically.
-
-The main tuning parameters here are the stopping iterations $\mathbf{m}_{\text{stop}}=m_{\text{stop},1},\ldots,m_{\text{stop},K}$. As in the one-dimensional gradient boosting algorithm, \citet{schmid} say that it should not run until convergence, but rather find estimates by cross-validation. Similarly, the step length should be small, but is not of minor importance.
-
+After cycling through all estimation parameters in $\rho$, we find the current optimal nuisance parameters, if the loss function has any nuisance parameters. A nuisance parameter is any parameter which is not of immediate interest but which must be accounted for in the analysis of those parameters which are of interest. For example, if we are considering a multivariate normal distribution and are only interested in the means, the residual variance would be a nuisance parameter. We find the optimal nuisance parameters by performing numerical minimization of the empirical risk for one scale parameter at a time.
+For each nuisance parameter $\sigma_l, l=1,2,\ldots,L$, we plug all other estimated parameters into the empirical risk, and minimize it over the current nuisance parameter $\sigma_l$:
+\begin{equation}
+    \hat{\sigma_l}^{[m+1]}=\argmin_{\sigma_l} \sum_{i=1}^N \rho(y_i,\hat{f}^{[m+1]},\hat{\sigma}_1^{[m+1]},\hat{\sigma}_2^{[m+1]},\ldots,
+    \hat{\sigma}_{l-1}^{[m+1]},\sigma_l,\hat{\sigma}_{l+1}^{[m]},\ldots,\hat{\sigma}_L^{[m]})
+\end{equation}
+The gamboostLSS algorithm \citep{gamboostLSS} does not include this step this because GAMLSS do not have any nuisance parameters.
 \begin{algorithm}
 \caption{Multidimensional cyclical component-wise gradient boosting}
 \label{algo:multi-cyclical}
@@ -379,26 +381,98 @@ The main tuning parameters here are the stopping iterations $\mathbf{m}_{\text{s
 \end{enumerate}
 \end{algorithm}
 
-\subsection{Noncyclical boosting algorithm}
-\citet{thomas2018} point out a problem with the approach above: The different $m_{\text{stop},j}$ parameters are not independent of each other, and hence have to be jointly optimized. The usually applied \textit{grid search} for such parameters scales exponentially with the number of parameters $k$, and this can quickly become computationally very demanding. Therefore \citet{thomas2018} develop an alternative solution in which only one tuning parameter is needed because only one parameter is chosen in each boosting iteration.
+See \eqref{algo:multi-cyclical} for a schematic overview of the algorithm. Note that this algorithm resembles the backfitting strategy by \citet{hastie1986}. In both strategies, components are updated successively by using estimates of the other components as offset values. In backfitting, a completely new estimate of $f^*$ is determined in every iteration, but in gradient boosting, the estimates are only slightly modified in each iteration.
 
-Usually, base-learners are selected by comparing their residual sum of squares with respect to the negative gradient vector. \citet{thomas2018} call this the \textit{inner loss}. However, in general these are not comparable across parameters of the loss function.\todo{Add small section with empirical proof?} Because this depends on the scale of the parameters. In a multivariate normal distribution, for example, the partial derivatives for each mean are symmetrical. But the partial derivative for the standard deviation will not be comparable. Therefore, to compare between parameters, a different comparison method is needed. \citet{thomas2018} give two methods here, which they call \textit{inner} and \textit{outer} loss. In both cases of this algorithm, we have the advantage that the optimal number of boosting steps, $m_{\text{stop}}$, is always a scalar value. Finding this tuning parameter can be done fairly quickly with standard cross validation schemes, and most importantly, it scales with with the number of parameters. This is unlike the cyclical algorithm, which needs a multidimensional grid search.
+The main tuning parameters in this algorithm are the stopping iterations $\mathbf{m}_{\text{stop}}=m_{\text{stop},1},\ldots,m_{\text{stop},K}$. As in the one-dimensional gradient boosting algorithm, \citet{schmid} say that it should not run until convergence, but rather find estimates by cross-validation. An issue with this algorithm, though, is that for proper tuning it requires a vector $\mathbf{m}_{\text{stop}}$ of stopping iterations, one for each prediction parameter. To properly tune these parameters, it is necessary to perform what is often called a grid search, i.e., do a multidimensional search of the parameters. This should be done by cross-validation, as usual, and the next subsection explains the procedure.
 
-\subsubsection{Inner loss}
+\subsection{Grid search cross-validation}\label{grid-search}
+To find a vector of length $K$ of optimal iterations $\mathbf{m}_{\text{stop}}=m_{\text{stop},1},\ldots,m_{\text{stop},K}$, we perform a $K$-dimensional grid search. We must first specify a minimum and maximum number of iterations for each parameter. Call these $m_{\min,k}$ and $m_{\max,k}$, respectively. We then divide this one-dimensional search space into a finite grid with $N_k$ points, such that we obtain
+\begin{equation} 
+    m_{\min,k}=m_{1,k}<m_{2,k}<\ldots<m_{N_k-1,k}<m_{N_k,k}=m_{\max,k},
+\end{equation}
+again for each $k=1,2,\ldots,K$. The total search space is the cartesian product of all of these grids. We illustrate with an example. Let $K=3$, and $m_{\min,k}=1$ and $m_{\max,k}=10$ for all $k$, and finally divide each grid into 10 points, i.e., $N_1=N_2=N_3=10$. The total search grid will consist of $N_1\cdot N_2\cdot N_3=10^3=10000$ tuples of configurations of $\mathbf{m}$, enumerated below:
+\begin{align*}
+    \left(m_{1,1},m_{1,2},m_{1,3}\right) \\
+    \left(m_{1,1},m_{1,2},m_{2,3}\right) \\
+    \ldots \\
+    \left(m_{1,1},m_{1,2},m_{10,3}\right) \\
+    \left(m_{1,1},m_{2,2},m_{1,3}\right) \\
+    \ldots \\
+    \left(m_{1,1},m_{2,2},m_{10,3}\right) \\
+    \ldots \\
+    \left(m_{10,1},m_{10,2},m_{10,3}\right).
+\end{align*}
+We want to find the best configuration $\mathbf{m}$, i.e., we want to find the optimum of the hyperplane $CV(\mathbf{m})$. Like in subsection \ref{subsec:K-fold}, we must calculate the estimate of the cross-validated prediction error for each given configuration $\mathbf{m}$, obtaining the prediction error $CV(\mathbf{m})$. We choose $\mathbf{m}_{\text{stop}}$ to be the minimizer of this error,
+\begin{equation*}
+    \mathbf{m}_{\text{stop}}=\argmin_{\mathbf{m}}\CV(\mathbf{m}).
+\end{equation*}
+Using boosting, we may obtain estimates of $\CV(\mathbf{m})$ for all $\CV(\mathbf{m})$ by fixing all but one of the parameters and perform a typical boosting run. If we fix all but one of the parameters in the vector $\mathbf{m}=\left(m_{i_1,1},m_{i_2,2},m_{i_3,3}\right)$, where $m_{\min,k}\leq i_k\leq m_{\max,k}$ for all $k=1,2,3$, say, we fix $m_{i_1,1}$ and $m_{i_2,2}$. This is due to the way boosting algorithms work, since for any given iteration $M$, we also automatically obtain all boosted estimates for all iterations less than $M$, if we have saved the boosted parameters for each iteration. Consider again the example. We now let the first two parameters in the example be fixed for each boosting run. While the search grid consist of $N_1\cdot N_2\cdot N_3$ tuples, considering the first two parameters as fixed, we only need to do $N_1\cdot N_2$ boosting runs, and in each run set the maximum number of possible iterations in the boosting algorithm for the third component to be $m_{\max,3}$. This means that we consider all configurations of the first two parameters in $\mathbf{m}$, i.e.,
+\begin{align*}
+    \left(m_{1,1},m_{1,2}\right) \\
+    \left(m_{1,1},m_{2,2}\right) \\
+    \ldots \\
+    \left(m_{1,1},m_{10,2}\right) \\
+    \left(m_{2,1},m_{1,2}\right) \\
+    \ldots \\
+    \left(m_{2,1},m_{10,2}\right) \\
+    \ldots \\
+    \left(m_{10,2},m_{10,2}\right),
+\end{align*}
+and do a boosting run for each such. Like in subsection \ref{subsec:K-fold}, we choose
+\begin{equation*}
+    \mathbf{m}_{\text{stop}}=\argmin_{\mathbf{m}}\CV(\mathbf{m}),
+\end{equation*}
+where
+\begin{equation*}
+    \CV(\mathbf{m})=\sum_{k=1}^K\sum_{i\in\kappa(k)}\rho(y_i,\hat{y}_i^{-\kappa(k)}),
+\end{equation*}
+i.e., the cross-validated prediction error, as usual.
+\section{Noncyclical component-wise multidimensional boosting algorithm}
+In the cyclical algorithm seen previously, algorithm \ref{algo:multi-cyclical}, the different $m_{\text{stop},j}$ parameters are not independent of each other, and hence they have to be jointly optimized. As we saw in the previous subsection \ref{grid-search}, the usually applied \textit{grid search} for such parameters scales exponentially with the number of parameters $K$. This can quickly become very demanding computationally. \citet{thomas2018} develop a new algorithm for fitting GAMLSS models, instead of the cyclical one used in gamboostLSS. In this new algorithm, which they call ``noncyclical,'' only one scalar tuning parameter $m_{\text{stop}}$ is needed because only one parameter is chosen in each boosting iteration. Compared to the cyclical algorithm in gamboostLSS \citep{gamboostlss-paper}, this noncyclical algorithm obtains faster variable tuning and equal prediction results on simulation studies carried out \citep{thomas2018}.
+
+\subsection{Problem with boosting only one component in each iteration}
+In the cyclical algorithm, we always boost all parameters in the same iteration. Therefore we do not need to choose between parameters. If we want to avoid having a separate tuning parameter for each parameter that we are boosting, however, it is necessary to choose one parameter to boost in each iteration. To do this we have to choose between parameters, and so we need to be able to find out which parameter would lead to the best increase in performance. We already do this for choosing which component-wise learner to use in each parameter. There, we choose that which has the best residual-sum-of-squares (RSS), with respect to the negative gradient vector. \citet{thomas2018} denote this the \textit{inner loss}.\todo[inline]{Add empirical proof?}However, in general these residual vectors are not comparable across parameters of the loss function, because the parameters have different scales \citep{thomas2018}. In a normal distribution, for example, the partial derivatives for the mean and the partial derivative for the standard deviation will not be comparable. Therefore, to compare between parameters, a different comparison method is needed. For each parameter $\theta_k$, we choose the component-wise base learner which best fits according to the RSS,
+\begin{equation}
+    \hat{h}_{\theta_k}(\cdot).
+\end{equation}
+If we incorporate this estimated base learner into the full boosted model, we would get
+\begin{equation}
+    f^{[m+1]}_{\theta_k}=f^{[m]}+\nu\cdot\hat{h}_{\theta_k}(\cdot).
+\end{equation}
+We can insert this proposed new model into the loss function to obtain a new empirical risk value,
+\begin{equation}
+    R(f^{[m+1]}_{\theta_k}).
+\end{equation}
+We calculate the gain in the loss function, which we denote $\rho_{\theta_k}$, by
+\begin{equation}
+    \rho_{\theta_k}=R(f^{[m]})-R(f^{[m+1]}_{\theta_k}).
+\end{equation}
+If we now compare the gain in loss function value, $\rho_{\theta_k}$, across each parameter $k=1,2,\ldots,K$, we can find out which parameter leads to the best increase. We choose that one, and incorporate only that one into the full boosting model, i.e.,
+\begin{equation}
+    f^{[m+1]}=f^{[m+1]}_{\theta_k}=f^{[m]}+\nu\cdot\hat{h}_{\theta_k}(\cdot).
+\end{equation}
+We choose the base learner for each component by comparing their residual sum of squares with respect to the negative gradient vector, which we called the inner loss. This is, however, not the same loss function that is used to choose between parameters. This might be problematic. Therefore, \citet{thomas2018} propose using the loss function also for choosing between component-wise learners. They call this the ``outer loss.'' In that case, instead of the usual procedure of choosing the component-wise learner for each parameter which minimizes the RSS, i.e.,
+\begin{equation}
+    j^*=\argmin_{j} \sum_{i=1}^N (u_{k,i}-(f^{[m]}(x_i)+\hat{h}(\x_i)))^2
+\end{equation}
+we now choose the component-wise learner for each parameter which minimizes the outer loss function, i.e., 
+\begin{equation}
+    j^*=\argmin_{j} \sum_{i=1}^N \rho(y_i,f(x_i)).
+\end{equation}
+The individual component-wise learners are still estimated by their usual method, e.g., by linear least squares if using simple linear regression base learners.
+
+In both cases of this algorithm, we have the advantage that the optimal number of boosting steps, $m_{\text{stop}}$, is always a scalar value. Finding this tuning parameter can be done fairly quickly with standard cross validation schemes, and most importantly, it scales with with the number of parameters. This is unlike the cyclical algorithm, which needs a multidimensional grid search.
+
+\subsection{Inner loss}
 One solution is to compare the empirical risks after the update with the best-fitting base-learners that have been selected via the residual sum of squares for each distribution parameter. In other words, for each parameter, calculate the estimated base learner for each base learner. Then, choose the base learner which has the best RSS of the generalized residuals. Finally, calculate the empirical risk for the model, given that you choose each of these base learners separately. Compare the additional gain $\Delta\rho$ across the selected base learners. Then, select only that parameter and that base learner which led to the best improvement, and update the model accordingly.
 
-\subsubsection{Outer loss}
+\subsection{Outer loss}
 Another option is to use the empirical risk for choosing the base learner within the parameter as well. Choosing base-learners and parameters with respect to two different optimization criteria may not always lead to the best possible update. The empirical loss, i.e., the negative log likelihood of the modeled distribution can be used to compare both. The negative gradients are used to estimate all base-learners. The improvement in the empirical risk is then calculated for each base learner of every distribution parameter, and only the overall best-performing base learner with regard to the outer loss is updated.
-
-\todo[inline]{Here I could perhaps write something about the performance of the noncyclical compared with the cyclical.}
-
-\subsection{Degenerate noncyclical boosting algorithm}
-We have a loss function for which we have several partial derivatives, one for each component/parameter. One way to extend the component-wise gradient boosting algorithm for one-dimensional loss functions into several dimensions is to estimate all base learners for all loss function components, and simply choose the best component according to the same criterion as for one-dimensional loss function, namely that with best RSS. This is however not a good idea, because the gradients are \textbf{not comparable} \citep{thomas2018}. Therefore, \citet{thomas2018} give the following algorithm.
 
 
 \begin{algorithm}
-\caption{Multidimensional non-cyclical component-wise gradient boosting}
-\label{algo:multi-non-cyclical}
+\caption{Multidimensional noncyclical component-wise gradient boosting}
+\label{algo:multi-noncyclical}
 \begin{enumerate}
     \item Start with a data set $D=\{x_i, y_i\}_{i=1}^N$ and a chosen loss function $\rho(y,\hat{f}(x))$, for which we wish to
         minimize the empirical risk, i.e., the loss function evaluated on the samples,
