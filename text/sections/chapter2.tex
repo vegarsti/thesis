@@ -38,11 +38,11 @@ Given censored survival data $(t_i,d_i),i=1,\ldots,n$, we introduce the at-risk 
 \begin{equation*}
     Y(t)=\#\{t\colon t_i\geq t\},
 \end{equation*}
-where $\#(\cdot)$ is the counting operator over a set. We may then estimate the survival function $S(t)$ by the Kaplan-Meier estimator \todo[inline]{add citation}
+where $\#(\cdot)$ is the counting operator over a set. We may then estimate the survival function $S(t)$ by the Kaplan-Meier estimator \citep{kaplan-meier}
 \begin{equation*}
     \hat{S}(t)=\prod_{t_i\leq t}1-\frac{d_i}{Y(t_i)},
 \end{equation*}
-and the cumulative hazard function $A(t)$ by the Nelson-Aalen estimator \todo[inline]{add citation}
+and the cumulative hazard function $A(t)$ by the Nelson-Aalen estimator \citep{nelson, aalen1978}.
 \begin{equation*}
     \hat{A}(t)=\sum_{t_i\leq t}\frac{d_i}{Y(t_i)}.
 \end{equation*}
@@ -121,6 +121,18 @@ So far we have not thought much about how a time-to-event is generated. Instead,
     T=\min_t\left(t\colon Y(t)\in\setB\right)
 \end{equation}
 Models based on this view are called first hitting threshold models (FHT). FHT models were introduced in \citet{whitmore1986}, see \citet{leewhitmore2006} for a complete overview. Note that these authors use the term threshold regression. We have, following \citet{caroni2017}, chosen to not use this term, as it is already referring to a well established, and quite different, topic in econometrics. FHT models have been applied to many different fields, including medicine, engineering, and economics, and used, for example to describe the survival time of a transplant patient\todo[inline]{citation needed}, the duration time of a strike\todo{citation needed}, the failure time of an engineering system\todo[inline]{citation}, and so on.
+
+Assess lung cancer risk in railroad workers \citep{leewhitmore2004}.
+
+Length of stay as a stochastic process: A general approach and application to hospitalization for schizophrenia \citep{eaton-whitmore}.
+
+Model for the duration of a strike \citep{lancaster}.
+
+Hospital stay \citep{whitmore1975}.
+
+Labour turnover \citep{whitmore1979}.
+
+Degradation \citep{whitmore1995}.
 
 \subsection{Choice of the health process}
 The first hitting time model framework is highly flexible. We have flexibility both in choice of process, boundary and initial value. The most important part is the stochastic process. Examples include Wiener processes, Markov chains, Bernoulli processes, and Gamma processes. We choose to use the Wiener process, because it has a simple intuition behind it, and it yields a fully parametric regression model.
