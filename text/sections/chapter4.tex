@@ -70,6 +70,19 @@ Another way to do this is to only boost one component in each iteration. The com
 \section{Simulation experiments}
 In this section, I will discuss how I tried validating the boosting method I have developed. While working with implementing the algorithm, to see if it worked, I first used an example with low dimensions. In low dimensions, it's feasible to find the joint maximum likelihood numerically. After confirming the method works as it should, we can go to more complicated examples.
 
+\section{Simulation setup}
+We do simulations where we draw observations from the Inverse Gaussian distribution, i.e., we simulate lifetimes from the first hitting time model with Wiener process as the health process. We use algorithm \eqref{algo:FHT-sim} to do this. We will have two scenarios: One with no correlation, and one with a lot of correlation. To simulate the covariate matrices $X$ and $Z$ we will use algorithm \eqref{algo:clinical-sim}, which is a method for simulating clinical and gene data together. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. We specify the different correlations for the covariate matrices. But most importantly, we specify the true parameter vectors, $\bbeta$ and $\bgamma$. For each scenario, we conduct $N_{\text{scenario}}$ runs.
+
+One run consists of first drawing data (with a specific seed to ensure reproducibility), i.e., we draw covariate matrices $\X$, $\Z$ from \label{algo:clinical-sim}. $\X$ is of size $N\times p$ and $\Z$ is of size $N\times d$, where $N$ is the number of observations, $p+1$ is the size of the covariate vector $\bbeta$ (including an intercept which will not be affected by the covariates), and $d+1$ is the size of the covariate vector $\bgamma$. Then we combine these with the true covariate matrices to get vectors $\y_0$ and $\mathbf{\mu}$ of initial value of the health process, and drift, respectively. Then we draw from the Inverse Gaussian distribution according to \label{algo:FHT-sim}, obtaining $N$ right-censored lifetimes, i.e., $N$ tuples $(\widetilde{t}_i,\delta_i)_{i=1,\ldots,N}$. With these tuples, then, we can do a run with the FHT boosting algorithm. We first use repeated K-fold cross-validation to find the optimal number of boosting steps, $m_{\text{stop}}$. Then we estimate the model on the whole of this training set. Then we validate this model on a training set of size $N_{\text{test}}$. The data here is drawn in the exact same manner as the training data, here also with a specific seed.
+
+\begin{algorithm}
+\caption{Generating clinical and gene expression data}
+\label{algo:clinical-sim}
+\begin{enumerate}
+    \item Lorem ipsum.
+\end{enumerate}
+\end{algorithm}
+
 \subsection{Small example}
 Let parameter vectors be two dense $\bbeta=(2,0.1,0.2)$ and $\bgamma=(-1, -0.1, 0.1)$. Let $X$ and $Z$ be such and such, drawn from a beta distribution.
 We simulate data using Algorithm \ref{algo:FHT-sim}, with the censoring time $W$ being drawn from a distribution $\exp(0.1)$. The resulting survival times have the following Kaplan-Meier plot.
@@ -95,18 +108,6 @@ The final $\hat{\bbeta}$ is $(1.968, 0.103, 0.180)$, and the final $\hat{\bgamma
 \end{tabular}
 
 As we can see, our boosting method recovers the original parameters quite well. This is of course with data coming from the exact same kind of model.
-
-\subsection{Large example with uncorrelated matrices}
-Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
-We also here draw $X$ and $Z$ from a beta distribution. The resulting survival times have the following Kaplan-Meier plot.
-\begin{figure}
-\caption{Kaplan-Meier plot of case 2}
-\centering\includegraphics[scale=0.4]{figures/case2.pdf}
-\end{figure}
-We use cross validation to find a suitable iteration number $\mstop$, and find it to be 80. We then run our algorithm with that number of iterations. We find that elements ... are selected. They are 
-
-\subsection{Large example with correlated matrices}
-Here, $N$ is 1000. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
 
 \section{Brier scores on survival data}
 In order to assess predictive performance, we need what's called a proper scoring rule: One which is 1 if the actual data is inserted as predictions.
@@ -139,29 +140,33 @@ The difference in deviance between a fitted model and the null model containing 
 where $l^{\text{test}}(\beta)$ is the likelihood attained with covariate vector $\beta$ on the test set.
 
 \section{Large simulation with uncorrelated matrices}
-Here, $N$ is 500. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
-We here draw $X$ and $Z$ from a simulation algorithm which simulates clinical and gene data. We set all correlations to 0, so this is a completely uncorrelated example. We end up with $N=500$ lifetimes.
+Here, $N$ is 500. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0. So,
+\begin{align*}
+    \bbeta=\left(2.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 35}}, \overbrace{0, 0, \ldots, 0}^{\text{length 9965}}\right) \\
+    \bgamma=\left(-1.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 5}}, \overbrace{0, 0, \ldots, 0}^{\text{length 10}}\right)
+\end{align*}
+We draw $X$ and $Z$ from 
 
 To make a test set, we draw $N_{\text{test}}=1000$ lifetimes from a distribution with the same parameters, but of course with a unique seed.
-Here is the Kaplan-Meier plot.
+\todo[inline]{add Kaplan-Meier plot}
 
-With this exact setup, we run a simulation experiment $B=143$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$. We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above. We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$. Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
+With this exact setup, we run a simulation experiment $B=500$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$. We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above. We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$. Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
 
 \subsection{Variable selection results}
 We here try to summarize how the model selects the informative variables.
 
 \subsection{Boosting with changing the intercept}
-
-\begin{table}\caption{Summary of results}
+See Table \ref{table:non-correlated-with-intercept-summary}, Table \ref{table:non-correlated-with-intercept-y0}, and \ref{table:non-correlated-with-intercept-mu}.
+\begin{table}\caption{Summary of results}\label{table:non-correlated-with-intercept-summary}
 \begin{tabular}{l|rrrr}
 Measure &   Mean & Standard deviation &  Minimum &    Maximum \\
 \hline
 Deviance & 95.371 & 76.742 & -7.2 & 1418.1 \\
-$m_{\text{stop}}$   & 15.854 &  6.437 &  2.0 &   39.0
+$m_{\text{stop}}$   & 15.9 &  6.4 &  2 &   39
 \end{tabular}
 \end{table}
 
-\begin{table}\caption{Result for $y_0$, $\beta$}
+\begin{table}\caption{Result for $y_0$, $\beta$}\label{table:non-correlated-with-intercept-y0}
 \begin{tabular}{l|rr}
 Measure &  Mean &    Standard deviation \\
 \hline
@@ -176,7 +181,7 @@ NPV         & 0.997 & 0.000
 \end{table}
 
 
-\begin{table}\caption{Result for $\mu$, $\gamma$}
+\begin{table}\caption{Result for $\mu$, $\gamma$}\label{table:non-correlated-with-intercept-mu}
 \begin{tabular}{l|rr}
 Measure     & Mean   & Standard deviation     \\
 \hline
@@ -193,16 +198,17 @@ NPV         & 0.888 & 0.093
 
 
 \subsection{Boosting \textit{without} changing the intercept}
-\begin{table}\caption{Summary of results}
+See Table \ref{table:non-correlated-no-intercept-summary}, Table \ref{table:non-correlated-no-intercept-y0}, and \ref{table:non-correlated-no-intercept-mu}.
+\begin{table}\caption{Summary of results}\label{table:non-correlated-no-intercept-summary}
 \begin{tabular}{l|rrrr}
 Measure &    Mean &     Standard deviation &  Minimum & Maximum \\
 \hline
 Deviance & 129.779 & 41.207 & -8.0 & 255.2 \\
-$m_{\text{stop}}$   &  63.667 & 26.615 &  2.0 & 160.0 \\
+$m_{\text{stop}}$   &  63.7 & 26.6 &  2 & 160 \\
 \end{tabular}
 \end{table}
 
-\begin{table}\caption{Result for $y_0$, $\beta$}
+\begin{table}\caption{Result for $y_0$, $\beta$}\label{table:non-correlated-no-intercept-y0}
 \begin{tabular}{l|rr}
 Measure &  Mean &    Standard deviation \\
 \hline
@@ -217,7 +223,7 @@ Negative predictive value         & 0.998 & 0.001
 \end{table}
 
 
-\begin{table}\caption{Result for $\mu$, $\gamma$}
+\begin{table}\caption{Result for $\mu$, $\gamma$}\label{table:non-correlated-no-intercept-mu}
 \begin{tabular}{l|rr}
 Measure &  Mean & Standard deviation \\
 \hline
