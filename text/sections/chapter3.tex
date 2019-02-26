@@ -3,13 +3,6 @@ Boosting is one of the most promising methodological approaches for data analysi
 
 Computer scientists Michael Kearns and Leslie Valiant, who were working on computational learning theory, posed the following question: Could any weak learner be transformed to become a strong learner? \citep{kearnsvaliant} A weak learner, sometimes also simple or base learner, means one which has a low signal-to-noise ratio, and which in general performs poorly. For classification purposes it is easy to give a good example: A weak learner is one which performs only slightly better than random uniform chance. In the binary classification setting, then, it would only perform slightly better than a coin flip. For regression, a weak learner is for example a linear least squares model of only one variable, and having only a small parameter effect for that variable. Meanwhile, a strong learner should be able to perform in a near-perfect fashion, for example attaining high accuracy on a prediction task. I will first attend to give a summary of the history of boosting, starting with AdaBoost \citep{adaboost}, which proved that the answer to the original question above was yes. For a complete overview, see \citet{mayr14a, mayr14b, mayr17}.
 
-\todo[inline]{the section below is new!}
-
-\section{Setting}
-Consider a data set containing the values of an outcome variable $\Y$ and predictor variables $\X_1, \X_2,\ldots,\X_p$. Although $\Y$ will be one-dimensional, we explicitly allow for multidimensional outcome variables. The objective is to model the relationship between $\Y$ and $\X=(\X_1,\X_2,\ldots,\X_p)^T$ and to obtain an ``optimal'' prediction of $\Y$ given $\X$. Usually, this is accomplished by optimizing an objective function $\rho(\Y,f)\in\R$ over a prediction function $f$ (depending on $\X$). Linear refression with a continuous outcome variable $\Y\in\R$ is a well known example of this approach: Here, $\rho$ corresponds to the least squares objective function, i.e, the $L_2$ loss function and $f$ is a parametric, linear, function of $\X$.
-
-In order to address the issue of analyzing high dimensional data sets, a variety of regression techniques have been developed over the past years. Many of these techniques are characterized by a built-in mechanism for ``regularization'', which means that shrinkage of coefficient estimates or selection of relevant predictors is carried out simultaneously with the estimation of the model parameters. Both shrinkage and variable selection will typically improve prediction accuracy: In case of shrinkage, coefficient estimates tend to have a slightly increased bias but a decreased variance, while in case of variable selection, overfitting the data is avoided by selecting only the most informative predictors. Note that regularization is not only useful in the high-dimensional data setting, but also tends to improve prediction accuracy in low-dimensional settings where $p\leq N$, where $N$ is the number of observations in the data set, and $p$ the number of predictors, i.e., columns in $\X$.
-
 \section{AdaBoost}
 The original AdaBoost, also called Discrete AdaBoost \citep{adaboost} is an iterative algorithm for constructing a binary classifier $F(\cdot)$. It was the first \textit{adaptive} boosting algorithm, as it automatically adjusted its parameters to the data based on its perfomance. In the binary classification problem, we are given a set of observations $(\x_i,y_i)_{i=1,\ldots,n}$, where $x_i\in\R^p$ and $y_i\in\{-1,1\}$, i.e., positive or negative; yes or no. We want to find a rule which best separates these observations into the correct classes $\{-1,1\}$, as well as being able to classify new, unseen observations $\x_{\text{new}}$ of the same form. Some observations are hard to classify, whereas some are not. One way to look at binary classification is to imagine the $p$-dimensional space of the observations $\x$, and think of the classifier as finding the line which best splits the observations into their corresponding label. Some observations are not at all close to the boundary, and so they are easily classified. The problems start when the observations are close to the boundary. \citet{adaboost} realized that one could assign a weight to each observation. First, assign equal weight to each observation. Then, use a weak learner $h(\cdot)$ to make an initial classifier, minimizing the weighted sum of misclassified points. After this initial classification, some points will be correctly classified, and some will be misclassified. We increase the weights of the misclassified ones, and normalize the weights afterwards. This then also results in the correctly classified ones having a reduced weight. Finally, based on the misclassification rate of this classifier, calculate a weight $\alpha$ to give to this classifier. Currently, the classifier is $F_1(\cdot)=\alpha_1h_1(\cdot).$ In the next iteration, aaply again a weak learner which minimizes the weighted sum of the observations and reweight observations accordingly as before. Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F_2(\cdot)=\alpha_1h_1(\cdot)+\alpha_2h_2(\cdot)$. Continue iterating in this fashion until an iteration $m$. The resulting final classifier, the AdaBoost classifier, becomes $\hat{F}(\cdot)=F_m(\cdot)=\sum_{i=1}^m\alpha_ih_i(\cdot)$. It is a linear combination of the weak classifiers, and in essence a weighted majority vote of weak learners given the observations.
 
@@ -21,11 +14,54 @@ In its original formulation, the AdaBoost classifier does not have interpretable
 
 %See some figure for a schematic overview of the algorithm.
 
-\section{Statistical model fitting}
-While originally developed for binary classification, boosting is now used to estimate the unknown quantities in more general statistical models and settings. We therefore extend our discussion to a more general regression scheme. Let $D=\{x^{(i)},y^{(i)}\}_{i=1,\ldots,n}$ be a learning data set. We assume that the samples $i=1,\ldots,n$ are generated independently from an identical distribution over the joint space $\setX\times\setY$. The input space is a possibly high-dimensional $\setX\in\R^p$ and the output space is a low-dimensional space $\setY$. For the majority of applications, the output space $\setY$ is one-dimensional.
+\todo[inline]{the section below is new!}
 
-We assume there exists some structure in the data to be found. We choose a model $f(\cdot)$ to model that structure. We can then produce predicted values $\hat{y}^{(i)}=f(x^{(i)})$. To calculate the difference between the predicted outcome and the actual outcome, we need a loss function $\rho$. It measures the difference, or distance, between the true outcome $y^{(i)}$ and the predicted outcome $\hat{y}^{(i)}$. A loss function must be symmetric and convex. Examples of $\rho$ are the absolute loss $|y-\eta(x)|$, which leads to a regression model for the median, and the quadratic loss (the $L_2$ loss), which leads to the usual regression model for the mean. Very often, the loss is derived from the \textbf{negative} log likelihood of the distribution of $\setY$, depending on the desired model. Keep in mind that the negative is used, due to the aim of \textit{minimizing} the loss function. In the survival data setting, typical loss functions are ROC and Briar score \citep{bovelstadborgan}.
+\section{Statistical model fitting and setting}
+While originally developed for binary classification, boosting is now used to estimate the unknown quantities in more general statistical models and settings. We therefore extend our discussion to a more general regression scheme. Consider a data set
+\begin{equation}
+    D=\{\X^{(i)},\Y^{(i)}\}_{i=1,\ldots,n}
+\end{equation}
+containing the values of an outcome variable $\Y$ and predictor variables $\X_1, \X_2,\ldots,\X_p$, forming covariate matrix $\X=(\X_1, \X_2,\ldots,\X_p)$. We assume that the samples $i=1,\ldots,n$ are generated independently from an identical distribution over the joint space $\setX\times\setY$. The input space of $\X$ is a possibly high-dimensional $\setX\in\R^p$ and the output space is a low-dimensional space $\setY$. For the majority of applications, the output space $\setY$ is one-dimensional, but we will explicitly allow for multidimensional outcome variables. The objective is to model the relationship between $\Y$ and $\X$ and to obtain an ``optimal'' prediction of $\Y$ given $\X$. We denote predictions $\hat{f}$. The prediction $\hat{f}$ might often be a probability, according to the probability density function (pdf) of the desired model $f$. We evaluate its fit using a loss function $\rho(y,\hat{f})$. Very often, the loss $\rho$ is derived from the negative log likelihood of the distribution of $\setY$, depending on the desired model $f$, i.e.,
+\begin{equation}
+    \rho(y,x)=-l(y,\theta)=-\log{f(y|\theta)},
+\end{equation}
+where $\theta$ is a parameter of the assumed model. To do regression on parameters, we will let this parameter $\theta$ of the model $f$ depend on covariates. We let $\theta$ be a functional
+\begin{equation}
+    \theta(\bbeta,\X)=g(\bbeta^T\X)=g\left(\beta_0+\sum_{j=1}^p\beta_jx_j\right),
+\end{equation}
+where $\bbeta$ is a parameter vector of length $p$, which is the same length as $\X$ is wide, such that each element in the vector corresponds to a column in the covariate matrix $\X$, and where $g(\cdot)$ is a link function which is chosen appropriately. Note that $\beta_0$ is an intercept which does not correspond to any covariate.
 
+\subsection{Example of a model and corresponding loss function}
+An example might be to model a normal linear regression. We assume data $D=(\X_i,Y_i)_{i=1}^N$ generated from a normal distribution $N(\mu,1)$, where $\mu$ corresponds to $\theta$ above and is a functional which depends on covariates, i.e.,
+\begin{equation}
+    \mu(\bbeta,\X)=g(\bbeta^T\X),
+\end{equation}
+and where $g(\cdot)$ is a link function. For a continuous response $\Y$, we let the link function $g$ be the identity link, such that
+\begin{equation}
+    \mu(\bbeta,\X)=\bbeta^T\X=\beta_0+\sum_{j=1}^p\beta_jx_j.
+\end{equation}
+Although $\mu$ is a functional which depends on covariate matrix $\X$ and parameter vector $\bbeta$, we will denote it $\mu$ whenever possible to lighten the notation. For linear regression with continuous variables, $f(y)$ will be the pdf of the normal distribution,
+\begin{equation}
+    .f(y|\mu,\sigma^2)=\frac{1}{\sqrt{2\pi\sigma^2}}\exp{-\frac{(y-\mu)^2}{2\sigma^2}},
+\end{equation}
+and we derive the loss function $\rho$ accordingly, yielding
+\begin{align*}
+    \rho(y,x)&=-\log{f(y|\mu)}\\
+    &=\log{(\sqrt{2\pi\sigma^2})}+\frac{(y-\mu)^2}{2\sigma^2} \\
+    &\propto\frac{1}{2}\left(y-\mu\right)^2.
+\end{align*}
+Note that since we will only perform regression on $\mu$, the loss function need not depend on $\sigma^2$, so we must only preserve the relevant proportionality.
+
+\subsection{Regression}
+We want to find $\bbeta^*$ which minimizes $\rho(y,\mu(\bbeta,\X))$, on the observed training data set $D$. There are many ways to proceed in how to find $\bbeta^*$.
+To estimate $\bbeta$
+
+Obtaining the optimal prediction is usually accomplished by minimizing $\rho$. 
+
+\subsection{High dimensions, regularization, and variable selection}
+In order to address the issue of analyzing high dimensional data sets, a variety of regression techniques have been developed over the past years. Many of these techniques are characterized by a built-in mechanism for ``regularization'', which means that shrinkage of coefficient estimates or selection of relevant predictors is carried out simultaneously with the estimation of the model parameters. Both shrinkage and variable selection will typically improve prediction accuracy: In case of shrinkage, coefficient estimates tend to have a slightly increased bias but a decreased variance, while in case of variable selection, overfitting the data is avoided by selecting only the most informative predictors. Note that regularization is not only useful in the high-dimensional data setting, but also tends to improve prediction accuracy in low-dimensional settings where $p\leq N$, where $N$ is the number of observations in the data set, and $p$ the number of predictors, i.e., columns in $\X$.
+
+\subsection{BLAHLBLAH}
 The goal of the model fitting scenario is to estimate a function which minimizes the loss over an unseen ``hold-out'' sample, often called the out-of-sample error, the generalization error, or the test error. For a specific data set, we can calculate the empirical risk $R$, which is the sum of the loss function evaluated on all samples in the learning data set $D$,
 \begin{equation}\label{eq:empirical-risk-2}
     R(D)=\sum_{i=1}^n\rho(y^{(i)},x^{(i)}).
@@ -265,7 +301,7 @@ where $p_j(\cdot)=\sum_{m=1}^M f(x_j)$. For a schematic overview of the algorith
     \item Return $\hat{f}(\cdot)=\hat{f}_M(\cdot)=\sum_{m=0}^Mf_m(\cdot)$.
 \end{enumerate}
 \end{algorithm}
-\subsection{Variable selection}
+\subsection{Data-driven variable selection}
 If the number of iterations $M$ is not very large compared to the number of variables, the component-wise gradient boosting algorithm will carry out automatic variable selection. What this means is that based on their explanatory power, the base learners applied to irrelevant variables will never be added into the model, and therefore many of the columns of $\X$ will not be a part of the final model. In many cases, a good $M$ is less than the number of predictors, and so even if every iteration selects a different base learner, the final model will have excluded predictors. Realistically, some predictors will be more explanatory than others, and so they will be selected more than once. Some predictors are simply more correlated with the output than others. Therefore some components will lead to better improvements and those corresponding base learners will thus be more frequently selected. Therefore the component-wise boosting algorithm has inherent variable selection.
 
 \section{Selecting $\mstop$}
