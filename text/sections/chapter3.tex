@@ -279,9 +279,9 @@ Note that this is exactly like in the generic FGD algorithm. While the generic F
 \end{equation}
 We select the best-fitting base-learner $h_{j^{[m]}}^{[m]}$ based on the residual sum of squares of the base-learner fit
 \begin{equation}
-    j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\right).
+    j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\right)^2.
 \end{equation}
-We add this best-fitting base-learner to the current model, with a pre-specified step length of $\nu$. The resulting model is
+We add this best-fitting base-learner to the current model, with a pre-specified step length of $\nu$. Hence the model after iteration $m$ is
 \begin{equation}
     f^{[m]}(\cdot)\gets f^{[m-1]}(\cdot)+\nu\cdot\hat{h}_{j^{[m]}}.
 \end{equation}
@@ -289,11 +289,11 @@ We iterate until the iteration number $m$ becomes the pre-specified stopping ite
 \begin{equation}
     \hat{f}=f^{[m_{\text{stop}}]}(\cdot)=\beta_0 + \sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_{j^{[m]}}^{[m]}(\cdot).
 \end{equation}
-Note that any base-learner $h_j$ can be selected in multiple iterations. The partial effect of the variable $x_j$ is the sum of the estimated corresponding base learner in all iterations where it was selected, i.e.,
+Note that any base-learner $h_j$ can be selected at multiple iterations. The partial effect of the variable $x_j$ is the sum of the estimated corresponding base learner in all iterations where it was selected, i.e.,
 \begin{equation*}
-    f_j(x_j)=\sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_j(x_j)\indicator\left(j^{[m]}=j\right).
+    f_j(x_j)=\sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_j(x_j)\indicator\left(j^{[m]}=j\right),
 \end{equation*}
-For a schematic overview of the algorithm, see Algorithm \ref{algo:component-wise}.
+hence the resulting additive predictor is a sum of component-wise predictors in the GAM form of \eqref{gam}. For a schematic overview of the algorithm, see Algorithm \ref{algo:component-wise}.
 \begin{algorithm}
 \caption{Component-wise gradient boosting}\label{algo:component-wise}
 \begin{enumerate}
