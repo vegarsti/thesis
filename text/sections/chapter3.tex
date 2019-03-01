@@ -16,70 +16,74 @@ While originally developed for binary classification, boosting is now used to es
 
 %See some figure for a schematic overview of the algorithm.
 
-\section{General model structure and setting} %Statistical model fitting and setting
+\section{General model structure, setting, and chosen notation} %Statistical model fitting and setting
 The aim of statistical boosting algorithms is to estimate and select the effects in structured additive regression models. Consider a data set
 \begin{equation}
     D=\{\X^{(i)},\Y^{(i)}\}_{i=1,\ldots,n}
 \end{equation}
-containing the values of an outcome variable $\Y$ and predictor variables $\X_1, \X_2,\ldots,\X_p$, forming covariate matrix $\X=(\X_1, \X_2,\ldots,\X_p)$. We assume that the samples $i=1,\ldots,n$ are generated independently from an identical distribution over the joint space $\setX\times\setY$. The input space of $\X$ is a possibly high-dimensional $\setX\in\R^p$ and the output space is a low-dimensional space $\setY$. For the majority of applications, the output space $\setY$ is one-dimensional, but we will explicitly allow for multidimensional outcome variables. Our objective is to model the relationship between $\Y$ and $\X$ and to obtain an ``optimal'' prediction of $\Y$ given $\X$. 
-
-An important model class is the generalized additive model (GAM) \citep{gam-book}. In a GAM, the conditional distribution of the response variable is assumed to follow an exponential family distribution. Then, the expected response $\Y|\X$ is modeled given the observed value $\x$ using a link function $g$ as
-\begin{equation}
-    g(\mathbb{E}(\Y|\X=\x))=f(\x),
+containing the values of an outcome variable $\Y$ and predictor variables $\X_1, \X_2,\ldots,\X_p$, forming covariate matrix $\X=(\X_1, \X_2,\ldots,\X_p)$. We assume that the samples $i=1,\ldots,n$ are generated independently from an identical distribution over the joint space $\setX\times\setY$. The input space of $\X$ is a possibly high-dimensional $\setX\in\R^p$ and the output space is a low-dimensional space $\setY$. For the majority of applications, the output space $\setY$ is one-dimensional, but we will explicitly allow for multidimensional outcome variables. Our objective is to model the relationship between $\Y$ and $\X$ and to obtain an ``optimal'' prediction of $\Y$ given $\X$. To model the relationship, we will use an approach which is similar to the generalized additive model (GAM) approach \citep{gam-book}. We will assume that the conditional outcome $\Y|\X=\x$ follows some probability distribution function (pdf)
+\begin{equation}\label{eq:psi}
+    \psi(\Y|\theta(\X=\x)),
 \end{equation}
-meaning that if we use $g^{-1}(\cdot)$, the inverse of the link function, on this expression, we get
+where $\theta$ is a parameter in the distribution function, typically related to the mean. We will at times refer to $\psi$ as a prediction function. Further, we will model $\theta$ as a functional of the covariates $\X$, with conditional expectation given the observed value $\X=\x$ as
 \begin{equation}
-    \mathbb{E}(\Y|\X=\x))=g^{-1}(f(\x).
+    g(\mathbb{E}(\theta(\X=\x))=f(\x),
 \end{equation}
-This means that the conditional expectation of $\Y$ given $\X$ is a transformation of the additive predictor $f(\x)$ using the inverse of the link function.
-We will not restrict ourselves to GAMs, but we will do something very similar. We will consider outcomes from a distribution
+where $g(\cdot)$ is a so-called link function and $f(\cdot)$ is an additive predictor. We see that if we use $g^{-1}(\cdot)$, the inverse of the link function, on this expression, we get
 \begin{equation}
-    \psi(\Y|\X=\x,\theta),
+    \mathbb{E}(\theta(\X=\x))=g^{-1}(f(\x)).
 \end{equation}
-which we will also at times refer to as a prediction function. We will model the conditional distribution of the parameter $\theta$ used in the prediction function, i.e.,
-\begin{equation}
-    \mathbb{E}(\theta|\X=\x)=g(f(\x)),
-\end{equation}
-where $g(\cdot)$ is a chosen link function for the parameter $\theta$. $\theta$ will typically correspond to the mean, but varying the distribution of course gives a lot of flexibility. In both these cases, we will call the function $f(\cdot)$ an additive predictor, which consists of the additive effects of the single predictors,
+This means that the conditional expectation of $\theta$ given the observed $\x$ is a transformation of the additive predictor $f(\x)$ using the inverse of the link function. The link function will be chosen appropriately for the parameter $\theta$ in the distribution $\psi$, and is typically used to constrain the domain of the parameter. For example, if we choose the logarithm as the link function, the inverse link function is the exponential function, meaning that
+\begin{align}
+    \mathbb{E}(\theta(\X=\x)|\X=\x)=\exp(f(\x)),
+\end{align}
+which will constrain the expectation to be a positive number. Further, the additive predictor $f(\cdot)$ consists of the additive effects of the single predictors,
 \begin{equation}\label{eq:gam}
-    \theta(\x)=f(\x)=\beta_0+f_1(x_1)+\ldots+f_p(x_p),
+    f(\x)=\beta_0+f_1(x_1)+\ldots+f_p(x_p),
 \end{equation}
-where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are the partial effects of the variables $x_j$. The generic notation $f_j(x_j)$ may be different types of predictor effects such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on. In statistical boosting algorithms, we typically use component-wise effects, meaning that the different partial effects are estimated by separate base-learners $h_1(\cdot),\ldots,h_p(\cdot)$. Read more about this in section \ref{sec:component} on component-wise boosting. The component-wise effects will be built up by additive estimation of base-learners.
+where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are single predictors, which are the partial effects of the variables $x_j$. The generic notation $f_j(x_j)$ may be different types of predictor effects such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on.\todo[inline]{add citations on base learners here?}
+In statistical boosting algorithms, we typically use component-wise effects, meaning that the different partial effects are estimated by separate base-learners $h_1(\cdot),\ldots,h_p(\cdot)$. Read more about this in section \ref{sec:component} on component-wise boosting. The component-wise effects will typically be built up by additive estimation of base-learners, and statistical boosting is one way to perform this additive estimation.
 
-We evaluate the additive predictor using a loss function $\rho(y,f(\cdot))$, which is a measure of the discrepancy between the observed outcome $\y$ and the additive predictor $f(\cdot)$. Very often, the loss $\rho$ is derived from the negative log likelihood of the distribution of $\setY$. We denote this distribution $\psi(y)$. In case of GAMs, this will be the distribution of the corresponding exponential family. So the loss function is
+We evaluate the fit of the model and its additive predictor using a loss function $\rho(y,f(\cdot))$, which is a measure of the discrepancy between the observed outcome $\y$ and the additive predictor $f(\cdot)$. In machine learning and optimization, one usually talks of loss functions, and as the name reveals, we wish to minimize this. Since we maximize the log-likelihood in statistics, very often, the loss function $\rho$ is derived from the negative log likelihood of the distribution of the response \citep{mayr14a, bovelstadborgan}, which we denoted $\psi$ in \eqref{eq:psi}. In these cases, the loss function, which works on one set of observations $(\x_i,\y_i)$, is
 \begin{equation}
-    \rho(\y,f(\x))=-\log{\psi(\y|f(\x)}.
+    \rho(\y,\theta(\x))=-\log{\psi(\y|\theta(\x)},
 \end{equation}
-Note that we will use the negative log likelihood as the loss function, due to the aim of \textit{minimizing} the loss function, whereas the log likelihood increases as the model fits better to the data.
+since the likelihood of one observation is simply the distribution given the observed data. Note that maximizing the log-likelihood is equivalent to minimizing the Kullback-Leibler Divergence, which is a measure of the difference between the distribution of the data itself and the assumed distribution $\psi$. \todo[inline]{Drop this? Or add citation?}
 
 \subsection{Example of a model and corresponding loss function}
-An example might be to model a normal linear regression. We assume data $D=(\X_i,Y_i)_{i=1}^N$ generated from a normal distribution $N(\mu,1)$, where $\mu$ corresponds to $\theta$ above and is a functional which depends on covariates, i.e.,
+Let us look at a specific example of a setting, using the notation described above. We have a dataset $D=\{\x_i,y_i\}_{i=1}^N$ where the responses $y_i$ are continuous, and which we assume follow a normal distribution given the data. Thus we wish to model the conditional mean $\mu$, and so we use $\mu$ in place of $\theta$. Since the responses are continuous and normal, we do not need any transformation of the additive predictor, which means that the link function is the identity function,
 \begin{equation}
-    \mu(\bbeta,\X)=g(\bbeta^T\X),
+    g(\x)=\x.
 \end{equation}
-and where $g(\cdot)$ is a link function. For a continuous response $\Y$, we let the link function $g$ be the identity link, such that
+Further, it means that
 \begin{equation}
-    \mu(\bbeta,\X)=\bbeta^T\X=\beta_0+\sum_{j=1}^p\beta_jx_j.
+    \mathbb{E}(\mu(\X=\x))=f(\x).
 \end{equation}
-Although $\mu$ is a functional which depends on covariate matrix $\X$ and parameter vector $\bbeta$, we will denote it $\mu$ whenever possible to lighten the notation. For a normally distributed observation, the likelihood is the pdf,
+For a normally distributed observation $y$, the likelihood is the pdf,
 \begin{equation}
     .f(y|\mu,\sigma^2)=\frac{1}{\sqrt{2\pi\sigma^2}}\exp{-\frac{(y-\mu)^2}{2\sigma^2}},
 \end{equation}
 and we derive the loss function $\rho$ accordingly, yielding
 \begin{align*}
-    \rho(y,x)&=-\log{f(y|\mu)}\\
-    &=\log{(\sqrt{2\pi\sigma^2})}+\frac{(y-\mu)^2}{2\sigma^2} \\
-    &\propto(y-\mu)^2,
+    \rho(y,\mu(\x))&=-\log{f(y|\mu(\x))}\\
+    &=\log{(\sqrt{2\pi\sigma^2})}+\frac{(y-\mu(\x))^2}{2\sigma^2} \\
+    &\propto(y-\mu(\x))^2,
 \end{align*}
-which is the familiar $L_2$ loss function. Note that since we will only perform regression on $\mu$, the loss function need not depend on $\sigma^2$, so we must only preserve the relevant proportionality.
-\todo[inline]{This section needs to be rewritten.}
+which is the familiar $L_2$ loss function. Note that since we will only model $\mu(\cdot)$, the loss function need not depend on $\sigma^2$. With all those parts in place, we can model the additive predictor $f(\cdot)$.
 
 \subsection{Optimization}
-Obtaining the optimal prediction is usually accomplished by minimizing $\rho$. The goal of the model fitting scenario is to estimate a function which minimizes the loss over an unseen ``hold-out'' sample, often called the out-of-sample error, the generalization error, or the test error. For a specific data set, we can calculate the empirical risk $R$, which is the sum of the loss function evaluated on all samples in the learning data set $D$,
-\begin{equation}\label{eq:empirical-risk-2}
-    R(D)=\sum_{i=1}^n\rho(y^{(i)},f(x^{(i)})).
+Obtaining the optimal prediction is accomplished by minimizing $\rho$ with regard to the additive predictor $f(\cdot)$. We have only observed a data set $D$, but we wish to generalize the results to unseen data sets of a similar type. Therefore, what is typically done is to minimizes the loss over an unseen ``hold-out'' sample, often called the test error. Other names are generalization error and out-of-sample error. For a specific data set $D$, we can calculate the loss function on each observation, and sum these losses. This is what is often called the empirical risk of the loss $\rho$ over the data set $D$, which we will denote $R_D$,
+\begin{equation}\label{eq:empirical-risk}
+    R_D(\theta)=\sum_{i=1}^n\rho(y_{i},\theta(x_i)),
 \end{equation}
-Other names for $R$ are in-sample error and training error. Since $D$ arises from a data distribution, $R(D)$ is a realization of a more general loss value. We wish to learn about the general structure of $D$, and as such are we most interested in the expected loss, also known as the generalization or test error,
+where again the parameter $\theta$ is a functional
+\begin{equation}
+    \theta(x)=g(f(x)),
+\end{equation}
+$g(\cdot)$ is the chosen link function, and $f(\x)$ is the additive predictor.
+Other names for $R_D(\cdot)$ are in-sample error and training error.
+\todo[inline]{This section needs to be rewritten. Maybe the above is good???}
+Since $D$ arises from a data distribution, $R_D$ is a realization of a more general loss value. We wish to learn about the general structure of $D$, and as such are we most interested in the expected loss, also known as the generalization or test error,
 \begin{equation*}
     \text{Err}_{D}=\E[\rho(Y,f(\X))|D],
 \end{equation*}
@@ -95,10 +99,8 @@ i.e., average over many different test sets. As mentioned, in practice we observ
 for test error. If the observed sample is not large enough, one can calculate a $K$-fold cross-validated test error. In this case, one divides the data set into $K$ parts (folds), and for each fold, one lets it be the hold-out data set, and estimate a model using only the other $K-1$ folds. In this way, one gets $K$ test errors, and so the cross-validated test error is the mean of these. See later for a more detailed description.
 \todo[inline]{This section needs to be rewritten.}
 
-\section{Gradient boosting}
-In a seminal paper, \citet{friedman2001} developed an iterative algorithm for fitting an additive model \eqref{eq:gam} called gradient boosting. He showed that AdaBoost performs this algorithm for a particular exponential loss function, which provided a connection between what had previously been in the machine learning domain, with the statistical domain. See \citet{ESL} for a good demonstration of this AdaBoost argument. This provided a way of viewing boosting through a statistical lens, and connected the successful machine learning approach to the world of statistical modelling. To understand gradient boosting, we first need to understand the gradient descent algorithm.
-
-\subsection{Gradient descent}
+To understand gradient boosting, we first need to understand the gradient descent algorithm.
+\section{Gradient descent}
 Suppose we are trying to minimize a differentiable multivariate function $G\colon\R^m\to\R$, where $m\in\N$. Gradient descent is a greedy algorithm for finding the minimum of such a function $G$, and one which is quite simple and surprisingly effective. If all partial derivatives of $G$ at a point $\x=(x_1,x_2,\ldots,x_m)$ exist, then the gradient of $G$ at $\x$ is the vector of all its partial derivatives at $\x$, namely
 \begin{equation}
     \nabla G(\x)=\left(\frac{\partial G(\x)}{\partial x_1},\frac{\partial G(\x)}{\partial x_2},\ldots,\frac{\partial G(\x)}{\partial x_m}\right).
@@ -123,30 +125,36 @@ We want to minimize $G(\x)$, i.e. solve $\min_{\x}G(\x)$.
 \end{algorithm}
 The gradient descent algorithm is surprisingly robust. Even though it may converge to a local minimum, it often seems to find good solutions globally. This is likely related to research which has found that in high-dimensional spaces, most minima are not minima, but in fact, saddlepoints masquerading as local minima \citep{saddlepoints}. This means that training will slow since the gradient will be small at this saddlepoint or plateau. When using a gradient descent method typically one sets a threshold at which the algorithm terminates when the gradient becomes smaller than the threshold. However if powering through the saddlepoint, then the multivariate gradient descent search should be able to continue digging downwards from these points.
 
-\subsection{Description of gradient boosting}
-Now, consider the problem of finding the additive predictor \eqref{eq:gam} which minimizes the empirical risk of a chosen loss function on a data set $D=\{x_i,y_i\}_{i=1}^N$:
-\begin{equation}
-    \hat{f}=\argmin_{f}R(f)=\argmin_{f}\sum_{i=1}^n\rho(\y^{(i)},f(\x^{(i)}).
-\end{equation}
-The gradient boosting algorithm is gradient descent in the functional parameter space spanned by the base learners \citep{friedman2001}.
-Friedman starts with suggesting a nonparametric approach. In this case, we consider each function value $f(x)$ to be a parameter, and then seek to minimize the empirical risk \eqref{eq:empirical-risk-2}, as above. In function space, there are an infinite number of such parameters, since the space in which $x$ exists is continuous. However, for our realized data set, there are only a finite number of such parameters, since we have $N$ values of $\hat{f}(x_i),i=1,\ldots,N$. We can then use the gradient descent algorithm as inspiration, and we take the solution $f(\cdot)$ to be a sum
-\begin{equation}
-    f(\cdot)=f^{[0]}(\cdot)+\sum_{m=1}^M f^{[m]}(\cdot),
-\end{equation}
-where the first $f^{[0]}(\cdot)$ is an initial guess, and the remaining $\{f^{[m]}(\cdot)\}_{m=1}^M$ are incremental functions -- steps, or boosts -- defined by the optimization method.
+\section{Gradient boosting}
+In a seminal paper, \citet{friedman2001} developed an iterative algorithm for fitting an additive model \eqref{eq:gam} called gradient boosting. He showed that AdaBoost performs this algorithm for a particular exponential loss function, which provided a connection between what had previously been in the machine learning domain, with the statistical domain. See \citet{ESL} for a good demonstration of this AdaBoost argument. This provided a way of viewing boosting through a statistical lens, and connected the successful machine learning approach to the world of statistical modelling.
 
-To use gradient descent on our objective function, the empirical risk, we need to compute its negative gradient, which we denote $\u$. There are two ways to arrive at it. One is to calculate the partial derivatives of the empirical risk \eqref{eq:empirical-risk-2}, with respect to each estimated function value $\hat{f}^{[m-1]}(x_i)$:
-\begin{align}
-    \u&=-\left(\frac{\partial}{\partial f(x_1)}R(f(\x)),\ldots,\frac{\partial}{\partial f(x_n)}R(f(x_n))\right) \\
-    &=-\left(\frac{\partial}{\partial f(x_1)}\sum_{i=1}^N\rho(y_i, f(x_i)),\ldots,\frac{\partial}{\partial f(x_n)}\sum_{i=1}^N\rho(y_i, f(x_i))\right) \\
-    &=-\left(\frac{\partial}{\partial f(x_1)}\rho(y_1, f(x_1)),\ldots,\frac{\partial}{\partial f(x_n)}\rho(y_n, f(x_n))\right)
-\end{align}
-We see that each element in this vector $\u$ consists of the partial derivative of the loss function, with respect to each sample. However these partial derivatives are equal except for the $y_i$'s and the $\hat{f}(x_i)$'s. In other words, we can simplify the notation as
+Now, consider the problem of finding an additive predictor \eqref{eq:gam} which minimizes the empirical risk of a chosen loss function on a data set $D=\{x_i,y_i\}_{i=1}^N$,
 \begin{equation}
-    \u^{[m-1]}=\left(-\frac{\partial}{\partial f}\rho(y_i, f(x_i))\big\rvert_{f=\hat{f}^{[m-1]}}\right)_{i=1}^N
+    \hat{f}=\argmin_{f}R_D(\theta)=\argmin_{f}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
 \end{equation}
-This $\u^{[m-1]}$ is a vector of \textit{generalized residuals}. We could also have arrived at it by simply taking the derivative of the loss function $\rho(y,\hat{f}(x))$ with respect to $\hat{f}$, and made the vector by plugging in each sample.
+where again the parameter $\theta$ is a functional
+\begin{equation}
+    \theta(x)=g(f(x)),
+\end{equation}
+and $g(\cdot)$ is a link function chosen appropriately. However, as the $g(\cdot)$ transformation is fixed, we only care about the additive predictor $f(\cdot)$. The gradient boosting algorithm is a way to build up the additive predictor $f(\cdot)$ by way of iterative fitting of base learners $h$.
+Gradient boosting is gradient descent in the functional parameter space spanned by the base learners \citep{friedman2001}.
 
+Friedman starts with suggesting a nonparametric approach. In this case, we consider each function value $f(\x)$ to be a parameter, and then seek to minimize the empirical risk \eqref{eq:empirical-risk}, as above. In function space, there are an infinite number of such parameters, since the space in which $\x$ exists is continuous. However, for our realized data set, there are only a finite number of such parameters, since we have $N$ values of $\hat{f}(\x_i),i=1,\ldots,N$. We can then use the gradient descent algorithm as inspiration, and we take the solution, or estimate, $\hat{f}(\cdot)$ to be a sum
+\begin{equation}
+    \hat{f}(\cdot)=\hat{f}^{[0]}(\cdot)+\sum_{m=1}^M \hat{f}^{[m]}(\cdot),
+\end{equation}
+where the first $\hat{f}^{[0]}(\cdot)$ is an initial guess, and the remaining set $\{\hat{f}^{[m]}(\cdot)\}_{m=1}^M$ of functions is a set of elements which are incremental functions -- steps, or boosts -- defined by the optimization method. In this case gradient descent. To use gradient descent on our objective function, the empirical risk, we need to compute its negative gradient $r(\cdot)$,
+\begin{equation}
+    r(\theta)=\frac{\partial}{\partial\theta} R_D(\theta).
+\end{equation}
+We denote the realization of the negative gradient $r_D(\theta)$ on the observed data by $\u$, and call $\u$ \textit{generalized residuals},
+\begin{equation}
+    \u=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \theta(x_i))\big\rvert_{\theta=\hat{\theta}^{[m]}}\right)_{i=1}^N,
+\end{equation}
+where $\hat{\theta}^{[m]}$ is the estimate at the current iteration number $m$, i.e.,
+\begin{equation}
+    \hat{\theta}^{[m]}(x)=g(\hat{f}^{[m]}(x)).
+\end{equation}
 With the generalized residuals in hand, we should now be able to minimize the loss function by performing gradient descent. However, this nonparametric approach of simply reducing the error of each data point will not generalize, because we are only looking at the observed data points, and not at neighboring points in $\setX$ space. We must therefore impose smoothness to neighboring points. But most importantly, we in any case wish to have an interpretable model. So we choose a base learner
 \begin{equation}
     h(\cdot),
@@ -407,11 +415,7 @@ where $g_k^{-1}(\cdot)$ is the inverse of a chosen link function, which must the
 \begin{equation}
     f_k(\x)=\beta_{k,0}+f_{k,1}(x_1)+f_{k,2}(x_2)+\ldots+f_{k,p}(x_p),
 \end{equation}
-where each component $x_j,j=1,\ldots,p$ in the covariate matrix $\X$ has its own predictor $f_{k,j}(x_j)$. The link functions are typically used to constrain the domain of the parameter. For example, if we use the logarithm as the link function, the inverse link function is the exponential function, meaning that
-\begin{align*}
-    \mathbb{E}(\theta_k|\X=\x)&=\exp(f_k(\x)),
-\end{align*}
-which will constrain the expectation to be a positive number.
+where each component $x_j,j=1,\ldots,p$ in the covariate matrix $\X$ has its own predictor $f_{k,j}(x_j)$.
 
 We may consider $\theta_k$ a functional which takes the covariate matrix $\X$. We denote the full set of all additive predictors
 \begin{equation}
