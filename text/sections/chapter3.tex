@@ -128,33 +128,39 @@ The gradient descent algorithm is surprisingly robust. Even though it may conver
 \section{Gradient boosting}
 In a seminal paper, \citet{friedman2001} developed an iterative algorithm for fitting an additive model \eqref{eq:gam} called gradient boosting. He showed that AdaBoost performs this algorithm for a particular exponential loss function, which provided a connection between what had previously been in the machine learning domain, with the statistical domain. See \citet{ESL} for a good demonstration of this AdaBoost argument. This provided a way of viewing boosting through a statistical lens, and connected the successful machine learning approach to the world of statistical modelling.
 
+The key idea of statistical boosting is to iteratively fit the different predictors with simple regression functions (base-learners) and combine the estimates to an additive predictor. In case of gradient boosting, the base-learners are fitted to the negative gradient of the loss function; this procedure can be described as gradient descent in function space \citep{buhlmann2007}.
+
 Now, consider the problem of finding an additive predictor \eqref{eq:gam} which minimizes the empirical risk of a chosen loss function on a data set $D=\{x_i,y_i\}_{i=1}^N$,
-\begin{equation}
-    \hat{f}=\argmin_{f}R_D(\theta)=\argmin_{f}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
+\begin{equation}\label{eq:argmin-theta}
+    \theta^*=\argmin_{\theta}R_D(\theta)=\argmin_{\theta}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
 \end{equation}
 where again the parameter $\theta$ is a functional
 \begin{equation}
     \theta(x)=g(f(x)),
 \end{equation}
-and $g(\cdot)$ is a link function chosen appropriately. However, as the $g(\cdot)$ transformation is fixed, we only care about the additive predictor $f(\cdot)$. The gradient boosting algorithm is a way to build up the additive predictor $f(\cdot)$ by way of iterative fitting of base learners $h$.
-Gradient boosting is gradient descent in the functional parameter space spanned by the base learners \citep{friedman2001}.
-
+and $g(\cdot)$ is a link function chosen appropriately. However, as the $g(\cdot)$ transformation is fixed, we only care about the additive predictor $f(\cdot)$. The gradient boosting algorithm is a way to build up the additive predictor $f(\cdot)$ by way of iterative fitting of base learners $h$. In other words, finding $\theta^*$ \eqref{eq:argmin-theta}, given a choice of link function $g(\cdot)$, is really finding
+\begin{equation}\label{eq:argmin-f}
+    f^*=\argmin_{f}R_D(g(f))=\argmin_{f}\sum_{i=1}^n\rho(\y_i,g(f(\x_i)).
+\end{equation}
 Friedman starts with suggesting a nonparametric approach. In this case, we consider each function value $f(\x)$ to be a parameter, and then seek to minimize the empirical risk \eqref{eq:empirical-risk}, as above. In function space, there are an infinite number of such parameters, since the space in which $\x$ exists is continuous. However, for our realized data set, there are only a finite number of such parameters, since we have $N$ values of $\hat{f}(\x_i),i=1,\ldots,N$. We can then use the gradient descent algorithm as inspiration, and we take the solution, or estimate, $\hat{f}(\cdot)$ to be a sum
 \begin{equation}
-    \hat{f}(\cdot)=\hat{f}^{[0]}(\cdot)+\sum_{m=1}^M \hat{f}^{[m]}(\cdot),
+    \hat{f}(\cdot)=\hat{f}^{[0]}(\cdot)+\sum_{m=1}^{m_{\text{stop}}} \hat{f}^{[m]}(\cdot),
 \end{equation}
-where the first $\hat{f}^{[0]}(\cdot)$ is an initial guess, and the remaining set $\{\hat{f}^{[m]}(\cdot)\}_{m=1}^M$ of functions is a set of elements which are incremental functions -- steps, or boosts -- defined by the optimization method. In this case gradient descent. To use gradient descent on our objective function, the empirical risk, we need to compute its negative gradient $r(\cdot)$,
+where the first $\hat{f}^{[0]}(\cdot)$ is an initial guess, and the remaining set $\{\hat{f}^{[m]}(\cdot)\}_{m=1}^M$ of functions is a set of incremental functions -- steps, or boosts -- defined by the optimization method. In this case gradient descent. To perform gradient descent on our objective function, the empirical risk $R_D(\cdot)$, we need to compute the negative gradient $r(\cdot)$ of the loss function,
 \begin{equation}
-    r(\theta)=\frac{\partial}{\partial\theta} R_D(\theta).
+    r(\theta|d)=\frac{\partial}{\partial\theta} \rho(y,\theta(x)),
 \end{equation}
-We denote the realization of the negative gradient $r_D(\theta)$ on the observed data by $\u$, and call $\u$ \textit{generalized residuals},
+where $d$ is a tuple of an observation $(x,y)$. We denote the realization of the negative gradient $r_D(\theta)$ on the observed data by $\u$, and call $\u$ \textit{generalized residuals},
 \begin{equation}
-    \u=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \theta(x_i))\big\rvert_{\theta=\hat{\theta}^{[m]}}\right)_{i=1}^N,
+    \u=r\left(\theta|d_i\big\rvert_{\theta=\hat{\theta}^{[m]}}\right)_{i=1}^N=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \theta(x_i))\big\rvert_{\theta=\hat{\theta}^{[m]}}\right)_{i=1}^N,
 \end{equation}
 where $\hat{\theta}^{[m]}$ is the estimate at the current iteration number $m$, i.e.,
 \begin{equation}
     \hat{\theta}^{[m]}(x)=g(\hat{f}^{[m]}(x)).
 \end{equation}
+Note that although we must take the derivative with respect to $\theta$, not $f$.
+We now have a vector of generalized residuals, where each element $i$ is a measure of the error that the current model $\theta^{[m-1]}$
+does in trying to predict the outcome $y_i$ given $\x_i$.
 With the generalized residuals in hand, we should now be able to minimize the loss function by performing gradient descent. However, this nonparametric approach of simply reducing the error of each data point will not generalize, because we are only looking at the observed data points, and not at neighboring points in $\setX$ space. We must therefore impose smoothness to neighboring points. But most importantly, we in any case wish to have an interpretable model. So we choose a base learner
 \begin{equation}
     h(\cdot),
@@ -163,23 +169,21 @@ like discussed previously. These base learners are usually relatively simple par
 
 We start with an initial guess $f_0(\cdot)$, say, a constant. Then we iterate, let us say, at each step $m$ ($m>0$) first calculating the generalized residuals from the previous iteration,
 \begin{equation}
-    \u^{[m-1]}=\left(-\frac{\partial}{\partial \hat{f}(x)}\rho(y_i, \hat{f}(x))\big\rvert_{\hat{f}=\hat{f}^{[m-1]}}\right)_{i=1}^N,
+    \u^{[m-1]}=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \theta)\big\rvert_{\hat{\theta}=\hat{\theta}^{[m-1]}}\right)_{i=1}^N,
 \end{equation}
-where we insert the model from the previous step, $\hat{f}^{[m-1]}$. We wish to improve on these generalized residuals as much as possible, therefore we use a gradient descent step, but constrained to the base learner $h(\cdot)$. The function that we wish to choose, which minimizes the residuals, is the member of the base learner class that produces the $\hat{h}^{[m]}$ which is \textit{most parallel} to $\u^{[m-1]}$, i.e. the $h$ that is most correlated with $\u^{[m-1]}$ over the data distribution. This means that this $\hat{h}^{[m]}$ is an approximation of the generalized residuals $\u^{[m-1]}$, or, a projection of the generalized residuals onto the space spanned by the base learner function class. We obtain that $\hat{h}_m$ by fitting the base learner $h(\cdot)$ to the generalized residuals. The method of fitting depends on the basel earner. If, for example, the base learner is ordinary least squares, then this will be $\hat{h}^{[m]}=\left(\u^{[m-1]}\right)^T\hat{\bbeta}^{[m]}$, where
+where we insert the model from the previous step, $\hat{f}^{[m-1]}$. We wish to improve on these generalized residuals as much as possible, therefore we use a gradient descent step, but constrained to the base learner $h(\cdot)$. The function that we wish to choose, which minimizes the residuals, is the member of the base learner class that produces the $\hat{h}^{[m]}$ which is \textit{most parallel} to $\u^{[m-1]}$, i.e. the $h$ that is most correlated with $\u^{[m-1]}$ over the data distribution. This means that this $\hat{h}^{[m]}$ is an approximation of the generalized residuals $\u^{[m-1]}$, or, a projection of the generalized residuals onto the space spanned by the base learner function class. We obtain that $\hat{h}_m$ by fitting the base learner $h(\cdot)$ to the generalized residuals. The method of fitting depends on the base learner. If, for example, the base learner is ordinary least squares, then this will be $\hat{h}^{[m]}=\left(\u^{[m-1]}\right)^T\hat{\bbeta}^{[m]}$, where
 \begin{equation}
     \hat{\bbeta}^{[m]}=\left(\left(\u^{[m-1]}\right)^T\u^{[m-1]}\right)^{-1}\left(\u^{[m-1]}\right)^T\y.
 \end{equation}
 Having estimated the base learner, we do a line search to find the appropriate step length to use in order to minimize the loss function the most,
 \begin{equation}
-    a^{[m]}=\argmin_{a}R(\hat{f}^{[m-1]}+a^{[m]}\cdot\hat{h}^{[m]}{\cdot}.
+    a^{[m]}=\argmin_{a}R\left(\hat{f}^{[m-1]}+a^{[m]}\cdot\hat{h}^{[m]}{\cdot}\right).
 \end{equation}
 We add the estimated learner times the step length to the current model, obtaining
 \begin{equation}
-    f^{[m]}(\cdot)\gets f^{[m-1]}(\cdot)+a^{[m]}\hat{h}^{[m]}(\cdot).
+    \hat{f}^{[m]}(\cdot)\gets \hat{f}^{[m-1]}(\cdot)+a^{[m]}\hat{h}^{[m]}(\cdot).
 \end{equation}
-We iterate this procedure until some stopping criterion.
-
-We are using gradient descent to find the parameters in each iteration, i.e., to find each . In other words, doing gradient descent in parameter space . So boosting can be viewed as an optimization procedure in functional space. For a schematic overview, see Algorithm \ref{algo:fgd}.
+We iterate this procedure until some stopping criterion. Gradient boosting does gradient descent in parameter space. Hence gradient boosting is gradient descent in the functional parameter space spanned by the base learners \citep{friedman2001}. Boosting can be viewed as an optimization procedure in functional space. For a schematic overview, see Algorithm \ref{algo:fgd}.
 \begin{algorithm}
 \caption{Gradient boosting, or, generic Functional Gradient Descent (FGD)}
 \label{algo:fgd}
@@ -407,24 +411,26 @@ In many applications, modelling only one parameter will not be sufficient. We wa
 \begin{equation}
     \psi(\Y|\X=\x)=\psi(\Y|\btheta(\x))=\psi(\Y|\theta_1(\x),\theta_2(\x),\ldots,\theta_K(\x)).
 \end{equation}
-We will model each parameter $\theta_k,k=1,\ldots,K$ with its own additive predictor, meaning modelling its conditional mean as
+We will model each parameter $\theta_k,k=1,\ldots,K$ with its own link function $g_k$ and additive predictor $f_k$, meaning modelling its conditional mean as
 \begin{equation}
     \mathbb{E}(\theta_k|\X=\x)=g_k^{-1}(f_k(\x)),
 \end{equation}
-where $g_k^{-1}(\cdot)$ is the inverse of a chosen link function, which must then be required to be invertible, for parameter $k$. Furthermore, $f_k(\cdot)$ is an additive predictor
+where $g_k^{-1}(\cdot)$ is the inverse of a chosen link function for parameter $k$, which must then be required to be invertible. Furthermore, $f_k(\cdot)$ is an additive predictor
 \begin{equation}
     f_k(\x)=\beta_{k,0}+f_{k,1}(x_1)+f_{k,2}(x_2)+\ldots+f_{k,p}(x_p),
 \end{equation}
 where each component $x_j,j=1,\ldots,p$ in the covariate matrix $\X$ has its own predictor $f_{k,j}(x_j)$.
-
-We may consider $\theta_k$ a functional which takes the covariate matrix $\X$. We denote the full set of all additive predictors
+We may consider $\theta_k$ a functional which takes the covariate matrix $\X$. We denote the vector of the parameters as
+\begin{equation}
+    \btheta(\cdot)=\left(\theta_1(\cdot),\theta_2(\cdot),\ldots,\theta_K(\cdot)\right),
+\end{equation}
+and the vector of the additive predictors as
 \begin{equation}
     \mathbf{f}(\cdot)=\left(f_1(\cdot),f_2(\cdot),\ldots,f_K(\cdot)\right).
 \end{equation}
-
-To evaluate the fit of the additive predictors, we use a loss function $\rho(y,\btheta(\x))$, which as usual typically is the negative log likelihood of the distribution of $\psi$. Like in regular statistical boosting, we must be able to obtain derivatives of the loss function with regard to the parameters $\btheta$. Therefore, it is assumed that all partial derivatives
+To evaluate the fit of the estimated parameters $\btheta$, we as usual use a loss function $\rho(y,\btheta(\x))$, which again typically is the negative log likelihood of the distribution of $\psi$. Like in regular statistical boosting, we must be able to obtain derivatives of the loss function with regard to the parameters $\btheta$. Therefore, it is assumed that all partial derivatives
 \begin{equation}
-    \frac{\partial}{\theta_1}\rho(\btheta),\frac{\partial}{\theta_2}\rho(\btheta),\ldots,\frac{\partial}{\theta_K}\rho(\btheta)
+    \frac{\partial}{\partial\theta_1}\rho(\btheta),\frac{\partial}{\partial\theta_2}\rho(\btheta),\ldots,\frac{\partial}{\partial\theta_K}\rho(\btheta)
 \end{equation}
 exist. The main idea of the cyclical multidimensional boosting algorithm (although cyclical was a term coined later by \citet{thomas2018}) is to have a boosting step for each parameter $k$, in each iteration. In other words, we cycle through all parameter dimensions in each boosting iteration. The initialization of the algorithm is done analogously to the regular boosting method, by setting each parameter to a constant, typically zero or the constant which maximizes the likelihood of the data. We also specify a base learner for each parameter dimension $k$. In any iteration, the algorithm cycles through the different parameter dimensions $k$. In every dimension $k$, we carry out one boosting iteration. This boosting iteration can be the same as in the generic FGD algorithm \eqref{algo:fgd}, i.e., estimating one full base learner, or it can be to estimate a base learner for each covariate, and then select the best-fitting one, like in the component-wise gradient boosting algorithm \eqref{algo:component-wise}. The latter approach is typically used, since it has been shown that component-wise boosting algorithms often are powerful. In iteration $m$, after having cycled through to component $k$, the estimated parameter vector is
 \begin{equation*}
@@ -435,28 +441,28 @@ meaning all parameter dimensions $1,2,\ldots,k-1$ have been updated in the curre
     \u_k^{[m-1]}&=(u_{k,1}^{[m-1]},u_{k,2}^{[m-1]},\ldots,u_{k,N}^{[m-1]})\\
     &=\left(-\frac{\partial}{\partial \theta_k}\rho(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m]},\ldots,\hat{\theta}_{k-1}^{[m]},\hat{\theta}_{k+1}^{[m-1]},\ldots,\hat{\theta}_{K}^{[m-1]})\right)_{i=1}^N.
 \end{align*}
-Again, like in a regular component-wise boosting algorithm, we fit all component-wise base learners separately to this residual vector $\u_k^{[m-1]}$. Of these learners, select the best fitting component $j_k^{[m]}$ and corresponding estimated learner $\hat{h}^{[m-1]}_{j^{[m]}}(\cdot)$, and update the parameter in dimension $k$ by the usual
+Again, like in a regular component-wise boosting algorithm, we fit all component-wise base learners separately to this residual vector $\u_k^{[m-1]}$. Of these learners, select the best fitting component $j_k^{[m]}$ and corresponding estimated learner $\hat{h}^{[m-1]}_{j^{[m]}}(\cdot)$, and update the additive predictor in dimension $k$ by the usual
 \begin{equation}
-    \theta_k^{[m]}\gets\theta_k^{[m-1]}+\nu\cdot \hat{h}^{[m]}_{j_k^{[m]}}(\cdot).
+    \hat{f}_k^{[m]}\gets\hat{f}_k^{[m-1]}+\nu\cdot \hat{h}^{[m]}_{j_k^{[m]}}(\cdot).
 \end{equation}
 A schematic representation of the updating process using this algorithm in a given iteration $m$ looks as follows:
 \begin{align*}
-    \frac{\partial}{\theta_1}\rho\left(\hat{\theta}_1^{[m-1]},\hat{\theta}_2^{[m-1]},\hat{\theta}_3^{[m-1]},\ldots,\hat{\theta}_{K-1}^{[m-1]},\hat{\theta}_K^{[m-1]}\right)
+    \frac{\partial}{\theta_1}\rho\left(\theta_1^{[m-1]},\theta_2^{[m-1]},\theta_3^{[m-1]},\ldots,\theta_{K-1}^{[m-1]},\theta_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}}\u_{1}^{[m-1]}
-    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{1}^{[m]} \\
+    \xlongrightarrow{\text{fit and update}}\hat{f}_{1}^{[m]} \\
     \frac{\partial}{\theta_2}\rho\left(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m-1]},\hat{\theta}_3^{[m-1]},\ldots,\hat{\theta}_{K-1}^{[m-1]},\hat{\theta}_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}} \u_{2}^{[m-1]}
-    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{2}^{[m]} \\
+    \xlongrightarrow{\text{fit and update}}\hat{f}_{2}^{[m]} \\
     \frac{\partial}{\theta_3}\rho\left(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m]},\hat{\theta}_3^{[m-1]},\ldots,\hat{\theta}_{K-1}^{[m-1]},\hat{\theta}_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}}\u_{3}^{[m-1]}
-    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{3}^{[m]} \\
+    \xlongrightarrow{\text{fit and update}}\hat{f}_{3}^{[m]} \\
     \ldots\\
     \frac{\partial}{\theta_{K-1}}\rho\left(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m]},\hat{\theta}_3^{[m]},\ldots,\hat{\theta}_{K-1}^{[m-1]},\hat{\theta}_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}}\u_{K-1}^{[m-1]}
-    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{K-1}^{[m]} \\
+    \xlongrightarrow{\text{fit and update}}\hat{f}_{K-1}^{[m]} \\
     \frac{\partial}{\theta_K}\rho\left(\hat{\theta}_1^{[m]},\hat{\theta}_2^{[m]},\hat{\theta}_3^{[m]},\ldots,\hat{\theta}_{K-1}^{[m]},\hat{\theta}_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}}\u_{K}^{[m-1]}
-    \xlongrightarrow{\text{fit and update}}\hat{\theta}_{K}^{[m]}
+    \xlongrightarrow{\text{fit and update}}\hat{f}_{K}^{[m]}
 \end{align*}
 After cycling through all estimation parameters in $\rho$, the algorithm does an additional step to find the current optimal nuisance parameters. If indeed the loss function has any nuisance parameters. A nuisance parameter is any parameter which is not of immediate interest but which must be accounted for in the analysis of those parameters which are of interest. For example, if we are considering a multivariate normal distribution and are only interested in the means, the residual variance would be a nuisance parameter. We find the optimal nuisance parameters by performing numerical minimization of the empirical risk for one scale parameter at a time.
 For each nuisance parameter $\sigma_l, l=1,2,\ldots,L$, we plug all other estimated parameters into the empirical risk, and minimize it over the current nuisance parameter $\sigma_l$:
@@ -492,7 +498,7 @@ The main tuning parameters in this algorithm are the stopping iterations $\mathb
             \hat{h}_{k,1}^{[m]},\hat{h}_{k,2}^{[m]},\ldots,\hat{h}_{k,p}^{[m]}
         \end{equation}
         where each vector is an estimate of the negative gradient vector $\u^{[m-1]}_k$, or, again, a projection onto the space spanned by the component-wise learner.
-    \item Select the component of $\x$ which best fits $\u^{(m-1)}_k$ according to RSS, or, rather, the best-fitting base learner,
+    \item Select the component of $\x$ which fits best $\u^{(m-1)}_k$ (according to RSS), or, rather, the best-fitting base learner,
         \begin{equation}
             j_k^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_{k,i}-\hat{h}_{k,j}^{[m]}\right)^2.
         \end{equation}
@@ -563,33 +569,33 @@ In the cyclical algorithm, we always boost all parameters in the same iteration.
 \end{equation}
 as usual. If we incorporate this estimated base learner into the full boosted model, we would get
 \begin{equation}
-    f^{[m+1]}_{\theta_k}=f^{[m]}+\nu\cdot\hat{h}_{\theta_k}(\cdot).
+    \hat{f}^{[m]}_{k}=\hat{f}^{[m-1]}+\nu\cdot\hat{h}^{[m]}_{k}(\cdot).
 \end{equation}
 We can insert this proposed new model into the loss function to obtain a new empirical risk value,
 \begin{equation}
-    R(f^{[m+1]}_{\theta_k}).
+    R\left(\hat{f}^{[m]}_{k}\right).
 \end{equation}
 We calculate the gain in the loss function, which we denote $\Delta\rho_{\theta_k}$, by
 \begin{equation}
-    \Delta\rho_{\theta_k}=R(f^{[m]})-R(f^{[m+1]}_{\theta_k}).
+    \Delta\rho_{k}=R\left(\hat{f}^{[m-1]}\right)-R\left(\hat{f}^{[m]}_{k}\right).
 \end{equation}
-If we now compare the gain in loss function value, $\rho_{\theta_k}$, across each parameter $k=1,2,\ldots,K$, we can find out which parameter leads to the best increase. We choose that one, i.e.,
+If we now compare the gain in loss function value, $\rho_{k}$, across each parameter $k=1,2,\ldots,K$, we can find out which parameter leads to the best increase. We choose that one, i.e.,
 \begin{equation}
-    k^*=\argmin_k\Delta\rho_{\theta_k},
+    k^{[m]}=\argmin_k\Delta\rho_{k},
 \end{equation}
 and incorporate only the best-fitting learner corresponding for that parameter into the full boosting model, i.e.,
 \begin{equation}
-    f^{[m+1]}\gets f^{[m+1]}_{\theta_k}=f^{[m]}+\nu\cdot\hat{h}_{\theta_k}(\cdot).
+    \hat{f}^{[m]}\gets \hat{f}^{[m]}_{k}=\hat{f}^{[m-1]}+\nu\cdot\hat{h}^{[m]}_{k}(\cdot).
 \end{equation}
 We choose the base learner for each component by comparing their residual sum of squares with respect to the negative gradient vector, which we called the inner loss. In other words, we use the usual procedure of choosing the component-wise learner for each parameter which minimizes the RSS, i.e.,
 \begin{equation}
-    j^*=\argmin_{j} \sum_{i=1}^N (u_{k,i}-(f^{[m]}(x_i)+\hat{h}(\x_i)))^2.
+    j^{[m]}=\argmin_{j} \sum_{i=1}^N (u_{k,i}-(f^{[m]}(x_i)+\hat{h}(\x_i)))^2.
 \end{equation}
 This is, however, not the same criterion that is used to choose between parameters. This might be problematic. Therefore, \citet{thomas2018} propose using the loss function $\rho$ for choosing between component-wise learners as well. They call this the ``outer loss.'' In that case, we instead choose the component-wise learner for each parameter which minimizes the outer loss function, i.e., 
 \begin{equation}
-    j^*=\argmin_{j} \sum_{i=1}^N \rho(y_i,f(x_i)).
+    j^{[m]}=\argmin_{j} \sum_{i=1}^N \rho(y_i,f(x_i)).
 \end{equation}
-The individual component-wise learners are still estimated by their usual method, i.e., calculating the negative gradient of the generalized residuals and using the base learner to estimate models. E.g., by linear least squares if using simple linear regression base learners. The improvement in the empirical risk, $\Delta\rho_{\theta_k}$, is then calculated for each base learner of every distribution parameter, and only the overall best-performing base learner with regard to the outer loss is updated.
+The individual component-wise learners are still estimated by their usual method, i.e., calculating the negative gradient of the generalized residuals and using the base learner to estimate models. E.g., by linear least squares if using simple linear regression base learners. The improvement in the empirical risk, $\Delta\rho_{k}$, is then calculated for each base learner of every distribution parameter, and only the overall best-performing base learner with regard to the outer loss is updated.
 
 In both cases of this algorithm, we have the advantage that the optimal number of boosting steps, $m_{\text{stop}}$, is always a scalar value. Finding this tuning parameter can be done fairly quickly with standard cross validation schemes, and most importantly, it scales with with the number of parameters. This is unlike the cyclical algorithm, which needs a multidimensional grid search.
 
