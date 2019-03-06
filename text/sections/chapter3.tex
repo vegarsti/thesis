@@ -130,6 +130,8 @@ In a seminal paper, \citet{friedman2001} developed an iterative algorithm for fi
 
 The key idea of statistical boosting is to iteratively fit the different predictors with simple regression functions (base-learners) and combine the estimates to an additive predictor. In case of gradient boosting, the base-learners are fitted to the negative gradient of the loss function; this procedure can be described as gradient descent in function space \citep{buhlmann2007}.
 
+GAMBoost \citep{gamboost-paper}.
+
 Now, consider the problem of finding an additive predictor \eqref{eq:gam} which minimizes the empirical risk of a chosen loss function on a data set $D=\{x_i,y_i\}_{i=1}^N$,
 \begin{equation}\label{eq:argmin-theta}
     \theta^*=\argmin_{\theta}R_D(\theta)=\argmin_{\theta}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
