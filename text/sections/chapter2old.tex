@@ -110,7 +110,6 @@ We can now substitute the covariates in \eqref{eq:coeffs} into this.
 %\todo[inline]{This can be expanded a lot more!}
 
 \subsection{Optimization}
-%\todo{not really!!}
 Until now, mainly numerical maximum likelihood methods have been used to find optimal parameters, via direct maximization of the likelihood. Finding a closed-form solution for the maximum likelihood is not possible. It is only feasible to do numerical optimization of the maximum likelihood in the low-dimensional case, since it will optimize the entire parameter space at once. Therefore it is necessary to develop methods which can deal with high-dimensional cases. That is what we intend to do in the main part of the thesis. For our purposes, we need to differentiate the logarithm with respect to the parameters $\mu$ and $y_0$. Since the logarithm is monotone, it preserves optimality, and hence we can take the logarithm of \eqref{eq:fht-lik}, and we get
 \begin{align}\label{eq:loglik}
 \begin{split}

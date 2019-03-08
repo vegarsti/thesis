@@ -1,6 +1,6 @@
 \chapter{Appendix 1: Differentiating the IG FHT}\label{appendix}
 First we have the likelihood,
-\begin{align}\label{eq:fht-loglik}
+\begin{align}\label{eq:fht-lik}
 \begin{split}
 L(y_0, \mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
 &\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di},
@@ -14,15 +14,15 @@ and so in particular,
 \begin{equation}
     \Phi(x)=1-(1-\Phi(x))=1-\Phi(-x),
 \end{equation}
-and thus we can rewrite \eqref{eq:fht-loglik} as
-\begin{align}\label{eq:fht-loglik-proper}
+and thus we can rewrite \eqref{eq:fht-lik} as
+\begin{align}\label{eq:fht-lik-proper}
 \begin{split}
 L(y_0, \mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
 &\times\sqb*{\Phi\p*{\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di}.
 \end{split}
 \end{align}
-It is easier to work with the log likelihood, so we take the log of \eqref{eq:fht-loglik-proper} and get
-\begin{align}
+It is easier to work with the log likelihood, so we take the log of \eqref{eq:fht-lik-proper} and get
+\begin{align}\label{eq:fht-loglik}
 \begin{split}
     l(y_0, \mu)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
     &+
