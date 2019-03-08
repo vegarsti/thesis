@@ -1,6 +1,97 @@
 \chapter{Multivariate component-wise boosting on survival data}
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
 
+\section{GAMLSSBoost Algorithm}
+Response has a distribution
+\begin{equation}
+    f_{\text{dens}}(y_i|\btheta_i),
+\end{equation}
+depending on $K$ distribution parameters
+\begin{equation}
+    \btheta_i=\left(\theta_{i,1},\theta_{i,2},\ldots,\theta_{i,K}\right)^T.
+\end{equation}
+Each distribution parameter $\theta_k,k=1,2,\ldots,K$ has its own known monotonic link function
+\begin{equation}
+    g_k(\cdot).
+\end{equation}
+A GAMLSS is given by the equations
+\begin{equation}
+    g_k(\theta_k)=\beta_{0,\theta_k}+\sum_{j=1}^{p_k}f_{j,\theta_k}(x_{k,j})=\eta_{\theta_k},
+\end{equation}
+for all $k=1,2,\ldots,K$. Here $\beta_{0,\theta_k}$ is the intercept for distribution parameter $\theta_k$, and $f_{j,\theta_k}$
+represents the type of effect that covariate $j$ has on $\theta_k$.
+In the case of a simple linear regression learner,
+\begin{equation}
+    f_{j,\theta_k}(x_{k,j})=x_{k,j}\beta_{k,j}.
+\end{equation}
+Finally, $\eta_{\theta_k}$ is the additive predictor for $\theta_k$. We see that the GAMLSS reduces to a GAM \citep{gam-book} in the case
+where the distribution parameter vector is simply
+\begin{equation}
+    \btheta_i=\mu,
+\end{equation}
+i.e., the mean.
+
+\section{FHTBoost}
+The first-hitting-time model with Wiener processes, as shown, leads to inverse Gaussian lifetimes. As in the usual
+regression scheme (see section ...) for this setup, we we have $K=2$ distribution parameters,
+\begin{equation}
+    \btheta_i=(\theta_1,\theta_2)^T=(y_0,\mu)^T.
+\end{equation}
+We choose link functions
+\begin{equation}
+    g_1(x)=\log(x)
+\end{equation}
+and
+\begin{equation}
+    g_2(x)=\id(x)=x,
+\end{equation}
+for parameters $y_0$ and $\mu$, respectively.
+
+We apply the GAMLSSBoost algorithm shown previously (see ...) to this setup. The loss function of interest is quite
+naturally the negative log likelihood of the censored inverse Gaussian distribution, derived in ..., i.e.,
+\begin{equation*}
+    \rho(y,\btheta)=-l(y_0, \mu).
+\end{equation*}
+(See Appendix for the full expression!)
+Given an estimated additive predictor $\hat{\boldeta}$, we get the corresponding estimated distribution parameters by
+transforming the additive predictors via the inverse of their link functions. Thus,
+\begin{equation}
+    y_0=\theta_1=g_1^{-1}(\eta_1)=\exp(\eta_1),
+\end{equation}
+and
+\begin{equation}
+    \mu=\theta_2=g_2^{-2}(\eta_2)=\eta_2.
+\end{equation}
+This means that as a function of the additive predictors, the loss function is
+\begin{equation*}
+    \rho(y,\boldeta)=-l(\exp(\eta_1), \eta_2).
+\end{equation*}
+To use the gradient boosting algorithm, we of course need to have the negative gradient of the loss function, i.e.,
+the negative derivative. The negative partial derivative of the loss function is equal to the (positive) derivative of the (positive) loss 
+function, with regard to each parameter. These are
+\begin{equation}
+    p_1(\eta_1,\eta_2)\coloneqq-\frac{\partial}{\partial\eta_1}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2)
+\end{equation}
+and
+\begin{equation}
+    p_2(\eta_1,\eta_2)\coloneqq-\frac{\partial}{\partial\eta_2}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2).
+\end{equation}
+(See Appendix for the full expressions for these!)
+
+
+
+
+Our loss function is the negative of the log-likelihood in \eqref{eq:fht-loglik}, so
+\begin{align}\label{eq:fht-loglik}
+\begin{split}
+    \rho(y,\hat{\boldeta})&=-l(\hat{y}_0, \hat{\mu}) \\
+    &=-\di\p*{\ln \hat{y}_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\hat{y}_0+\hat{\mu}\ti}^2}{2\sigma^2\ti}} \\
+    &-
+    (1-\di)\ln\p*{\Phi\p*{\frac{\hat{\mu}\ti+\hat{y}_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2\hat{y}_0\hat{\mu}}{\sigma^2}}\Phi\p*{\frac{\hat{\mu}\ti-\hat{y}_0}{\sqrt{\sigma^2\ti}}}}
+\end{split}
+\end{align}
+
+
 \section{Simulation of survival data}
 We wish to simulate survival times $\ti,i=1,\ldots,N$ with censoring. We first draw survival times $\tilde{t}_i$ from some survival time distribution $f(\cdot)$. If this distribution has a closed form probability distribution function, we can draw from it directly. If not, we might use some an inverse sampling method, e.g. by drawing unit exponentials and using a corresponding transformation.
 
@@ -138,104 +229,3 @@ The difference in deviance between a fitted model and the null model containing 
     d=-2\left(l^{\text{test}}(\beta_{\text{train}})-l^{\text{test}}(0)\right),
 \end{equation*}
 where $l^{\text{test}}(\beta)$ is the likelihood attained with covariate vector $\beta$ on the test set.
-
-\section{Large simulation with uncorrelated matrices}
-Here, $N$ is 500. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0. So,
-\begin{align*}
-    \bbeta=\left(2.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 35}}, \overbrace{0, 0, \ldots, 0}^{\text{length 9965}}\right) \\
-    \bgamma=\left(-1.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 5}}, \overbrace{0, 0, \ldots, 0}^{\text{length 10}}\right)
-\end{align*}
-We draw $X$ and $Z$ from 
-
-To make a test set, we draw $N_{\text{test}}=1000$ lifetimes from a distribution with the same parameters, but of course with a unique seed.
-\todo[inline]{add Kaplan-Meier plot}
-
-With this exact setup, we run a simulation experiment $B=500$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$. We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above. We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$. Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
-
-\subsection{Variable selection results}
-We here try to summarize how the model selects the informative variables.
-
-\subsection{Boosting with changing the intercept}
-See Table \ref{table:non-correlated-with-intercept-summary}, Table \ref{table:non-correlated-with-intercept-y0}, and \ref{table:non-correlated-with-intercept-mu}.
-\begin{table}\caption{Summary of results}\label{table:non-correlated-with-intercept-summary}
-\begin{tabular}{l|rrrr}
-Measure &   Mean & Standard deviation &  Minimum &    Maximum \\
-\hline
-Deviance & 95.371 & 76.742 & -7.2 & 1418.1 \\
-$m_{\text{stop}}$   & 15.9 &  6.4 &  2 &   39
-\end{tabular}
-\end{table}
-
-\begin{table}\caption{Result for $y_0$, $\beta$}\label{table:non-correlated-with-intercept-y0}
-\begin{tabular}{l|rr}
-Measure &  Mean &    Standard deviation \\
-\hline
-Sensitivity & 0.188 & 0.092 \\
-Specificity & 1.000 & 0.000 \\
-Accuracy    & 0.997 & 0.000 \\
-FPR         & 0.000 & 0.000 \\
-FNR         & 0.812 & 0.092 \\
-FOR         & 0.003 & 0.000 \\
-NPV         & 0.997 & 0.000
-\end{tabular}
-\end{table}
-
-
-\begin{table}\caption{Result for $\mu$, $\gamma$}\label{table:non-correlated-with-intercept-mu}
-\begin{tabular}{l|rr}
-Measure     & Mean   & Standard deviation     \\
-\hline
-Sensitivity & 0.730 & 0.248 \\
-Specificity & 0.944 & 0.109 \\
-Accuracy    & 0.872 & 0.091 \\
-FPR         & 0.056 & 0.109 \\
-FNR         & 0.270 & 0.248 \\
-FOR         & 0.112 & 0.093 \\
-NPV         & 0.888 & 0.093
-\end{tabular}
-\end{table}
-
-
-
-\subsection{Boosting \textit{without} changing the intercept}
-See Table \ref{table:non-correlated-no-intercept-summary}, Table \ref{table:non-correlated-no-intercept-y0}, and \ref{table:non-correlated-no-intercept-mu}.
-\begin{table}\caption{Summary of results}\label{table:non-correlated-no-intercept-summary}
-\begin{tabular}{l|rrrr}
-Measure &    Mean &     Standard deviation &  Minimum & Maximum \\
-\hline
-Deviance & 129.779 & 41.207 & -8.0 & 255.2 \\
-$m_{\text{stop}}$   &  63.7 & 26.6 &  2 & 160 \\
-\end{tabular}
-\end{table}
-
-\begin{table}\caption{Result for $y_0$, $\beta$}\label{table:non-correlated-no-intercept-y0}
-\begin{tabular}{l|rr}
-Measure &  Mean &    Standard deviation \\
-\hline
-Sensitivity & 0.452 & 0.163 \\
-Specificity & 0.997 & 0.002 \\
-Accuracy    & 0.995 & 0.001 \\
-False positive rate         & 0.003 & 0.002 \\
-False negative rate         & 0.548 & 0.163 \\
-False omission rate         & 0.002 & 0.001 \\
-Negative predictive value         & 0.998 & 0.001
-\end{tabular}
-\end{table}
-
-
-\begin{table}\caption{Result for $\mu$, $\gamma$}\label{table:non-correlated-no-intercept-mu}
-\begin{tabular}{l|rr}
-Measure &  Mean & Standard deviation \\
-\hline
-Sensitivity & 0.953 & 0.120 \\
-Specificity & 0.640 & 0.291 \\
-Accuracy    & 0.744 & 0.186 \\
-False positive rate         & 0.360 & 0.291 \\
-False negative rate         & 0.047 & 0.120 \\
-False omission rate         &    NA &    NA \\
-Negative predictive value         &    NA &    NA \\
-\end{tabular}
-\end{table}
-
-
-\section{Large simulation with correlated matrices}
