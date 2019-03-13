@@ -33,7 +33,7 @@ i.e., the mean.
 
 \section{FHTBoost}
 The first-hitting-time model with Wiener processes, as shown, leads to inverse Gaussian lifetimes. As in the usual
-regression scheme (see section ...) for this setup, we we have $K=2$ distribution parameters,
+regression scheme (see subsection \ref{subsec:IG-reg}) for this setup, we we have $K=2$ distribution parameters,
 \begin{equation}
     \btheta_i=(\theta_1,\theta_2)^T=(y_0,\mu)^T.
 \end{equation}
@@ -222,10 +222,3 @@ where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$.
     R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
 \end{equation*}
 where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals. One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
-
-\subsection{Deviance}
-The difference in deviance between a fitted model and the null model containing no covariates is given by
-\begin{equation*}
-    d=-2\left(l^{\text{test}}(\beta_{\text{train}})-l^{\text{test}}(0)\right),
-\end{equation*}
-where $l^{\text{test}}(\beta)$ is the likelihood attained with covariate vector $\beta$ on the test set.

@@ -75,8 +75,12 @@ To make a test set, we draw $N_{\text{test}}=1000$ lifetimes from a distribution
 
 With this exact setup, we run a simulation experiment $B=500$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$. We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above. We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$. Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
 
-\subsection{Variable selection results}
-We here try to summarize how the model selects the informative variables.
+\subsection{Deviance}
+The difference in deviance between a fitted model and the null model containing no covariates is given by
+\begin{equation*}
+    d=-2\left(l^{\text{test}}(\beta_{\text{train}})-l^{\text{test}}(0)\right),
+\end{equation*}
+where $l^{\text{test}}(\beta)$ is the likelihood attained with covariate vector $\beta$ on the test set.
 
 \subsection{Boosting with changing the intercept}
 See Table \ref{table:non-correlated-with-intercept-summary}, Table \ref{table:non-correlated-with-intercept-y0}, and \ref{table:non-correlated-with-intercept-mu}.
@@ -98,8 +102,8 @@ Measure &  Mean &    Standard deviation \\
 Sensitivity & 0.187 & 0.092 \\
 Specificity & 1.000 & 0.000 \\
 Accuracy    & 0.997 & 0.000 \\
-False positive rate         & 0.000 & 0.000 \\
-False negative rate         & 0.813 & 0.092
+False positive rate & 0.000 & 0.000 \\
+False negative rate & 0.813 & 0.092
 \end{tabular}
 \end{table}
 
@@ -192,9 +196,9 @@ False negative rate         & 0.844 & 0.084
 Measure     & Mean   & Standard deviation     \\
 \hline
 Sensitivity & 0.235 & 0.198 \\
-Specificity & 0.563 & 0.424 \\
-Accuracy    & 0.345 & 0.098 \\
-False positive rate         & 0.437 & 0.424 \\
+Specificity & 0.854 & 0.141 \\
+Accuracy    & 0.607 & 0.059 \\
+False positive rate         & 0.146 & 0.141 \\
 False negative rate         & 0.765 & 0.198
 \end{tabular}
 \end{table}
@@ -230,9 +234,14 @@ False negative rate         & 0.796 & 0.082
 Measure     & Mean   & Standard deviation     \\
 \hline
 Sensitivity &  0.606 & 0.264 \\
-Specificity & -0.347 & 0.735 \\
-Accuracy    &  0.288 & 0.144 \\
-False positive rate         &  1.347 & 0.735 \\
+Specificity &  0.551 & 0.245 \\
+Accuracy    &  0.573 & 0.086 \\
+False positive rate         &  0.449 & 0.245 \\
 False negative rate         &  0.394 & 0.264
 \end{tabular}
 \end{table}
+
+\begin{figure}
+\caption{YYY}
+\centering\includegraphics[scale=0.4]{figures/correlated_non-cyclic-no-intercept_cv_deviance.pdf}
+\end{figure}
