@@ -1,36 +1,6 @@
 \chapter{Multivariate component-wise boosting on survival data}
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
 
-\section{GAMLSSBoost Algorithm}
-Response has a distribution
-\begin{equation}
-    f_{\text{dens}}(y_i|\btheta_i),
-\end{equation}
-depending on $K$ distribution parameters
-\begin{equation}
-    \btheta_i=\left(\theta_{i,1},\theta_{i,2},\ldots,\theta_{i,K}\right)^T.
-\end{equation}
-Each distribution parameter $\theta_k,k=1,2,\ldots,K$ has its own known monotonic link function
-\begin{equation}
-    g_k(\cdot).
-\end{equation}
-A GAMLSS is given by the equations
-\begin{equation}
-    g_k(\theta_k)=\beta_{0,\theta_k}+\sum_{j=1}^{p_k}f_{j,\theta_k}(x_{k,j})=\eta_{\theta_k},
-\end{equation}
-for all $k=1,2,\ldots,K$. Here $\beta_{0,\theta_k}$ is the intercept for distribution parameter $\theta_k$, and $f_{j,\theta_k}$
-represents the type of effect that covariate $j$ has on $\theta_k$.
-In the case of a simple linear regression learner,
-\begin{equation}
-    f_{j,\theta_k}(x_{k,j})=x_{k,j}\beta_{k,j}.
-\end{equation}
-Finally, $\eta_{\theta_k}$ is the additive predictor for $\theta_k$. We see that the GAMLSS reduces to a GAM \citep{gam-book} in the case
-where the distribution parameter vector is simply
-\begin{equation}
-    \btheta_i=\mu,
-\end{equation}
-i.e., the mean.
-
 \section{FHTBoost}
 The first-hitting-time model with Wiener processes, as shown, leads to inverse Gaussian lifetimes. As in the usual
 regression scheme (see subsection \ref{subsec:IG-reg}) for this setup, we we have $K=2$ distribution parameters,
@@ -47,12 +17,36 @@ and
 \end{equation}
 for parameters $y_0$ and $\mu$, respectively.
 
-We apply the GAMLSSBoost algorithm shown previously (see ...) to this setup. The loss function of interest is quite
-naturally the negative log likelihood of the censored inverse Gaussian distribution, derived in ..., i.e.,
+We wish to model the effect of covariates on these parameters. In particular, we will let $y_0$ be modeled by a high-dimensional matrix $X$,
+in practice typically gene expression data, and we will let $\mu$ be modeled by a low-dimensional matrix $Z$, typically clinical data.
+We let a vector of covariate information from one individual $i,i=1,2,\ldots,n$ be labeled $\x_i$ and $\z_i$, where these are
+gene data and clinical data, respectively.
+These matrices are defined as
+\begin{equation}
+    X=(\x_1,\x_2,\ldots,\x_{p_1}),
+\end{equation}
+and
+\begin{equation}
+    Z=(\z_1,\z_2,\ldots,\z_{p_2}),
+\end{equation}
+where the number of dimensions $p_1$ of $X$ is high (in particular, $p_1$ is much larger than $n$, $p_1 >> n$),
+and the number of dimensions $p_2$ of $Z$ is relatively small, and in particular, $p_2 < n$.
+
+We apply the GAMLSSBoost algorithm shown previously (see section \ref{sec:gamlssboost}) to this setup. The loss function of interest is
+the negative log likelihood of the censored inverse Gaussian distribution, derived in the Appendix, i.e.,
 \begin{equation*}
-    \rho(y,\btheta)=-l(y_0, \mu).
+    \rho(y,\btheta)=-l((t,d), (y_0,\mu)).
 \end{equation*}
 (See Appendix for the full expression!)
+We wish to build up an additive predictor $\boldeta$, consisting of components $\eta_1$ and $\eta_2$. As in the GAMLSS setting, these are given by
+\begin{equation}
+    \eta_1\coloneqq \exp(y_0)=\beta_{1,0}+\sum_{j=1}^{p_1}f_{1,j}(x_{1,j})
+\end{equation},
+and
+\begin{equation}
+    \eta_2\coloneqq \mu=\beta_{2,0}+\sum_{j=1}^{p_2}f_{2,j}(x_{2,j}).
+\end{equation},
+We wish to estimate these additive predictors by a gradient boosting algorithm.
 Given an estimated additive predictor $\hat{\boldeta}$, we get the corresponding estimated distribution parameters by
 transforming the additive predictors via the inverse of their link functions. Thus,
 \begin{equation}
@@ -67,158 +61,24 @@ This means that as a function of the additive predictors, the loss function is
     \rho(y,\boldeta)=-l(\exp(\eta_1), \eta_2).
 \end{equation*}
 To use the gradient boosting algorithm, we of course need to have the negative gradient of the loss function, i.e.,
-the negative derivative. The negative partial derivative of the loss function is equal to the (positive) derivative of the (positive) loss 
-function, with regard to each parameter. These are
+the negative derivative. The negative partial derivative of the loss function is equal to the (positive) derivative of the (positive) 
+log-likelihood function, with regard to each parameter. These are
 \begin{equation}
-    p_1(\eta_1,\eta_2)\coloneqq-\frac{\partial}{\partial\eta_1}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2)
+    -\frac{\partial}{\partial\eta_1}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2)
 \end{equation}
 and
 \begin{equation}
-    p_2(\eta_1,\eta_2)\coloneqq-\frac{\partial}{\partial\eta_2}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2).
+    -\frac{\partial}{\partial\eta_2}\rho(y_i,\btheta)=\frac{\partial}{\partial\eta_1}l(\exp(\eta_1), \eta_2).
 \end{equation}
 (See Appendix for the full expressions for these!)
-
-
-
-
-Our loss function is the negative of the log-likelihood in \eqref{eq:fht-loglik}, so
-\begin{align}\label{eq:fht-loglik}
-\begin{split}
-    \rho(y,\hat{\boldeta})&=-l(\hat{y}_0, \hat{\mu}) \\
-    &=-\di\p*{\ln \hat{y}_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\hat{y}_0+\hat{\mu}\ti}^2}{2\sigma^2\ti}} \\
-    &-
-    (1-\di)\ln\p*{\Phi\p*{\frac{\hat{\mu}\ti+\hat{y}_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2\hat{y}_0\hat{\mu}}{\sigma^2}}\Phi\p*{\frac{\hat{\mu}\ti-\hat{y}_0}{\sqrt{\sigma^2\ti}}}}
-\end{split}
-\end{align}
-
-
-\section{Simulation of survival data}
-We wish to simulate survival times $\ti,i=1,\ldots,N$ with censoring. We first draw survival times $\tilde{t}_i$ from some survival time distribution $f(\cdot)$. If this distribution has a closed form probability distribution function, we can draw from it directly. If not, we might use some an inverse sampling method, e.g. by drawing unit exponentials and using a corresponding transformation.
-
-To censor the data, we draw censoring times $W_i\sim f(\cdot),i=1,\ldots,N$, from a more right-tailed distribution, meaning we want to get many, but not all, $W_i$'s to be larger than the $\tilde{t}_i$'s. We let the observed survival times then be $t_i=\min(\tilde{t}_i,W_i)$.
-The corresponding observed indicator, $\di$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<W_i$. We end up with a set of $N$ tuples $(t_i,\delta_i),i=1,\ldots,N$. Note that this scheme incorporates independent censoring: The censoring time is independent of the survival times.
-
-\begin{algorithm}
-\caption{Generating survival data from Inverse Gaussian FHT distribution}
-\label{algo:FHT-sim}
-\begin{enumerate}
-    \item Given design matrices $\X$, $\Z$ and true parameter vectors $\bbeta$ and $\bgamma$.
-    \item Link covariates and parameters using link functions
-        \begin{align*}
-            \ln y_0&=\bbeta^T\X \\
-            \mu&=\bgamma^T\Z.
-        \end{align*}
-    \item Draw $N$ survival times $(t_i)_{i=1}^N$ from IG$(\mu,y_0)$.
-    \item Draw a censoring time $W$ from some distribution which is independent of the data.
-    \item Right censor data by choosing $\widetilde{t}_i=\min(t_i,W)$. The indicator on whether observation $i$ was observed or not is then $\delta_i=I(\widetilde{t}_i=t_i)$.
-    \item The simulated data set is $(\widetilde{t}_i,\delta_i)_{i=1,\ldots,N}$.
-\end{enumerate}
-\end{algorithm}
-
-\section{Algorithm}
-We apply the component-wise boosting algorithm \ref{algo:fhtboost} with loss function $\rho(\mu,\y0)=-\log\loss{y_0,\mu}$. We differentiate the loss function with respect to these two and get .... For more details on the derivation, see \ref{appendix}. \todo{Maybe use $b$ instead of $y_0$, to not get subscript chaos?}
 
 \begin{algorithm}
 \caption{FHT Boost with twodimensional loss function}
 \label{algo:fhtboost}
 \begin{enumerate}
-    \item Initialize the $n$-dimensional vectors $\hat{y}_0^{[0]},\hat{\mu}^{[0]}$ with the maximum likelihood estimates as offset values, i.e., $\hat{y}_0^{[0]}, \hat{\mu}^{[0]}=\argmin_{y_0,\mu}\rho(\cdot,\cdot)$.
-    \item For both components of the loss function, we specify linear base learners. In particular, a component-wise base learner which can be used for each of the $p$ variables used in $\X$ corresponding to $y_0$ and the $d$ variables in $\Z$ corresponding to $\mu$. Like earlier, the base learner takes one input variable and has one output variable.
-    \item Set $m=0$ and $\nu=0.1$.
-    \item Increase $m$ by 1.
-    \begin{enumerate}
-        \item If $m>m_{\text{stop},y_0}$, proceed to step 4 e). If not, compute the negative partial derivative $-\frac{\partial\rho}{\partial y_0}$ and evaluate at $\hat{f}^{[m-1]}(X_i,Z_i)=\left(\hat{y}_0^{[m-1]}(X_i),\hat{\mu}^{[m-1]}(Z_i)\right)_{i=1,\ldots,n}$. This yields the negative gradient vector $U_{y_0}^{[m-1]}=\left(U_{i,y_0}^{[m-1]}\right)_{i=1,\ldots,n}:=\left(-\frac{\partial}{\partial y_0}\rho\left(Y_i,\hat{f}^{[m-1]}(X_i,Z_i)\right)\right)_{i=1,\ldots,n}$.
-        \item Fit the negative gradient vector $U_{y_0}^{[m-1]}$ to each of the $p$ components of $\X$ separately (i.e. to each predictor variable) using the base learners specified in step 2. This yields $p$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $U_{y_0}^{[m-1]}$.
-        \item Select the component of $\X$ which best fits $U_{y_0}{[m-1]}$ according to $R^2$. Set $\hat{U}_{y_0}^{[m-1]}$ equal to the fitted values of the corresponding best model fitted in the previous step.
-        \item Update $\hat{y}_0^{[m-1]}\gets\hat{y}_0^{[m-1]}+\nu\hat{U}_{y_0}^{[m-1]}$.
-        \item If $m>m_{\text{stop},\mu}$, proceed to step 4 j). If not, compute the negative partial derivative $-\frac{\partial\rho}{\partial \mu}$ and evaluate at $\hat{f}^{[m-1]}(X_i,Z_i)=\left(\hat{y}_0^{[m-1]}(X_i),\hat{\mu}^{[m-1]}(Z_i)\right)_{i=1,\ldots,n}$. This yields the negative gradient vector $U_{\mu}^{[m-1]}=\left(U_{i,\mu}^{[m-1]}\right)_{i=1,\ldots,n}:=\left(-\frac{\partial}{\partial \mu}\rho\left(Y_i,\hat{f}^{[m-1]}(X_i,Z_i)\right)\right)_{i=1,\ldots,n}$.
-        \item Fit the negative gradient vector $U_{\mu}^{[m-1]}$ to each of the $p$ components of $\Z$ separately (i.e. to each predictor variable) using the base learners specified in step 2. This yields $d$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $U_{\mu}^{[m-1]}$.
-        \item Select the component of $\Z$ which best fits $U_{\mu}{[m-1]}$ according to $R^2$. Set $\hat{U}_{\mu}^{[m-1]}$ equal to the fitted values of the corresponding best model fitted in the previous step.
-        \item Update $\hat{\mu}^{[m-1]}\gets\hat{\mu}^{[m-1]}+\nu\hat{U}_{\mu}^{[m-1]}$.
-        \item Update $\hat{f}^{[m]}\gets\hat{f}^{[m-1]}$.
-        \item If $m>\max(m_{\text{stop},y_0},m_{\text{stop},\mu})$, go to step 5. If not, repeat step 4.
-    \end{enumerate}
-    \item Return $\hat{f}^{[m]}$.
-\end{enumerate}
-\end{algorithm}
-We might call this cyclical boosting.
-
-\subsection{Boost in same}
-Another way to do this is to only boost one component in each iteration. The component might be corresponding to $X$, or it might be corresponding to $Z$.
-
-
-% First tried cyclical boosting.
-% Then tried non-cyclical, with comparing RSS. Doesn't work; not on the same scale.
-% Then tried using non-cyclical, comparing instead the loss function instead of rss.
-
-\subsection{Derivatives not on same scale}
-Pass.
-
-\subsection{Changing the intercept in each iteration}
-Another way to do this is to only boost one component in each iteration. The component might be corresponding to $X$, or it might be corresponding to $Z$.
-
-
-\section{Simulation experiments}
-In this section, I will discuss how I tried validating the boosting method I have developed. While working with implementing the algorithm, to see if it worked, I first used an example with low dimensions. In low dimensions, it's feasible to find the joint maximum likelihood numerically. After confirming the method works as it should, we can go to more complicated examples.
-
-\section{Simulation setup}
-We do simulations where we draw observations from the Inverse Gaussian distribution, i.e., we simulate lifetimes from the first hitting time model with Wiener process as the health process. We use algorithm \eqref{algo:FHT-sim} to do this. We will have two scenarios: One with no correlation, and one with a lot of correlation. To simulate the covariate matrices $X$ and $Z$ we will use algorithm \eqref{algo:clinical-sim}, which is a method for simulating clinical and gene data together. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. We specify the different correlations for the covariate matrices. But most importantly, we specify the true parameter vectors, $\bbeta$ and $\bgamma$. For each scenario, we conduct $N_{\text{scenario}}$ runs.
-
-One run consists of first drawing data (with a specific seed to ensure reproducibility), i.e., we draw covariate matrices $\X$, $\Z$ from \label{algo:clinical-sim}. $\X$ is of size $N\times p$ and $\Z$ is of size $N\times d$, where $N$ is the number of observations, $p+1$ is the size of the covariate vector $\bbeta$ (including an intercept which will not be affected by the covariates), and $d+1$ is the size of the covariate vector $\bgamma$. Then we combine these with the true covariate matrices to get vectors $\y_0$ and $\mathbf{\mu}$ of initial value of the health process, and drift, respectively. Then we draw from the Inverse Gaussian distribution according to \label{algo:FHT-sim}, obtaining $N$ right-censored lifetimes, i.e., $N$ tuples $(\widetilde{t}_i,\delta_i)_{i=1,\ldots,N}$. With these tuples, then, we can do a run with the FHT boosting algorithm. We first use repeated K-fold cross-validation to find the optimal number of boosting steps, $m_{\text{stop}}$. Then we estimate the model on the whole of this training set. Then we validate this model on a training set of size $N_{\text{test}}$. The data here is drawn in the exact same manner as the training data, here also with a specific seed.
-
-\begin{algorithm}
-\caption{Generating clinical and gene expression data}
-\label{algo:clinical-sim}
-\begin{enumerate}
-    \item Lorem ipsum.
+    \item Lorem ipsum
 \end{enumerate}
 \end{algorithm}
 
-\subsection{Small example}
-Let parameter vectors be two dense $\bbeta=(2,0.1,0.2)$ and $\bgamma=(-1, -0.1, 0.1)$. Let $X$ and $Z$ be such and such, drawn from a beta distribution.
-We simulate data using Algorithm \ref{algo:FHT-sim}, with the censoring time $W$ being drawn from a distribution $\exp(0.1)$. The resulting survival times have the following Kaplan-Meier plot.
-\begin{figure}
-\caption{Kaplan-Meier plot of small example}
-\centering\includegraphics[scale=0.4]{figures/case1.pdf}
-\end{figure}
-We use cross validation to find a suitable iteration number $\mstop$, and find it to be 28. We then run our algorithm with that number of iterations. Below is a plot of the negative log likelihood of the data (in-sample loss) as a function of iteration number.
-\begin{figure}
-\caption{Log-likelihood}
-\centering\includegraphics[scale=0.4]{figures/case1_loglik.pdf}
-\end{figure}
-The final $\hat{\bbeta}$ is $(1.968, 0.103, 0.180)$, and the final $\hat{\bgamma}$ is $(-0.964, -0.082, 0.062)$. The parameters found by numerically maximizing the joint maximum likelihood are also included. Summarized in the table below.
-
-\begin{tabular}{lrr}
-    parameter  & true & estimated \\
-    $\beta_0$  &  2.0 &     1.968 \\
-    $\beta_1$  &  0.1 &     0.103 \\
-    $\beta_2$  &  0.2 &     0.180 \\
-    $\gamma_0$ & -1.0 &    -0.964 \\
-    $\gamma_1$ & -0.1 &    -0.082 \\
-    $\gamma_2$ &  0.1 &     0.062 \\
-\end{tabular}
-
-As we can see, our boosting method recovers the original parameters quite well. This is of course with data coming from the exact same kind of model.
-
-\section{Brier scores on survival data}
-In order to assess predictive performance, we need what's called a proper scoring rule: One which is 1 if the actual data is inserted as predictions.
-
-\subsection{Brier scores and $R^2$ measure}
-The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts. While it is also able to handle multiple categories, we will here give the definition for the binary case. We start by assuming that we are in a situation with no censoring, and that we have $m$ individuals in a test set. We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,m$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$. The error made in predicting the event status $I(t>t^*)$ for a patient in the test set can be given as
-\begin{align*}
-BS(t^*)&=\frac{1}{M}\sum_{i=1}^m\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
-    &=\frac{1}{M}\sum_{i=1}^m\left[\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*)+(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)\right].
-\end{align*}
-In the first formulation, the Brier score looks like a version of an RSS measure, where one sums the squared error between the observed event and the estimated probability. In the case of censored data, the above is of course not enough. The Brier score was adapted to handle censored survival times by \citet{graf}, assuming independent censoring. They showed that the loss of information due to censoring can be accounted for by using an inverse probability of censoring weighting \citep{bovelstadborgan}. This Brier score for censored data is defined as
-\begin{equation*}
-    BS^c(t^*)=\frac{1}{M}\sum_{i=1}^m\left[\frac{\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*,\delta_i=1)}{\hat{G}(t_i)}+\frac{(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)}{\hat{G}(t^*)}\right],
-\end{equation*}
-where $\hat{G}$ is the Kaplan-Meier estimate of the censoring distribution, defined as
-\begin{equation*}
-    \hat{G}(t)=\prod_{t_i<t}\left(1-\frac{1-\delta_i}{\sum_{i=1}^NY_i(t)}\right),
-\end{equation*}
-where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$. This score may also be used to define an $R^2$ measure, where one can benchmark the performance of a fitted model to a so-called null model, i.e., one where each regression coefficient is set to zero. A measure of explained variation can be found by calculating the gain in accuracy when adding covariates. Thus we define the Brier $R^2$ measure as
-\begin{equation*}
-    R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
-\end{equation*}
-where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals. One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
+\subsection{Modification: Changing the intercept in each iteration}
+Another way to do this is to only boost one component in each iteration. The component might be corresponding to $X$, or it might be corresponding to $Z$.
