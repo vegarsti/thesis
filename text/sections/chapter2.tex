@@ -213,6 +213,8 @@ where $\beta_j(t),j=1,\ldots,p$ is the increase in the hazard at time $t$ corres
 \subsection{Robustness of Cox when the PH assumption is violated}
 Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo[inline]{Need to find a citation here.}
 
+\subsection{Cox, proportional hazards, and variable selection}
+
 \section{First hitting time models}\label{sec:FHT}
 So far we have done regression by modelling the hazard rate $\hz(\cdot)$.
 Therefore we have not thought much about how a time-to-death is \textit{generated}, other than the fact that it arises from a survival distribution $S(\cdot)$ with a corresponding hazard function $\hz(\cdot)$.
@@ -324,9 +326,9 @@ and cumulative distribution function (cdf)
     F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
 \end{equation}
 As previously discussed in subsection \ref{fht-idea}, note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
-\begin{equation*}
+\begin{equation}\label{eq:P-inf-FHT}
     \Pr{(T=\infty)}=1-\Pr{(T<\infty)}=1-\exp{(-2y_0\mu)},
-\end{equation*}
+\end{equation}
 see \citet{cox1965}. Since we in survival analysis prefer working with the survival function $S(t)=1-F(t)$ rather than the cdf $F(t)$, we note that $S(t)$ becomes
 \begin{equation}
 \label{eq:ig-surv}
@@ -355,22 +357,39 @@ There are three parameters in the inverse Gaussian distribution, namely $y_0, \m
 We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through the ratios $\mu/\sigma$ and $y_0/\sigma$.
 Hence, there are in reality only two free parameters. In other words, we can without loss of generality fix one parameter. The conventional way to proceed is to set $\sigma$ equal to 1 \citep{leewhitmore2006}. We will use this to make inference.
 
-\subsection{The shape of the hazard rate}
-The hazard rate is $\hz(t)=f(t)/S(t)$ \eqref{eq:hfs}. Regardless of the initial value, this converges to the same limiting hazard. If $y_0$ is close to zero, we essentially get a decreasing hazard rate. If $y_0$ is far from zero, this gives an essentially increasing hazard rate. If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+\section{Properties of the IG functions}
+
+\subsection{The shape of the hazard function in the inverse Gaussian model}
+From \eqref{eq:hfs}, we know that the hazard function can be seen as
+\begin{equation*}
+    \hz(t)=f(t)/S(t).
+\end{equation*}
+The expression for this is rather unruly, but we can make some comments on its shape as it relates to different values for $y_0$ and $\mu$.
+If $y_0$ is close to zero, we essentially get a decreasing hazard rate.
+If $y_0$ is far from zero, however, we essentially get an increasing hazard rate.
+If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+In all three cases, the hazard has a peak.
+This peak is dependent on both the initial level and the drift, of course. 
+It is not as simple as the peak being at the mean lifetime, i.e., $y_0/\mu$.
+Although the height of the peak will change both by changing both parameters, to simplify it a lot, $y_0$ mostly impacts at what time the
+peak is, whereas $\mu$ mostly affects the height of the peak.
+Regardless of the initial value, the hazard rate converges to the same limiting hazard, which is
+\begin{equation}
+    \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2,
+\end{equation}
+as seen in \citet{ABG}.
 \todo[inline]{This is unclear}
-\todo[inline]{Add plots of hazard rates here. see page 401 in ABG} 
+\todo[inline]{Add plots of hazard rates here. see page 401 in ABG}
+To get an intuitive feel for this, I have made an interactive website at \verb|vegarsti.shinyapps.io/FHT_Hazard|.
 
 \subsection{Comparison of hazard rates}
 It might be of particular interest to look at the ratio between two hazard rates. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. This feature is the same phenomenon as that observed in frailty models, where the relative hazards often decline \citep{ABG}.
 \todo[inline]{Explain better}
-It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards. The hazard function converges to
-\begin{equation}
-    \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2
-\end{equation}
+It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards.
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
 \todo[inline]{Add plot here as well; also here see ABG page 402}
 
-\subsection{Regression}\label{subsec:IG-reg}
+\section{Regression}\label{subsec:IG-reg}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$. A simple and much used model
 \citep{leewhitmore2006, caroni2017}
 is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since it must be positive in our framework,
@@ -400,3 +419,10 @@ At the moment, the standard for fitting an inverse gaussian FHT model to surviva
 %Lorem ipsum some example. Just use numerical maximization.
 
 %\subsection{Identification problems}
+
+\subsection{Combining clinical and genetic data in the Inverse Gaussian FHT model}
+Combining clinical and genetic data in biomedical survival analysis is a large and important goal.
+The IG FHT model lends itself nicely to combining clinical and genetic data.
+As discussed in \citet{aalengjessing2001}, an a priori
+decision that e.g. the initial level of a health process is decided by genes, and that the health process drift is decided by
+``lifestyle,'' would be an instance of this combining of data.
