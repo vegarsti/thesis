@@ -245,7 +245,14 @@ In some versions of the FHT model, there is no guarantee that the process $\{Y(t
 \begin{equation}
     P(T=\infty)=1-P(T<\infty).
 \end{equation}
-This condition is sometimes plausible and a desirable model feature. This will become apparent when we deal with regression.
+This condition is sometimes plausible and a desirable model feature.
+Two common concepts in survival analysis might lead to this.
+One is the case of competing risks.
+That is the case where an individual might die from not only one, but several causes, but we are only studying one of these.
+Naturally, then, we would not except that all individuals die from the cause that we study, and hence $P(T<\infty)<1$.
+The second concept is what models that aee often called ``cure models'', or, models with ``long-term survivors.''
+A cure model is a model where there are individuals with zero frailty, i.e., a nonsusceptible group \citep{ABG}.
+Consult \citet{maller1996survival} for a book on this.
 
 \citet{eaton-whitmore} discuss FHTs as a general model for hospital stay. \citet{aalengjessing2001} provide an overview of much of this subject. \citet{lawless2011} provides a compact overview of the theory. \citet{leewhitmore2004a} provides an overview of first hitting time models for survival and time-to-event data. There is a large literature dealing with theoretical and mathematical aspects of FHT models.
 

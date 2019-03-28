@@ -1,4 +1,4 @@
-\chapter{Real life data study}
+\chapter{Application on a real data set}
 
 \section{Neuroblastoma}
 We consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
@@ -41,7 +41,14 @@ We simply remove these, and are left with a data set of 359.
 In our data set, which we have received in part from Bøvelstad, we have used above or below the median age as a covariate, and not the age itself.
 
 \citet{bovelstad2009} generated 50 random splits of training (240 patients) and test (122 patients) sets from the data.
-We generate one split of train and test data, where we divide into $K$ folds, stratified by censoring status, and perform cross-validation on the training set.
+We first generate one split of train and test data to give an example of how to interpret the estimated parameters.
+Later we generate 100 random splits of training and test sets.
+For each split, we carry out the boosting algorithm with the training set, and calculate the difference of deviance on the test set.
+
+\section{Example}
+The division is done by first setting a particular seed, then dividing, stratified by censoring status, into 3 almost equally sized parts.
+We say that the first part is the test set, and the second and third parts are joined to make up the training set.
+We then perform cross-validation on the training set.
 
 \subsection{Cross-validation on training set}
 We perform a repeated (10 times) 5-fold cross validation to find the optimal number of iterations.
@@ -170,30 +177,65 @@ $j$ & $\beta_j$ \\
 $j$ & $\gamma_j$ & Properly scaled $\gamma_j$\\
 \hline
 0 &  0.105 &  \\
-1 &  -0.351 & X1 \\
-2 &   0.005 & X2
+1 &  -0.351 & -0.708 \\
+2 &   0.005 & 0.104
 \end{tabular}
 \end{table}
+
+To get proper effect, do ...
 
 We observe that 17 genes have been selected. Some effects are estimated to be positive, some to be negative.
 Again, these gene expression measurements have been centered and scaled.
 However, a larger parameter does not necessarily mean that the effect of this gene is larger than others, as that still depends on the distribution of these.
 We could for example compare the model to a clinical-only model, to see the effect of genes vs clinical.
 
-We calculate the deviance on the test set.
-We obtain a difference of deviance of X.
+Finally, we calculate the log-likelihood on the test set, with the model estimated from the training set, and similarly using the estimated null model of the training set.
+We use this to calculate the difference of deviance on the test set and obtain -9.64.
 
-Used in \citep{bovelstad2009}.
+\section{Difference in deviance}
+The difference in deviance between a fitted model and the null model containing no covariates is given by
+\begin{equation*}
+    d=-2\left(l^{\text{test}}(\bbeta_{\text{train}})-l^{\text{test}}(\0)\right),
+\end{equation*}
+where $l^{\text{test}}(\bbeta)$ is the likelihood attained with covariate vector $\beta$ on the test set.
+The performance of a model is good when the difference in deviance is small.
 
-\citet{bovelstad2007}
+In some of the results in this section, we end up with a \textit{positive} difference of deviance, which means that the null model performed better than the estimated model.
+This sounds weird.
+However, this will happen if the model estimated on the training set has estimated parameters which are in the \textit{opposite} direction of those in the test set.
+Thus the null model will perform better than the estimated model.
 
+\section{Comparing a clinical-only model to a full model}
+We now generate 100 splits of training and test sets.
+We perform the same method as above, estimating parameters based on the training set, and calculating deviance on the test set, using those parameters.
+Our boosting method offers a simple way to combine clinical and genetic data in estimating.
+We can use this to compare how our model performs when using only the clinical data, and when using the full data.
+A method proposed in \citet{bovelstad2007}. Used in \citep{bovelstad2009}.
+The median of difference of deviance as main measure of interest, and it is -35.53 for the full model, and -24.82 for the clinical model.
+See Figure \ref{fig:neuroblastoma-deviances} for a boxplot of these.
 
-MEDIAN of difference of deviance as main measure of interest.
+\begin{figure}\label{fig:neuroblastoma-deviances}
+\caption{Difference in deviance when using a clinical-only model with only boosting $\mu$ and a full model.}
+\centering\includegraphics[scale=0.4]{figures/deviance_all_boxplot_w_title.pdf}
+\end{figure}
+
 
 
 \section{Colon cancer}
-\citep{marisa-data}
-About the data.
-Here some times are originally 0. setting to 1e-9 caused numerical instability. test either set to 0, or, set to like 0.1
+We now consider data originating from \citet{marisa-data}, consisting of patients diagnosed with colon cancer.
+Colon cancer is the third most common cancer, and the fourth leading cause of cancer death worldwide \citep{marisa-data}.
+Pathological staging is the only prognostic
 
-Positive intercept because the number of censored are more than the number of observed?
+The French national CIT program involves a multicenter cohort of 750 patients with stage I to IV CC.
+
+About the data.
+
+We remove observations where any covariate is missing.
+
+We have four clinical measurements.
+These are sex, which is coded as a dummy variable $x_{\text{sex}}\in\{-1,1\}$, age, subtype, and finally stage.
+
+In the original data set, some survival times are originally 0.
+We first tried setting these to $10^{-9}$, but it resulted in numerical instability when using numerical optimization to find the maximum likelihood intercepts.
+We then tried setting these successively to $10^{-9},\,10^{-8},\,\cdot$, and not until 0.1 did we achieve numerical stability.
+Note that this likely has a large effect on the estimated parameters.
