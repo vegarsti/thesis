@@ -1,9 +1,12 @@
-\documentclass[a4paper]{memoir}
+%\documentclass[a4paper]{memoir}
+\documentclass[a4paper, USenglish, dvipsnames, svgnames, cmyk]{memoir}
+\usepackage[SDATA, 60]{masterfrontpage}
+
 
 \usepackage{style}      % Custom style
 \usepackage{mymacros}   % Custom defined macros and commands
 
-\title{Boosting the First-Hitting-Time Regression Model}
+\title{A boosting algorithm to extend first-hitting time models to a high-dimensional survival setting}
 \author
 {
     Vegard Stikbakke
@@ -13,9 +16,11 @@
 
     \frontmatter        % Folios in Roman numerals, unnumbered chapters.
 
-    \begin{titlingpage}
-        \maketitle
-    \end{titlingpage}
+    %\begin{titlingpage}
+    %    \maketitle
+    %\end{titlingpage}
+    \masterfrontpage
+    % Remove this!
 
     \input{sections/abstract}
     \input{sections/acknowledgements}
@@ -40,6 +45,8 @@
     \input{sections/chapter5}
 
     \input{sections/chapter6}
+
+    \input{sections/discussion}
 
     \appendix           % "Chapter" is renamed "Appendix"
     \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.

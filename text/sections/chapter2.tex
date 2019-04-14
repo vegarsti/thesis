@@ -214,6 +214,20 @@ where $\beta_j(t),j=1,\ldots,p$ is the increase in the hazard at time $t$ corres
 Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo[inline]{Need to find a citation here.}
 
 \subsection{Cox, proportional hazards, and variable selection}
+Consider survival data with two covariates $x_1$ and $x_2$.
+With Cox regression, the hazard is
+\begin{equation*}
+    \alpha(t|x_{i,1},\,x_{i,2})=\alpha_0(t)\exp(\beta_1x_{i,1}+\beta_2x_{i,2}).
+\end{equation*}
+There is a model inconsistency problem here.
+If we only observe $x_{i,1}$, and calculate the hazard $\alpha(t|x_{i,1})$, then this will not be of Cox regression form, regardless of the distribution of $x_2|x_1$.
+
+In addition, if there is perfect Cox structure given $x_1$ alone, and perfect Cox structure given $x_2$ alone, one almost never has a Cox model $(x_1,x_2)$.
+That is, one almost never has the proportional hazards assumption actually satisfied.
+
+Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models. 
+One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
+This is where first-hitting-time models come in.
 
 \section{First hitting time models}\label{sec:FHT}
 So far we have done regression by modelling the hazard rate $\hz(\cdot)$.
@@ -313,6 +327,7 @@ Consequently, the first hitting time will be nearly a deterministic function of 
 This is quite visible in Figure \ref{plot:wiener}, which shows examples of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=1$. If $\sigma^2$ is relatively large compared to the drift, the diffusion part is more dominant and thus the hitting time is less predictable \citep{ABG}.
 
 \subsection{Inverse Gaussian distribution and different parameterizations}
+This parameterization is not in the exponential family, and hence it is not a generalized linear model.
 
 
 \subsection{Wiener process and Inverse Gaussian first hitting time}

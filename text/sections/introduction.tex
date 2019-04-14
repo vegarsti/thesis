@@ -1,4 +1,30 @@
-\chapter{Introduction}
+\chapter{Introduction and outline of the thesis}
 \label{sec:intro}
 
-In this thesis, we work with boosting for regression in the first hitting time model. First hitting time is a model in survival analysis which serves as an alternative to the proportional hazards model, typically known as Cox regression. Developments in FHT regression are relatively recent, and there has to our knowledge been no attempt at tackling it in the high-dimensional case, in which boosting is an appropriate choice of method.
+In this thesis, we work with boosting for regression in the first hitting time model.
+First hitting time is a model in survival analysis which serves as an alternative to proportional hazards model, where Cox regression is by far the most prominent.
+Developments in FHT regression are relatively recent, and there has to our knowledge been no attempt at tackling it in the high-dimensional case, in which boosting is an appropriate choice of method.
+
+High-dimensional survival analysis.
+
+These days, genetic information is cheap.
+The cost of perform gene sequencing is very low, at the point where it is feasible to perform it on many patients.
+
+The Cox regression model \citep{cox1965} is widely used to model survival data.
+
+
+The main goal of this thesis is to adapt first-hitting-time models for survival analysis to a high-dimensional setting.
+This will be done by implementing a gradient boosting algorithm.
+Gradient boosting algorithms are iterative algorithms for performing penalized maximum likelihood estimation.
+Most traditional gradient boosting algorithms are concerned with modelling one parameter.
+We will estimate two parameters.
+To this end, we will review recent developments in gradient boosting for multidimensional likelihood functions.
+
+In chapter 2, we will discuss first-hitting-time models..
+We will first provide background on survival data and then briefly discuss Cox regression.
+The latter part of the chapter will be focused on first-hitting-time models.
+In chapter 3, we discuss gradient boosting methods.
+In chapter 4, we discuss a gradient boosting algorithm for first-hitting-time models.
+In chapter 5, we perform a simulation study.
+In chapter 6, we apply the developed algorithm on a real-life dataset with neuroblastoma patients, and compare it to Cox regression.
+Finally, chapter 7 summarizes and hints at future work.

@@ -73,6 +73,80 @@ and we derive the loss function $\rho$ accordingly, yielding
 \end{align*}
 which is the familiar $L_2$ loss function. Note that since we will only model $\mu(\cdot)$, the loss function need not depend on $\sigma^2$. With all those parts in place, we can model the additive predictor $f(\cdot)$.
 
+\subsection{Model selection and model assessment}
+\textit{Test error}, also referred to as \textit{generalization error}, is the prediction error over an independent test sample
+\begin{equation}
+    \text{Err}_{\tau}=\mathbb{E}[L(Y,\hat{f}(X))|D]
+\end{equation}
+where both $X$ and $Y$ are drawn randomly from their joint distribution (population).
+Here the training set $D$ is fixed, and test error refers to the error for this specific training set.
+A related quantity is the expected prediction error (or expected test error)
+\begin{equation}
+    \text{Err}=\mathbb{E}[L(Y,\hat{f}(X))]=\mathbb{E}\left[\text{Err}_D\right]
+\end{equation}
+Note that this expectation averages over everything that is random, including the randomness in the training set that produced $\hat{f}$.
+
+Estimation of $\text{Err}_D$ will be our goal, although we will see that $\text{Err}$ is more amenable to statistical analysis, and most methods effectively estimate it.
+
+\textit{Training error}, sometimes called empirical risk, is the average loss over the training sample
+\begin{equation}
+    R=\overline{\text{err}}=\frac{1}{N}\sum_{i=1}^NL(y_i,\hat{f}(x_i)).
+\end{equation}
+We would like to know the \textit{expected} test error of our estimated model $\hat{f}$,
+\begin{equation}
+    \mathbb{E}[R]=\mathbb{E}[\overline{\text{err}}]=\mathbb{E}\left[\frac{1}{N}\sum_{i=1}^NL(y_i,\hat{f}(x_i))\right].
+\end{equation}
+As the model becomes more and more complex, it uses the training data more and is able to adapt to more complicated underlying structures.
+Hence there is a decrease in bias but an increase in variance.
+The bias here refers to assumptions made on the structure of the response, which is not based on the data.
+An example of a model with high bias is a linear model
+\begin{equation}
+    y=\beta_0+\sum_{j=1}^p\beta_jx_j.
+\end{equation}
+It has high bias because it is only able to model a response $y$ which is linear in each covariate $x_j$.
+A model with high variance, on the other hand, does not make many assumptions on the relationship.
+Given two observations $\x_1$ and $x_2$, which are relatively similar, a model with high variance may propose two responses which are relatively different from each other.
+At least more so than a model with high bias, but low variance.
+There exists some intermediate model complexity that gives minimum expected test error, which is what we want to achieve.
+
+Unfortunately training error is not a good estimate of the test error.
+Typically, the training error will drop to zero if we increase the model complexity enough.
+This is because, as the bias becomes very small and the variance very large, the model ends up effectively learning the randomness inherent in the data, and not the structure of the relationship between the input $X$ and the output $Y$.
+This is what is called overfitting.
+An overfit model generalizes poorly, and it is generalization that we are after.
+
+So how do we estimate the expected test error of a model $\hat{f}$?
+Typically our model will have a tuning parameter $\alpha$, and so we write $\hat{f}_\alpha$.
+This tuning parameter varies the complexity of our model, and we wish to find that value of $\alpha$ which minimizes error, i.e., which produces the minimum of the average test error.
+
+It is important to note that there are two separate goals that we have in mind.
+First, we wish to perform \textbf{model selection}.
+We wish to choose the best model, and to do this we need to estimate the performance of different models.
+This is typically done in two steps.
+First, the model $\hat{f}_\alpha$ needs to be estimated.
+This is done using what is called a \textit{training set}.
+Second, we estimate the prediction error of this model on a \textit{validation set}.
+Having done so, for various values of $\alpha$, we wish to perform \textbf{model assessment}, to find the $\alpha$ which minimizes generalization error.
+We wish to, as accurately as possible, estimate the prediction error (generalization error) of our chosen model.
+This is typically done using a so-called \textit{test set}.
+It is important that we do not consider the performance of our chosen model on the validation set as the prediction error.
+This estimate is biased, because we are only looking at the performance of this model \textit{because} its performance is good.
+Ideally, the test set should be kept completely separate, and be brought out only at the end of the data analysis.
+
+In a setting where data is abundant, one can simply split the data into these three parts: Training, validation, and test.
+However, often, data is not abundant, and we wish to use the data as efficiently as possible.
+There exist good methods to do this.
+Notable general methods are the bootstrap, and K-fold cross-validation.
+We will in this thesis not discuss the bootstrap, but we will discuss cross-validation in a latter section.\todo[inline]{add reference}
+In short, K-fold cross validation uses a training data set and uses this as a joint training and validation set.
+First, split the data set into a test set and an original training set.
+Then, split the original training set into $K$ equally sized parts.
+For each part, \textit{train/estimate} the model $\hat{f}_\alpha$ on $K-1$ of the parts, and \textit{validate} on the $K$-th (the last) part.
+Then do this $K$ times, treating each part in turn as a validation set.
+Then sum up the validation errors across the $K$ validation sets.
+This means that the entire, original training set has also been used as a validation set.
+There is still a bias, but it is smaller than validating on the same data as training. 
+
 \subsection{Optimization}
 Obtaining the optimal prediction is accomplished by minimizing $\rho$ with regard to the additive predictor $f(\cdot)$. We have only observed a data set $D$, but we wish to generalize the results to unseen data sets of a similar type. Therefore, what is typically done is to minimizes the loss over an unseen ``hold-out'' sample, often called the test error. Other names are generalization error and out-of-sample error. For a specific data set $D$, we can calculate the loss function on each observation, and sum these losses. This is what is often called the empirical risk of the loss $\rho$ over the data set $D$, which we will denote $R_D$,
 \begin{equation}\label{eq:empirical-risk}
@@ -803,12 +877,12 @@ In both cases of this algorithm, we have the advantage that the optimal number o
     \item Increase $m$ by 1.
     \item Set $k=0$.
     \item Increase $k$ by 1.
-    \item Compute the negative partial derivative $-\frac{\partial\rho}{\partial \hat{f}_k}$
-        and evaluate at $\hat{f}^{(m-1)}(x_i),i=1,\ldots,N$, yielding negative gradient vector
+    \item Compute the negative partial derivative $-\frac{\partial\rho}{\partial \eta_k}$
+        and evaluate at $\hat{\boldeta}^{[m-1]}(x_i),i=1,\ldots,N$, yielding negative gradient vector
         \begin{equation}
-            \u^{(m-1)}_k=\left(-\frac{\partial}{\partial \hat{f}_k}\rho(y_i, \hat{f}^{(m-1)}(x_i))\right)_{i=1}^N
+            \u^{[m-1]}_k=\left(-\frac{\partial}{\partial \hat{\eta}_k}\rho(y_i, \hat{\boldeta}^{[m-1]}(x_i))\right)_{i=1}^N
         \end{equation}
-    \item Fit the negative gradient vector to each of the $p$ components of $X$ (i.e. to each base learner) separately, using the base learners specified in step X. This yields $p$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $\u^{(m-1)}_k$.
+    \item Fit the negative gradient vector to each of the $p$ components of $X$ (i.e. to each base learner) separately, using the base learners specified in step X. This yields $p$ vectors of predicted values, where each vector is an estimate of the negative gradient vector $\u^{[m-1]}_k$.
     \item Select the best fitting base learner, $h_{kj}$, either by
         \begin{itemize}
             \item the inner loss, i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
@@ -822,17 +896,44 @@ In both cases of this algorithm, we have the advantage that the optimal number o
         \end{itemize}
     \item Compute the possible improvement of this update regarding the outer loss,
         \begin{equation}
-            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{f}^{(m-1)}(x^{(i)}) + \nu \cdot \hat{h}_{kj^*}(x^{(i)}) \right)
+            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{\boldeta}^{[m-1]}(x^{(i)}) + \nu \cdot \hat{h}_{kj^*}(x^{(i)}) \right)
         \end{equation}
     \item Update, depending on the value of the loss reduction, $k^*=\argmin_{k\in1,\ldots,K}\Delta\rho_k$
         \begin{equation}
-            \hat{f}^{(m)}_{k^*}=\hat{f}^{(m-1)}_{k^*}+\nu\cdot\hat{h}_{k^*j^*}(x),
+            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}+\nu\cdot\hat{h}_{k^*j^*}(x),
         \end{equation}
         while for all $k\neq k^*$,
         \begin{equation}
-            \hat{f}^{(m)}_{k^*}=\hat{f}^{(m-1)}_{k^*}.
+            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}.
         \end{equation}
     \item Repeat steps 4 to 11 until $m=m_{\text{stop}}$.
-    \item Return $\hat{f}(\cdot)=\hat{f}_M(\cdot)=\sum_{m=0}^Mf_m(\cdot)$.
+    \item Return $\hat{\boldeta}(\cdot)=\hat{\boldeta}_M(\cdot)=\sum_{m=0}^M\boldeta_m(\cdot)$.
 \end{enumerate}
 \end{algorithm}
+
+
+\section{Centering and scaling of covariates is important to ensure proper fitting}
+\subsection{Centering}
+We are using component-wise linear least squares base learners \textit{without} intercepts, i.e., functions of the form
+\begin{equation*}
+    h_j(\x_i)=\beta_jx_{i,j}.
+\end{equation*}
+Here $i$ is an observation from the observed data set, i.e., $i\in\{1,2,\ldots,n\}$, and $j$ is a column of the covariate matrix, i.e., $j\in\{1,2\ldots,p\}$.
+Let $\X$ be a stochastic vector which is randomly drawn from the data distribution, and let $X_j$ be the $j$-th component of this vector.
+If column $j$ is centered, this means that
+\begin{equation*}
+    \mathbb{E}[X_j]=0.
+\end{equation*}
+Hence it follows that
+\begin{equation*}
+    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]\cdot0=0.
+\end{equation*}
+This means that the interpretation of the estimated $\hat{\beta}_j$ is ``the effect of a unit increase in $x_j$ over the expected value of $x_j$''.
+If, however, the column is not centered, then
+\begin{equation*}
+    \mathbb{E}[X_j]=x_j^*,
+\end{equation*}
+Hence it follows that
+\begin{equation*}
+    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]x_j^*.
+\end{equation*}

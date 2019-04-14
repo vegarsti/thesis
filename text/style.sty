@@ -51,12 +51,11 @@
 
 
 %% Graphics
-\RequirePackage[dvipsnames,
-                svgnames,
-                cmyk]{xcolor}     % Pre-defined colors
+% xcolor is already imported elsewhere. Moved these options to 
+% \RequirePackage[dvipsnames, svgnames, cmyk]{xcolor}     % Pre-defined colors
 \RequirePackage{graphicx}         % Tool for importing images
 \graphicspath{{figures/}}
-\RequirePackage{tikz}             % Drawing tool
+%\RequirePackage{tikz}             % Drawing tool
 \usetikzlibrary{calc}
 \usetikzlibrary{intersections}
 \usetikzlibrary{decorations.markings}
