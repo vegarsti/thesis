@@ -657,7 +657,7 @@ url="https://doi.org/10.1186/1471-2288-14-117"
   publisher={Springer New York}
 }
 
-@Inbook{cox,
+@Inbook{cox-model,
 author="Cox, David R.",
 title="Regression Models and Life-Tables",
 bookTitle="Breakthroughs in Statistics: Methodology and Distribution",
@@ -1257,3 +1257,18 @@ abstract = "Statisticians have begun to realize that certain deliberately induce
     abstract = {Abstract.  The traditional Cox proportional hazards regression model uses an exponential relative risk function. We argue that under various plausible scenarios, the relative risk part of the model should be bounded, suggesting also that the traditional model often might overdramatize the hazard rate assessment for individuals with unusual covariates. This motivates our working with proportional hazards models where the relative risk function takes a logistic form. We provide frequentist methods, based on the partial likelihood, and then go on to semiparametric Bayesian constructions. These involve a Beta process for the cumulative baseline hazard function and any prior with a density, for example that dictated by a Jeffreys-type argument, for the regression coefficients. The posterior is derived using machinery for Lévy processes, and a simulation recipe is devised for sampling from the posterior distribution of any quantity. Our methods are illustrated on real data. A Bernshteĭn–von Mises theorem is reached for our class of semiparametric priors, guaranteeing asymptotic normality of the posterior processes.},
     year = {2007}
 }
+
+@article{bretagnolle,
+ ISSN = {03036898, 14679469},
+ URL = {http://www.jstor.org/stable/4616093},
+ abstract = {In the usual linear regression with independent explanatory variables, one can omit some of them and still get consistent estimates for the coefficients of the remainders. We show here that it is not the case in Cox's regression model for survival data with censoring, and predict the sign of the bias in the two following cases: first, when there is only one covariate left in the used model whatever be the number of omitted covariates. Then the effect on the survival of the covariate under study is always underestimated. Secondly, in case of several covariates remaining in the studied model we prove that the same result of underestimation holds for each of them at least up to some fixed time t0 which, in practical cases, is reasonably long. The asymptotic bias resulting from such omissions is not negligible as we show from explicit computations. In practical cases, with sample sizes not exceeding 100 or 200, this bias results in changing the risk for confidence intervals from 5 to 50%.},
+ author = {Jean Bretagnolle and Catherine Huber-Carol},
+ journal = {Scandinavian Journal of Statistics},
+ number = {2},
+ pages = {125--138},
+ publisher = {[Board of the Foundation of the Scandinavian Journal of Statistics, Wiley]},
+ title = {Effects of Omitting Covariates in Cox's Model for Survival Data},
+ volume = {15},
+ year = {1988}
+}
+
