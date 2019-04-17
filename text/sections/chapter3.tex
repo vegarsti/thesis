@@ -8,11 +8,12 @@ The original AdaBoost, also called Discrete AdaBoost \citep{adaboost} is an iter
 
 The AdaBoost algorithm often carries out highly accurate prediction. In practice, it is often used with stumps: Decision trees with one split. For example, \citet{bauer-kohavi} report an average 27\% relative improvement in the misclassification error for AdaBoost using stump trees, compared to the error attained with a single decision tree. They conclude that boosting not only reduces the variance in the prediction error from using different training data sets, but that it also is able to reduce the average difference between the predicted and the true class, i.e., the bias. \citet{breiman1998} supports this analysis. Because of its plug-and-play nature and the fact that it never seemed to overfit (overfitting occurs when the learned classifier degrades in test error because of being too specialized on its training set), Breiman remarked that ``boosting is the best off-the-shelf classifier in the world'' \citep{ESL}.
 
-Overfitting occurs when the out-of-sample error starts to increase. At this point, the model is starting to be too sensitive to the structure of the specific data set it is estimated on. One way of thinking about it is that it is starting to fit to the error terms. Since what we actually care about is the performance on a test set, we want to stop just before the model starts overfitting.
-
-In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm. This means that we are unable to infer anything about the effect of different covariates. In statistics, however, we are interested in models which are interpretable.
-
-While originally developed for binary classification, boosting is now used to estimate the unknown quantities in more general statistical models and settings. We therefore extend our discussion to a more general statistical regression scheme.
+%Overfitting occurs when the out-of-sample error starts to increase. At this point, the model is starting to be too sensitive to the structure of the specific data set it is estimated on. One way of thinking about it is that it is starting to fit to the error terms. Since what we actually care about is the performance on a test set, we want to stop just before the model starts overfitting.
+While originally developed for binary classification, boosting is now used to estimate the unknown quantities in more general statistical models and settings.
+We therefore extend our discussion to a more general statistical regression scheme.
+In its original formulation, the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
+This means that we are unable to infer anything about the effect of different covariates.
+In statistics, however, we are interested in models which are interpretable.
 
 %See some figure for a schematic overview of the algorithm.
 
@@ -43,7 +44,7 @@ The predictor $f(\cdot)$ can be modeled in many ways. A common model is to let i
 \begin{equation}\label{eq:gam}
     f(\x)=\beta_0+f_1(x_1)+\ldots+f_p(x_p),
 \end{equation}
-where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are single predictors, which are the partial effects of the variables $x_j$. The generic notation $f_j(x_j)$ may be different types of predictor effects such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on.\todo[inline]{add citations on base learners here?}
+where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are single predictors, which are the partial effects of the variables $x_j$. The generic notation $f_j(x_j)$ may be different types of predictor effects such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on.%\todo[inline]{add citations on base learners here?}
 In statistical boosting algorithms, we typically use component-wise effects, meaning that the different partial effects are estimated by separate base-learners $h_1(\cdot),\ldots,h_p(\cdot)$. Read more about this in section \ref{sec:component} on component-wise boosting. The component-wise effects will typically be built up by additive estimation of base-learners, and statistical boosting is one way to perform this additive estimation.
 
 We evaluate the fit of the model and its additive predictor using a loss function $\rho(y,f(\cdot))$, which is a measure of the discrepancy between the observed outcome $\y$ and the additive predictor $f(\cdot)$. In machine learning and optimization, one usually talks of loss functions, and as the name reveals, we wish to minimize this. Since we maximize the log-likelihood in statistics, very often, the loss function $\rho$ is derived from the negative log likelihood of the distribution of the response \citep{mayr14a, bovelstadborgan}, which we denoted $\psi$ in \eqref{eq:psi}. In these cases, the loss function, which works on one set of observations $(\x_i,\y_i)$, is
@@ -75,7 +76,7 @@ which is the familiar $L_2$ loss function. Note that since we will only model $\
 
 \subsection{Model selection and model assessment}
 \textit{Test error}, also referred to as \textit{generalization error}, is the prediction error over an independent test sample
-\begin{equation}
+\begin{equation}\label{eq:test-error}
     \text{Err}_{\tau}=\mathbb{E}[L(Y,\hat{f}(X))|D]
 \end{equation}
 where both $X$ and $Y$ are drawn randomly from their joint distribution (population).
@@ -137,8 +138,8 @@ In a setting where data is abundant, one can simply split the data into these th
 However, often, data is not abundant, and we wish to use the data as efficiently as possible.
 There exist good methods to do this.
 Notable general methods are the bootstrap, and K-fold cross-validation.
-We will in this thesis not discuss the bootstrap, but we will discuss cross-validation in a latter section.\todo[inline]{add reference}
-In short, K-fold cross validation uses a training data set and uses this as a joint training and validation set.
+We will in this thesis not discuss the bootstrap, but we will discuss cross-validation in- depth later, in subsection \ref{subsec:K-fold}.
+In short, however, K-fold cross validation uses a training data set and uses this as a joint training and validation set.
 First, split the data set into a test set and an original training set.
 Then, split the original training set into $K$ equally sized parts.
 For each part, \textit{train/estimate} the model $\hat{f}_\alpha$ on $K-1$ of the parts, and \textit{validate} on the $K$-th (the last) part.
@@ -147,34 +148,7 @@ Then sum up the validation errors across the $K$ validation sets.
 This means that the entire, original training set has also been used as a validation set.
 There is still a bias, but it is smaller than validating on the same data as training. 
 
-\subsection{Optimization}
-Obtaining the optimal prediction is accomplished by minimizing $\rho$ with regard to the additive predictor $f(\cdot)$. We have only observed a data set $D$, but we wish to generalize the results to unseen data sets of a similar type. Therefore, what is typically done is to minimizes the loss over an unseen ``hold-out'' sample, often called the test error. Other names are generalization error and out-of-sample error. For a specific data set $D$, we can calculate the loss function on each observation, and sum these losses. This is what is often called the empirical risk of the loss $\rho$ over the data set $D$, which we will denote $R_D$,
-\begin{equation}\label{eq:empirical-risk}
-    R_D(\theta)=\sum_{i=1}^n\rho(y_{i},\theta(x_i)),
-\end{equation}
-where again the parameter $\theta$ is a functional
-\begin{equation}
-    \theta(x)=g(f(x)),
-\end{equation}
-$g(\cdot)$ is the chosen link function, and $f(\x)$ is the additive predictor.
-Other names for $R_D(\cdot)$ are in-sample error and training error.
-\todo[inline]{This section needs to be rewritten. Maybe the above is good???}
-Since $D$ arises from a data distribution, $R_D$ is a realization of a more general loss value. We wish to learn about the general structure of $D$, and as such are we most interested in the expected loss, also known as the generalization or test error,
-\begin{equation*}
-    \text{Err}_{D}=\E[\rho(Y,f(\X))|D],
-\end{equation*}
-where $(X,Y)$ is drawn randomly from their joint distribution and the training set $D$ is held fixed. It is infeasible to do effectively in practice
-and hence we must instead estimate the expected prediction error,
-\begin{equation}\label{eq:err}
-    \text{Err}=\E[\text{Err}_D]=\E_D\left[\rho(Y,f(\X))|D\right],
-\end{equation}
-i.e., average over many different test sets. As mentioned, in practice we observe a sample data set $D$. For this sample, we can calculate the training error -- the empirical risk. To estimate $\text{Err}$ \eqref{eq:err}, one can do two things. First, if the observed sample is large enough, one can choose a portion of this, say 20\%, to be used as a hold-out test set. Call this data set for $D_{\text{test}}$ We then estimate our model and its parameters based on the other 80\%, and make an estimate of the generalization error $\text{Err}$ by seeing how our estimated model performs on the hold-out test set. We call the resulting error
-\begin{equation*}
-    \widehat{\text{Err}}_{\text{test}}=\frac{1}{M}\sum_{i=1}^M \rho(y_i,\hat{f}(\x_i)),
-\end{equation*}
-for test error. If the observed sample is not large enough, one can calculate a $K$-fold cross-validated test error. In this case, one divides the data set into $K$ parts (folds), and for each fold, one lets it be the hold-out data set, and estimate a model using only the other $K-1$ folds. In this way, one gets $K$ test errors, and so the cross-validated test error is the mean of these. See later for a more detailed description.
-\todo[inline]{This section needs to be rewritten.}
-
+Our goal will be to use gradient boosting to minimize \ref{eq:test-error}.
 To understand gradient boosting, we first need to understand the gradient descent algorithm.
 \section{Gradient descent}
 Suppose we are trying to minimize a differentiable multivariate function $G\colon\R^m\to\R$, where $m\in\N$. Gradient descent is a greedy algorithm for finding the minimum of such a function $G$, and one which is quite simple and surprisingly effective. If all partial derivatives of $G$ at a point $\x=(x_1,x_2,\ldots,x_m)$ exist, then the gradient of $G$ at $\x$ is the vector of all its partial derivatives at $\x$, namely
@@ -348,11 +322,11 @@ The choice of this step length is not of critical importance as long as it is su
 \subsection{Number of iterations}\label{subsec:iterations}
 With a fixed step length (learning rate), the main tuning parameter for gradient boosting is the number of iterations $M$ that are performed before the algorithm is stopped. If $M$ is too small, the model will underfit and it cannot fully incorporate the influence of the effects on the response and will consequently have poor performance. On the other hand, too many iterations will result in overfitting, leading to poor generalization.
 
-\subsection{Practical considerations}
-When boosting, one must (or should) center and scale the matrix $X$.
+%\subsection{Practical considerations}
+%When boosting, one must (or should) center and scale the matrix $X$.
 
-\section{likelihood-based boosting}
-Lorem ipsum. \citep{DeBin2016} \citep{gamboost}.
+%\section{likelihood-based boosting}
+%Lorem ipsum. \citep{DeBin2016} \citep{gamboost}.
 
 \section{$L_2$Boost}
 With the generic functional gradient boosting algorithm \eqref{algo:fgd}, it is quite straightforward to derive specific algorithms to use for specific models: It is just a matter of plugging in a chosen loss function. This gives great flexibility.
@@ -399,10 +373,10 @@ and hence the boosting steps become repeated refitting of residuals \citep{fried
     \item Return $\hat{f}(\cdot)=\hat{f}_{\mstop}(\cdot)=\sum_{m=0}^{\mstop}f_m(\cdot)$.
 \end{enumerate}
 \end{algorithm}
-They also prove some nice important theoretical results for L2Boost.
-\todo[inline]{more on L2Boost!!}
-\subsection{$L_2$Boost example}
-Lorem ipsum.
+%They also prove some nice important theoretical results for L2Boost.
+%\todo[inline]{more on L2Boost!!}
+%\subsection{$L_2$Boost example}
+%Lorem ipsum.
 
 \section{High dimensions and component-wise gradient boosting}\label{sec:component}
 % add this to component-wise
@@ -530,13 +504,13 @@ Shrinkage of effect estimates lead to a lower variance and therefore to more sta
 
 If the number of iterations $m_{\text{stop}}$ is not very large compared to the number of variables, the component-wise gradient boosting algorithm will carry out automatic variable selection. What this means is that based on their explanatory power, the base learners applied to irrelevant variables will never be added into the model, and therefore many of the columns of $\X$ will not be a part of the final model. Some predictors will have more explanatory power, or signal, than others, and so they will be selected more than once. This is because some predictors are more correlated with the output than others. Therefore some components will lead to better improvements and those corresponding base learners will thus be more frequently selected. Therefore the component-wise boosting algorithm has inherent variable selection.
 
-\citep{mayr-hofner}.
+%\citep{mayr-hofner}.
 
 \section{Selecting $\mstop$}
 As we mentioned in subsection \ref{subsec:iterations}, the crucial tuning parameter in boosting is the number of iterations, $\mstop$. Stopping early enough performs variable selection and shrinks the parameter estimates toward zero. In the case of $p<N$, with $m\to\infty$, the parameters in boosting will converge towards the maximum likelihood estimates \citep{DeBin2016}, i.e., maximizing the in-sample error. We are, on the other hand, after all interested in minimizing out-of-sample prediction error (PE). The prediction error for a given data set is a function of the boosting iteration $m$. What we want is therefore a good method for approximating $\PE(m)$. This can be done in a number of ways. Many authors state that the algorithm should be stopped early, but do not go further into the details here. Common model selection criteria such as the Akaike Information Criteria (AIC) may be used, however the AIC is dependant on estimates of the model's degrees of freedom. Methods by \citet{chang2010} try this. This is problematic for several reasons. For $\text{L}_2\text{Boost}$, \citet{buhlmann2007} suggest that $\df(m)=\trace(B_m)$ is a good approximation. Here $B_m$ is the hat matrix resulting from the boosting algorithm. This was, however, shown by \citet{hastie2007} to always underestimate the actual degrees of freedom. \citet{mayr-hofner} propose a sequential stopping rule using subsampling. However this is computationally very expensive and not really used in practice. Instead, cross-validation, a very common method for selection of tuning parameters in statistics, is what is used in almost all cases, both in practice and in research.\todo{citation?} Cross-validation is flexible and easy to implement. It is somewhat computationally demanding, because it requires several full runs of the boosting algorithm.
 
-\subsection{Other selection methods}
-The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer. AIC, etc.
+%\subsection{Other selection methods}
+%The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer. AIC, etc.
 
 \subsection{K-fold cross-validation}\label{subsec:K-fold}
 K-fold cross-validation \citep{lachenbruch}, or simply cross-validation, is a general method commonly used for selection of penalty or tuning parameters. We will use it to approximate the prediction error. In cross-validation, the data is split randomly into K rougly equally sized folds. For a given fold $k$, all folds except $k$ act as the training data in estimating the model. We often say that the $k$-th fold is left out. The resulting model is then evaluated on the unseen data, namely the observations belonging to fold $k$. This procedure is repeated for all $k=1,\ldots,K$. An estimate for the prediction error is obtained by averaging over the test errors evaluated in each left-out fold. Let $\kappa(k)$ be the set of indices for fold $k$. The cross-validated estimate for a given $m$ then becomes
@@ -912,28 +886,28 @@ In both cases of this algorithm, we have the advantage that the optimal number o
 \end{algorithm}
 
 
-\section{Centering and scaling of covariates is important to ensure proper fitting}
-\subsection{Centering}
-We are using component-wise linear least squares base learners \textit{without} intercepts, i.e., functions of the form
-\begin{equation*}
-    h_j(\x_i)=\beta_jx_{i,j}.
-\end{equation*}
-Here $i$ is an observation from the observed data set, i.e., $i\in\{1,2,\ldots,n\}$, and $j$ is a column of the covariate matrix, i.e., $j\in\{1,2\ldots,p\}$.
-Let $\X$ be a stochastic vector which is randomly drawn from the data distribution, and let $X_j$ be the $j$-th component of this vector.
-If column $j$ is centered, this means that
-\begin{equation*}
-    \mathbb{E}[X_j]=0.
-\end{equation*}
-Hence it follows that
-\begin{equation*}
-    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]\cdot0=0.
-\end{equation*}
-This means that the interpretation of the estimated $\hat{\beta}_j$ is ``the effect of a unit increase in $x_j$ over the expected value of $x_j$''.
-If, however, the column is not centered, then
-\begin{equation*}
-    \mathbb{E}[X_j]=x_j^*,
-\end{equation*}
-Hence it follows that
-\begin{equation*}
-    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]x_j^*.
-\end{equation*}
+%\section{Centering and scaling of covariates is important to ensure proper fitting}
+%\subsection{Centering}
+%We are using component-wise linear least squares base learners \textit{without} intercepts, i.e., functions of the form
+%\begin{equation*}
+%    h_j(\x_i)=\beta_jx_{i,j}.
+%\end{equation*}
+%Here $i$ is an observation from the observed data set, i.e., $i\in\{1,2,\ldots,n\}$, and $j$ is a column of the covariate matrix, i.e., $j\in\{1,2\ldots,p\}$.
+%Let $\X$ be a stochastic vector which is randomly drawn from the data distribution, and let $X_j$ be the $j$-th component of this vector.
+%If column $j$ is centered, this means that
+%\begin{equation*}
+%    \mathbb{E}[X_j]=0.
+%\end{equation*}
+%Hence it follows that
+%\begin{equation*}
+%    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]\cdot0=0.
+%\end{equation*}
+%This means that the interpretation of the estimated $\hat{\beta}_j$ is ``the effect of a unit increase in $x_j$ over the expected value of $x_j$''.
+%If, however, the column is not centered, then
+%\begin{equation*}
+%    \mathbb{E}[X_j]=x_j^*,
+%\end{equation*}
+%Hence it follows that
+%\begin{equation*}
+%    \mathbb{E}[h_j(\X)]=\mathbb{E}[\beta_jX_{j}]=\mathbb{E}[\beta_j]\mathbb{E}[X_j]=\mathbb{E}[\beta_j]x_j^*.
+%\end{equation*}

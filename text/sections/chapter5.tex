@@ -1,15 +1,23 @@
 \chapter{Simulation study}
-To verify that the FHTBoost algorithm developed works, we need to test it on simulated data.
-As \citet{simulation-studies} say, there are several ways to use simulation studies.
+One way to verify that the FHTBoost algorithm which we have developed and discussed in chapter \ref{ch:FHTboost} works, is to test it on simulated data.
+Simulation studies may be used for many different purposes.
+We wish to simulate survival data which is generated using a first-hitting-time model, and using parameters that we specify in advance.
+We can then use our developed method to estimate parameters, and see how well it recovers these parameters.
+This is one common way to use a simulation study \citep{simulation-studies}.
+
 In this chapter we describe two scenarios, a highly correlated scenario and an uncorrelated scenario. 
 For each scenario, we estimate parameters based on the FHTBoost algorithm, and assess its performance.
-The scenarios are both thought to be realistic scenarios where one has clinical measurements, in a high-dimensional covariate matrix $\X$, as well as gene expressions,
-in a low-dimensional covariate matrix $\Z$.
+In both scenarios, we have a high-dimensional covariate matrix $\X$.
+In a biomedical setting, this would realistically be gene expressions.
+We also have a low-dimensional covariate matrix $\Z$, which consists of clinical measurements.
 We link each covariate to a parameter in a parameter vector, where $\X$ corresponds to $\bbeta$, and $\Z$ corresponds to $\bgamma$.
 In each parameter vector, we set a small number of parameters to a non-zero value, and all the rest to zero.
+%To be clear: In the parameter vector $\bbeta$, which is linked to gene expressions, only a very small proportion is set to non-zero.
 This means that only a very small number of covariates have an effect.
 Given these parameter vectors and covariate matrices, we can calculate a specific $y_0$ and a $\mu$ for each individual.
-Based on these parameters, we can draw an observation from the inverse Gaussian distribution, which is then a realization of a lifetime based on the first-hitting time framework with a Wiener process.
+With the FHT perspective, which we have discussed previously, in section \ref{fht-idea} and onward, these are parameters which represent the health process of each individual.
+As shown, this means that an individual $i$ with initial level $y_{0,i}$ and drift $\mu_i$ has a lifetime which follows the distribution $\IG(y_{0,i},\mu_i)$.
+We can then easily draw a lifetime for each individual from its respective inverse Gaussian distribution.
 
 In addition to verifying that the algorithm works, i.e., has predictive power and selects correct variables, we wish to see which of the two versions of the algorithm works best.
 The fixed intercept version or the changing intercept version.
@@ -25,37 +33,41 @@ To estimate each model, we first perform repeated 5-fold cross validations, with
 As shown in section ..., this should provide a reasonably stable $\mstop$ (near the ``true'' $\mstop$) for that specific data set.
 We then estimate a model on the test set, by running FHTBoost with $\mstop$ number of iterations.
 The boosting algorithm has two main purposes: Selection of variables, and minimizing test error.
-To assess variable selection, we look at some classification metric.
+To assess variable selection, we look at some well known classification metric.
 To assess test error, we calculate the difference of deviance on the test set.
 We first discuss these metrics.
 
 \section{Variable selection metrics}
-As shown in section \eqref{sec:variable-selection}, a component-wise gradient boosting algorithm, such as FHTBoost,
+As shown in section \ref{sec:variable-selection}, a component-wise gradient boosting algorithm, such as FHTBoost,
 performs data-driven variable selection.
-We wish to see how FHTBoost performs with regard to selecting variables which we have specified to be informative.
+We wish to see how FHTBoost performs with regard to selecting informative variables.
 
 In a given estimated boosting model, the model has selected a certain amount of variables.
 We denote a selected variable as a ``positive,'' or $P$ for short, and a variable which is not selected as ``negative'', or $N$ for short.
 Since we know which variables actually affect the response, we know how many of the variables selected are selected correctly, in the sense
 that they are selected and they have an effect. We call these true positives, or $TP$ for short.
 Similarly, we know which variables do not affect the response, and so we can calculate the number of non-informative variables
-which were not selected, i.e., true negative, or $TN$ for short. Furthermore, we say that variables which have been selected
-but which do not actually have an effect, are false positives, $FP$. Finally, false negatives, $FN$, are variables which do actually
-have an effect, but which were not selected in the boosting model.
+which were not selected, i.e., true negative, or $TN$ for short.
+Furthermore, we say that variables which have been selected but which do not actually have an effect, are false positives, $FP$.
+Similarly, false negatives, $FN$, are variables which do actually have an effect, but which were not selected in the boosting model.
+Here follows the definition of three metrics that we use to determine how well the model performs variable selection.
 
 \subsection{Sensitivity}
+Sensitivity measures the proportion of the selected variables which are informative.
 Ideally, this is 1.
 \begin{equation}\label{eq:sensitivity}
     \text{Sensitivity}=\frac{TP}{P}
 \end{equation}
 
 \subsection{Specificity}
+Specificity measures the proportion of variables \textit{not} selected which were not informative.
 Ideally, this is 1.
 \begin{equation}\label{eq:specificity}
     \text{Specificity}=\frac{TN}{N}
 \end{equation}
 
 \subsection{False prediction rate}
+This measures the proportion of selected variables which are in truth not informative.
 Ideally, this is 0.
 \begin{equation}\label{eq:accuracy}
     \text{FPR}=\frac{FP}{FP+TP}
@@ -72,20 +84,21 @@ Accuracy is a common metric to use when considering classification of something.
 \subsection{Difference in deviance}
 Difference in deviance is a measurement for comparing models of the same type, e.g., between different parameter vectors of an FHT model.
 The objective of the measurement is to assess how much the model improves when adding covariates.
-When estimating the FHT model, we first find the intercepts of the covariate vectors, $\beta_0$ and $\gamma_0$, respectively,
+We estimate the parameters of the FHT model on the training set.
+When doing so, we first find the intercepts of the covariate vectors, $\beta_0$ and $\gamma_0$, respectively,
 and the initial covariate vectors, i.e., the covariate vectors before starting boosting, are
 \begin{equation*}
-    \bbeta^{[0]}=(\beta_0^{[0]},0,0,\ldots,0)
+    \bbeta^{[0]}_{\text{train}}=(\beta_0^{[0]},0,0,\ldots,0)
 \end{equation*}
 and
 \begin{equation*}
-    \bgamma^{[0]}=(\gamma_0^{[0]},0,0,\ldots,0)
+    \bgamma^{[0]}_{\text{train}}=(\gamma_0^{[0]},0,0,\ldots,0)
 \end{equation*}
 We denote the concatened vector of these as
 \begin{equation*}
-    \btheta^{[0]}=\left(\bbeta^{[0]},\bgamma^{[0]}\right).
+    \btheta^{[0]}_{\text{train}}=\left(\bbeta^{[0]},\bgamma^{[0]}\right).
 \end{equation*}
-We call this the \textit{null model}.
+We call this the \textit{null model}, because it incorporates no covariate information, and will therefore predict and perform the same on every individual.
 Similarly, the fully estimated covariate vectors, boosted with $\mstop$ steps, on the training set, are
 \begin{equation*}
     \bbeta^{[\mstop]}_{\text{train}}=(\beta_0^{[\mstop]},\beta_1^{[\mstop]},\beta_2^{[\mstop]},\ldots,\beta_p^{[\mstop]})
@@ -104,17 +117,19 @@ The deviance of a model $\btheta$ is
     \text{dev}(\btheta)=2l(\btheta),
 \end{equation}
 where $l(\btheta)$ is the log-likelihood value attained by an estimated covariate vector $\btheta$.
+Deviance is used a lot in the generalized linear models (GLM) framework, where there exist a lot of results.
 The difference of deviance between two models $\btheta_1$ and $\btheta_2$ is
 \begin{equation}
     d=\text{dev}(\btheta_1)-\text{dev}(\btheta_2)=2l(\btheta_1)-2l(\btheta_2)=2\left(l(\btheta_1)-l(\btheta_2)\right).
 \end{equation}
-In our case, the null model, without covariates, is a boosted model with zero iterations, i.e., a model with only the intercepts, and its likelihood is given by
+In our case, the likelihood of the null model on the test set is
 \begin{equation}
     l^{\text{test}}\left(\btheta^{[0]}_{\text{train}}\right).
 \end{equation}
-The notation here tries to make the point that the covariate vector is estimated on the \textit{training} set, and the log-likelihood value is calculated on the \textit{test} set.
+The notation here is a bit overloaded to make it explicitly clear that the covariate vector is estimated based on the \textit{training} set, and that the log-likelihood value is calculated on the \textit{test} set.
+We wish to measure how much better $\btheta_{\text{train}}^{[\mstop]}$ explains the variation in the test set than $\btheta_{\text{train}}^{[0]}$ does.
 Further, the trained model, with covariates, is a model $\btheta^{[\mstop]}_{\text{train}}$, i.e., a model boosted with $\mstop$ steps.
-The estimated model has a likelihood of
+The estimated model which incorporates covariates has a likelihood of
 \begin{equation}
     l^{\text{test}}\left(\btheta^{[\mstop]}_{\text{train}}\right).
 \end{equation}
@@ -127,13 +142,18 @@ Hence the difference in deviance between a fitted model and the null model conta
 The performance of a model is good when $d$ is small, meaning ``very negative.''
 In some of the results in this section, we end up with a \textit{positive} difference of deviance.
 This means that the null model achieved a higher log-likelihood value than the fully estimated model.
-This might happen if the model estimated on the training set has estimated parameters which are in the opposite direction of those in the test set.
+This might happen if the model estimated on the training set contains parameters which make it worse.
 
 \section{Simulation of survival data from an IG FHT distribution}\label{sec:simulate-IG-data}
-We wish to simulate survival times $\ti,i=1,\ldots,n$ with censoring. We first draw $n$ (uncensored) survival times $\tilde{t}_i$ from some survival time distribution $f(\cdot)$. If this distribution has a closed form probability distribution function, we can draw from it directly. If not, we may use an inverse sampling method, e.g. by drawing unit exponentials and using a corresponding transformation.
+We wish to simulate survival times $\ti,i=1,\ldots,n$ with censoring.
+We first draw $n$ (uncensored) survival times $\{\tilde{t}_i\}_{i=1}^n$ from some survival time distribution $f(\cdot)$.
+If this distribution has a closed form probability distribution function, we can draw from it directly.
+If not, we may use an inverse sampling method, e.g. by drawing unit exponentials and using a corresponding transformation.
 
-To censor the data, we draw censoring times $W_i\sim f(\cdot),i=1,\ldots,N$, from a more right-tailed distribution, meaning we want to get many, but not all, $W_i$'s to be larger than the $\tilde{t}_i$'s. We let the observed survival times then be $t_i=\min(\tilde{t}_i,W_i)$.
-The corresponding observed indicator, $d_i$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<W_i$. We end up with a set of $N$ tuples $(t_i,d_i),i=1,\ldots,N$. Note that this scheme incorporates independent censoring: The censoring time is independent of the survival times.
+To censor the data, we draw censoring times $w_i\sim f(\cdot),i=1,\ldots,N$ from some other lifetime distribution where the parameters do \textit{not} depend on covariates.
+We let the observed survival times then be $t_i=\min(\tilde{t}_i,w_i)$.
+The corresponding censoring indicator, $d_i$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<w_i$.
+We end up with a set of $N$ tuples $(t_i,d_i),i=1,\ldots,N$. Note that this scheme incorporates independent censoring: The censoring time is independent of the survival times.
 
 \begin{algorithm}
 \caption{Generating survival data from Inverse Gaussian FHT distribution}
@@ -143,25 +163,24 @@ The corresponding observed indicator, $d_i$, is then set equal to 1 if the actua
     \item Specify censoring time distribution.
     \item Calculate distribution parameters $y_0$ and $\mu$ using link functions,
         \begin{align*}
-            y_0&=\exp(\bbeta^T\X) \\
-            \mu&=\bgamma^T\Z.
+            y_0&=\exp(\bbeta^T\X)=\exp\left(\beta_0+\sum_{j=1}^p\beta_jx_j\right), \\
+            \mu&=\bgamma^T\Z=\gamma_0+\sum{j=1}^d\gamma_jz_j.
         \end{align*}
     \item Draw $N$ uncensored survival times $(\tilde{t}_i)_{i=1}^N$ from IG$(\mu,y_0)$.
-    \item Draw $n$ censoring times $W_1,W_2,\ldots,W_n$ from a censoring time distribution which is independent of the data.
+    \item Draw $n$ censoring times $w_1,w_2,\ldots,w_n$ from a censoring time distribution which is independent of the data.
     \item Right censor the survival times by choosing $t_i=\min(\tilde{t}_i,W)$.
-        The indicator on whether observation $i$ was observed or not is then $\delta_i=I(t_i=\tilde{t}_i)$.
+          The censoring indicator on whether observation $i$ was observed or not is then $d_i=I(t_i=\tilde{t}_i)$.
     \item The simulated data set is $D=(t_i,\,d_i)_{i=1}^N$.
 \end{enumerate}
 \end{algorithm}
 
 \section{Generating correlated clinical and gene expression data}
 To create a realistic scenario where we have data looking like gene expression data and clinical data, we need an algorithm.
-In very broad terms, this is an algorithm for setting up a correlation structure (via a covariate matrix) and then drawing covariate matrices from a
-normal distribution.
+In very broad terms, this is an algorithm for setting up a correlation structure (via a covariate matrix) and then drawing covariate matrices from a normal distribution.
 
-We imagine a scenario where we for each individual have a covariate matrix $X$ consisting of $p_1$ gene expressions, and a
-covariate matrix $Z$ consisting of $p_2$ clinical measurements.
-We can imagine that some of the genes in $X$ are highly correlated. One way to imagine this is to imagine that we have blocks of genes,
+We consider a scenario where we for each individual have a covariate matrix $X$ consisting of $p$ gene expressions, and a covariate matrix $Z$ consisting of $d$ clinical measurements.
+We can imagine that some of the genes in $X$ are highly correlated.
+One way to imagine this is to imagine that we have blocks of genes,
 where inside one block, the genes are highly correlated, whereas genes in one block are not correlated to other genes.
 In addition, one block of genes might affect a block of clinical variables as well.
 
@@ -175,11 +194,27 @@ There are three types of correlations.
 2. Between clinical predictors in each pathway
 3. Between the clinical and molecular predictors in each pathway
 
+Algorithm \ref{algo:clinical-sim} contains a schematic overview.
 
-\section{Simulation setup}
-We do simulations where we draw observations from the Inverse Gaussian distribution, i.e., we simulate lifetimes from the first hitting time model with Wiener process as the health process. We use algorithm \eqref{algo:FHT-sim} to do this. We will have two scenarios: One with no correlation, and one with a lot of correlation. To simulate the covariate matrices $X$ and $Z$ we will use algorithm \eqref{algo:clinical-sim}, which is a method for simulating clinical and gene data together. We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements. We specify the different correlations for the covariate matrices. But most importantly, we specify the true parameter vectors, $\bbeta$ and $\bgamma$. For each scenario, we conduct $N_{\text{scenario}}$ runs.
 
-One run consists of first drawing data (with a specific seed to ensure reproducibility), i.e., we draw covariate matrices $\X$, $\Z$ from \label{algo:clinical-sim}. $\X$ is of size $n\times p$ and $\Z$ is of size $n\times d$, where $n$ is the number of observations, $p+1$ is the size of the covariate vector $\bbeta$ (including an intercept which will not be affected by the covariates), and $d+1$ is the size of the covariate vector $\bgamma$. Then we combine these with the true covariate matrices to get vectors $\y_0$ and $\mathbf{\mu}$ of initial value of the health process, and drift, respectively. Then we draw from the Inverse Gaussian distribution according to \label{algo:FHT-sim}, obtaining $n$ right-censored lifetimes, i.e., $n$ tuples $(t_i,d_i)_{i=1,\ldots,N}$. With these tuples, then, we can do a run with the FHT boosting algorithm. We first use repeated K-fold cross-validation to find the optimal number of boosting steps, $m_{\text{stop}}$. Then we estimate the model on the whole of this training set. Then we validate this model on a training set of size $N_{\text{test}}$. The data here is drawn in the exact same manner as the training data, here also with a specific seed.
+\section{General simulation procedure}
+We do simulations where we draw observations from the Inverse Gaussian distribution, i.e., we simulate lifetimes from the first hitting time model with Wiener process as the health process.
+We use algorithm \ref{algo:FHT-sim} to do this.
+We will have two scenarios: One with no correlation, and one with a lot of correlation.
+To simulate the covariate matrices $X$ and $Z$ we will use algorithm \eqref{algo:clinical-sim}, which is a method for simulating clinical and gene data together.
+We imagine $X$, corresponding to $\bbeta$, be gene expressions, whereas $Z$, corresponding to $\bgamma$ be clinical measurements.
+We specify the different correlations for the covariate matrices.
+But most importantly, we specify the true parameter vectors, $\bbeta$ and $\bgamma$.
+For each scenario, we conduct $N_{\text{scenario}}$ runs.
+
+One run consists of first drawing data (with a specific seed to ensure reproducibility), i.e., we draw covariate matrices $\X$, $\Z$ from Algorithm \ref{algo:clinical-sim}.
+$\X$ is of size $n\times p$ and $\Z$ is of size $n\times d$, where $n$ is the number of observations, $p+1$ is the size of the covariate vector $\bbeta$ (including an intercept which will not be affected by the covariates), and $d+1$ is the size of the covariate vector $\bgamma$.
+Then we combine these with the true covariate matrices to get vectors $\y_0$ and $\mathbf{\mu}$ of initial value of the health process, and drift, respectively.
+Then we draw from the Inverse Gaussian distribution according to \ref{algo:FHT-sim}, obtaining $n$ right-censored lifetimes, i.e., $n$ tuples $(t_i,d_i)_{i=1,\ldots,N}$.
+With these tuples, then, we can do a run with the FHT boosting algorithm. We first use repeated K-fold cross-validation to find the optimal number of boosting steps, $m_{\text{stop}}$.
+Then we estimate the model on the whole of this training set.
+Then we validate this model on a training set of size $N_{\text{test}}$.
+The data here is drawn in the exact same manner as the training data, here also with a specific seed.
 
 \begin{algorithm}
 \caption{Generating correlated clinical and gene expression data}
@@ -189,7 +224,8 @@ One run consists of first drawing data (with a specific seed to ensure reproduci
 \end{enumerate}
 \end{algorithm}
 
-\section{Large simulation with uncorrelated matrices}
+\section{Scenario 1: Uncorrelated}
+
 Here, $N$ is 500. We let $\bbeta$ be a large vector of size $p=10001$, and $\bgamma$ be a small vector of size $d=16$. Specifically, we set the intercept term in $\bbeta$ to be 2.0, and the first 35 elements to be 0.1. We set the rest to be 0. For $\bgamma$, we set the intercept term to be -1, and in similar fashion, let the first 5 elements have a non-zero value of -0.1. Here also we set the remaining 10 elements to be 0.
 Hence, the true parameter vectors are as follows:
 \begin{align*}
@@ -199,26 +235,30 @@ Hence, the true parameter vectors are as follows:
 We draw $X$ and $Z$ from the algorithm for drawing clinical and gene data, with $B=0$ blocks.
 
 Choosing 0.1 for the informative parameter effects $\beta_j,j=1,2,\ldots,35$, might seem like it is too low.
-The parameter vector $\bbeta$ is linked to the initial level $y_0$ by an exponential link function.
+The parameter vector $\bbeta$ is linked to the initial level $y_0$ by an exponential link function, as usual.
 This means that each parameter effect is multiplicative instead of additive.
-A large gene expression value here can potentially cause a large change in $y_0$, and especially if there are several rather extreme values.
+A large gene expression value here can potentially cause a large change in $y_0$, and especially if there are several rather extreme values, due to the multiplicative effect.
 With 35 genes that do affect $y_0$, the chance of having one or several large gene values is rather large.
 Although we do standardize before drawing.
 Because of this, I had trouble setting up any simulation in which the algorithm managed to pick up much of the underlying parameter vector.
 That is why the true parameter effects are rather small.
-In retrospect, the parameter effects for the drift $\mu$ could have been larger.
-One reason being that in this setup the effects of a unit increase in a gene is $\exp(0.1)=1.1$, and so an effect of only 0.1 on the drift is rather small in comparison.
-Another reason is that we hypothesize that a clinical measurement should have more effect than a gene.
-
+The reason the parameter sizes on the drift are so small is that the effect is linear with time.
 We specify that all correlations are 0, meaning no covariate correlates with any other.
 
 With this exact setup, we run a simulation experiment $B=500$ times, where we at the beginning of each simulation set the seed, via \verb|set.seed(seed)| to be $b=1,\ldots,B$.
-We first generate matrices $X$ and $Z$, and simulate FHT times from the algorithm above.
-We then run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$.
-Below is a box plot of the resulting times. We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, and use the resulting model on the test set.
+We first generate matrices $X$ and $Z$ from Algorithm \ref{algo:FHT-sim}, with all correlations set to 0.
+Based on these covariate matrices, we simulate FHT lifetimes from Algorithm \ref{algo:FHT-sim}.
+Having now a data set $D_b$, we run cross validation on this data set to find the optimal iteration number $m_{\text{stop}}$.
+See Figure \ref{fig:simulation-not-correlated-deviances-boxplot}
+We then run a boosting algorithm with $m_{\text{stop}}$ steps on the training set, to estimate parameters.
 
-\subsection{Boosting with changing the intercept}
+
+Finally, we calculate the deviance of the estimated model on the test set.
+
+\subsection{Results of FHTBoost with changing intercept}
 See Table \ref{table:non-correlated-with-intercept-summary}, Table \ref{table:non-correlated-with-intercept-y0}, and \ref{table:non-correlated-with-intercept-mu}.
+
+
 \begin{table}\caption{Summary of results with intercept boosting}\label{table:non-correlated-with-intercept-summary}
 \centering
 \begin{tabular}{lccccc}
@@ -233,7 +273,9 @@ $\mstop$      &    15.8 &  6.4 &     2 &    39 & 16.0\\
 \end{tabular}
 \end{table}
 
-\begin{table}\caption{Variable selection results on $y_0$, $\beta$, uncorrelated scenario, with changing intercept}\label{table:non-correlated-with-intercept-y0}
+\begin{table}
+\caption{Variable selection results on $y_0$, $\beta$, uncorrelated scenario, with changing intercept}
+\label{table:non-correlated-with-intercept-y0}
 \centering
 \begin{tabular}{lccc}
 \toprule
@@ -248,6 +290,7 @@ False discovery rate & 0.310 &  0.333 & 0.176 \\
 
 
 \begin{table}\caption{Variable selection results on $\mu$, $\gamma$, uncorrelated scenario, with changing intercept}
+\label{table:non-correlated-with-intercept-mu}
 \centering
 \begin{tabular}{lccc}
 \toprule
@@ -262,9 +305,13 @@ False discovery rate & 0.091 &  0.000 & 0.144 \\
 
 
 
-\subsection{Boosting \textit{without} changing the intercept}
+\subsection{Results of FHTBoost with fixed intercept}
 See Table \ref{table:non-correlated-no-intercept-summary}, Table \ref{table:non-correlated-no-intercept-y0}, and \ref{table:non-correlated-no-intercept-mu}.
-\begin{table}\caption{Summary of results without intercept boosting}\label{table:non-correlated-no-intercept-summary}
+
+
+\begin{table}
+\caption{Summary of results without intercept boosting}
+\label{table:non-correlated-no-intercept-summary}
 \centering
 \begin{tabular}{lccccc}
 \toprule
@@ -278,7 +325,8 @@ $\mstop$      &    63.8 & 26.5 &     2 &   160 & 67.5 \\
 \end{tabular}
 \end{table}
 
-\begin{table}\caption{Variable selection results on $y_0$, $\beta$, uncorrelated scenario, with fixed intercept}
+\begin{table}
+\caption{Variable selection results on $y_0$, $\beta$, uncorrelated scenario, with fixed intercept}
 \label{table:non-correlated-no-intercept-y0}
 \centering
 \begin{tabular}{lccc}
@@ -293,7 +341,9 @@ False discovery rate & 0.584 &  0.613 & 0.144 \\
 \end{table}
 
 
-\begin{table}\caption{Variable selection results on $\mu$, $\gamma$, uncorrelated scenario, with fixed intercept}\label{table:non-correlated-no-intercept-mu}
+\begin{table}
+\caption{Variable selection results on $\mu$, $\gamma$, uncorrelated scenario, with fixed intercept}
+\label{table:non-correlated-no-intercept-mu}
 \centering
 \begin{tabular}{lccc}
 \toprule
@@ -306,12 +356,14 @@ False discovery rate & 0.365 &  0.375 & 0.192 \\
 \end{tabular}
 \end{table}
 
-\begin{figure}\label{fig:simulation-not-correlated-deviances-boxplot}
+\begin{figure}
 \caption{Boxplot for difference in deviance for the two intercept variants, non-correlated scenario}
-\centering\includegraphics[scale=0.4]{deviances_simulation.pdf}
+\label{fig:simulation-not-correlated-deviances-boxplot}
+\centering
+\includegraphics[scale=0.4]{deviances_simulation.pdf}
 \end{figure}
 
-\subsection{Thoughts}
+\subsection{Discussion}
 Note first that the two versions of the algorithm have very different $\mstop$ values.
 The stopping iteration $\mstop$ when continuously changing the intercept is quite lower than when boosting without.
 This means that the resulting covariates for the intercept version are more shrunken than for the no intercept version.
@@ -329,13 +381,13 @@ These are organized by covariate vector.
 In each run, we counted $TP$, the number of informative covariates which were selected in the estimated boosting model.
 We similarly counted $TN$, the number of non-informative covariates which were selected in the model.
 Our setup has as many as 35 informative gene covariates and 5 informative clinical covariates.
-Since the no-intercept version has a rather low number of iterations, with a median of 16, it is impossible to get anywhere near perfect on these metrics, as at most one new parameter is selected in each iteration.
+Since the no-intercept version has a rather low number of iterations, with a median of 16, it is usually impossible to get anywhere near perfect on these metrics, as at most one new parameter is selected in each iteration, and we have 40 informative covariates in total from the two vectors.
 
 Furthermore, we are considering the sensitivity and specificity on both covariate vectors at the same time.
 This means that these scores will affect each other.
 
 Consider first the result of the version in which the intercept is changed in each step.
-Both covariate vectors have a very high specificity, which measures the amount of negatives which are correctly classified as negatives.
+Both covariate vectors have a very high specificity, which measures the amount of true negatives which are correctly classified as negatives, i.e., not selected.
 In both cases, these are almost 1.
 In fact, for $\bbeta$, although it is not exactly 1, but rather 0.999667937538074.
 When rounded to 3 significant digits, this is 1, and similarly, the standard error rounded is 0.000.
@@ -344,39 +396,45 @@ If we only look at $FN$, i.e., false positives, which is $N-TN$, the mean is 3.3
 With a median false discovery rate of 0.333, there is a one in three chance that we select a variable which is not actually informative.
 The sensitivity, i.e., the ratio of correctly selected informative variables, has a median of only 0.171.
 This means that a large proportion of the informative covariates are not selected.
-As we alluded to earlier, this is to be expected due to a low number of iterations.
+As we discusses earlier, this is to be expected due to a low number of iterations.
 For $\bgamma$, a much higher specificity is attained, with a median at 0.800.
 Even though the parameter effects on the drift are rather small, the informative covariates are often correctly selected.
 Furthermore, the false discovery rate here is very low, with a median at 0.000.
 
 Now consider the results of the fixed intercept version.
 For the $\bbeta$ covariate vector, a higher proportion of informative covariates are selected, with a median sensitivity of 0.457.
-Simultaneously, a larger false discovery rate of 0.584 is not good.
+Simultaneously, a larger false discovery rate of 0.584 is not good: This means that more than half should be expected to be false.
 At the same time, the $\bgamma$ covariate vector has a really good sensitivity, with a median of 1, and a good specificity with a median of 0.700.
 The false discovery rate on $\bgamma$ is slightly above one in three, with a median of 0.375.
 
-\section{Large simulation with correlated matrices}
-\subsection{Setup}
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet.
+\section{Scenario 2: Correlated}
+Consider now a scenario where we have correlation in different ways.
+We have blocks of genes which are correlated, meaning the genes comprising one are correlated.
+Further, the genes in a block of genes are correlated with certain clinical measurements.
+Finally, the clinical measurements are correlated.
+All these correlations are set to 0.7.
+In other words, this is a scenario with highly correlated data.
+
+There are three types of correlations.
+1. Within each block of genes. Defaults to 0 for genes not belonging to any block.
+2. Between clinical predictors in each pathway
+3. Between the clinical and molecular predictors in each pathway
+
 
 \subsection{Boosting with changing the intercept}
 See table \ref{table:correlated-intercept-summary}, table \ref{table:correlated-intercept-y0}, and \ref{table:correlated-intercept-mu}.
-\begin{table}\caption{Summary of results with intercept boosting}\label{table:correlated-intercept-summary}
+
+\begin{table}
+\caption{Summary of results with intercept boosting}
+\label{table:correlated-intercept-summary}
+\centering
 \begin{tabular}{lccccc}
+\toprule
 Measure &    Mean &    Standard error &  Minimum & Maximum & Median \\
 \hline
 $d$    &    -57.8 & 47.2 &   -203.4 & 87.6 & -53.6 \\
-$\mstop$      &    20.0 & 12.1 &     2 &    65 &  19.5 %\\
+$\mstop$      &    20.0 & 12.1 &     2 &    65 &  19.5 \\
+\bottomrule
 %$l^{\text{test}}\left(\bbeta^{[\mstop]}_{\text{train}}\right)$ & -2230.5 & 25.8 & -2342.6 & -2161.7 & -2230.3\\
 %$l^{\text{test}}\left(\bbeta^{[0]}_{\text{train}}\right)$ & -2259.4 & 13.4 & -2350.8 & -2250.0 & -2254.6
 \end{tabular}
@@ -468,8 +526,9 @@ False discovery rate         & 0.507 &  0.500 & 0.130 \\
 \end{figure}
 
 
-\subsection{Thoughts}
-For this scenario, as well, we see that the fixed intercept version has a higher optimal iteration number $\mstop$, a median of 50, compared to a median of 19.5 for the changing intercept version.
+\subsection{Discussion}
+For this scenario, as well, we see that the fixed intercept version has a higher optimal iteration number.
+The median $\mstop$ is 50 with a fixed intercept, compared to a median of 19.5 for the changing intercept version.
 Again this necessarily means that more variables are selected.
 We see that the median deviance is very slightly better for the fixed intercept version, and with better extreme values, both minimum and maximum.
 See Figure \ref{fig:simulation-not-correlated-deviances-boxplot} for a boxplot of the difference of deviance for the two versions.
@@ -477,16 +536,24 @@ See Figure \ref{fig:simulation-not-correlated-deviances-boxplot} for a boxplot o
 Now consider the variable selection metrics.
 We first look at the covariate vector $\bbeta$, which affects the initial level $y_0$.
 The fixed intercept version is slightly better with regards to sensitivity, i.e., selecting informative variables, with a median of 0.200 versus a median of 0.143 for the changing intercept version.
-This does come at a cost of a higher false discovery rate, with a median of 0.690, where the changing intercept version has a median of 0.500.
+This does come at a cost of a higher false discovery rate, with a median as high as 0.690, where the changing intercept version has a median of 0.500.
+This means that we should expect that more than two in three 
 In both versions, then, it is at least as likely to select a non-informative variable as an informative variable.
 The specificity score is almost perfect in both cases, but again we note that the denominator $N$ is very large.
 
 Look now at the ``clinical'' covariates, used in $\bgamma$ and related to the drift $\mu$.
 The changing intercept version performs quite a lot worse here than the fixed intercept version.
-A median sensitivity of 0.200 and 0.700, respectively.
+It achieves a median sensitivity of 0.200, while the fixed intercept version achieves 0.700.
 This does come at a cost of a lower specificity, with a median of 0.533 for the fixed intercept and 0.867 for the changing intercept.
-Finally, the two versions actually have the same median false discovery rate, but the mean of the fixed intercept is slightly higher, at 0.507, whereas the changing intercept version has a mean of 0.454.
+Finally, the two versions actually have the same median false discovery rate, 0.500.
+However, the mean of the fixed intercept is slightly higher, at 0.507, whereas the changing intercept version has a mean of 0.454.
+
+In conclusion, while the fixed intercept version also here selects more true positive variables, it comes at a cost of selecting more false positives.
+If we use the deviance to assess which one is best, then the fixed intercept version is the better one here as well.
 
 \section{Conclusive thoughts}
 Based on the results in this simulation study, we conclude that it is better to use the fixed intercept version of the algorithm.
 It has performed consistently, but only slightly better with regards to log-likelihood/deviance on out-of-sample data.
+As we have discussed, the variable selection has trade offs.
+The fixed intercept version selects more true positives, but it also selects more false positives.
+It does seem to be worth it, in the end, since it achieves a better generalization error in the form of a lower difference of deviance.

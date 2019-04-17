@@ -1,23 +1,32 @@
 \chapter{First-hitting-time models}
 
 \section{Survival data and basic definitions}
-Survival analysis is the field of studying lifetime and time-to-death data. 
+Survival analysis is the field of studying lifetime and time-to-death data.
+It has very important applciations in biomedical statistics, where we are often interested in, for example, the factors contributing to why some cancer patients recover, and others experience recurrence.
 
 \subsection{General idea}
-Consider studying the time to an event of interest. You might be a doctor performing a study of cancer patients, and monitoring them
-for possible relapse. In this case, the event is the relapse. Or, possibly, you are a demographer looking at all parents who have only one child, and you are monitoring the time that elapses before they have a second child.
-While these events are a relapse and a birth, respectively, we will
-collectively refer to them as deaths, and hence the time to the event happens we call time-to-death.
+Consider studying the time to an event of interest.
+You might be a doctor performing a study of cancer patients, and monitoring them for possible relapse.
+In this case, the event is the relapse.
+Or, possibly, you are a demographer looking at all parents who have only one child, and you are monitoring the time that elapses before they have a second child.
+While these events are a relapse and a birth, respectively, we will collectively refer to them as deaths, and hence the time to the event happens we call time-to-death.
 The time-to-death $T$ is a stochastic variable and of a non-negative domain.
-Clearly, to observe such data in real life, we must wait until the event actually happens. This might in some cases never happen, or it might take a very long time. Consider a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until their relapse. Such a trial can only last a certain amount of time, say, until $\tau$.
-Luckily, not every patient relapses during that time, and so the actual time to their relapse, $\tilde{T}_i$, is not observed. Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
+Clearly, to observe such data in real life, we must wait until the event actually happens.
+This might in some cases never happen, or it might take a very long time.
+Consider a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until their relapse.
+Such a trial can only last a certain amount of time, say, until $\tau$.
+Luckily, not every patient relapses during that time, and so the actual time to their relapse, $\tilde{T}_i$, is not observed.
+Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
 We could throw away these observations without an observed event. But we at least know that these patients survived until time $\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data.
 
 An overview of modelling survival data is \citet{ABG}.
 
 \subsection{Independently censored survival data}
-An observed lifetime $T$ is censored if the actual lifetime $\tilde{T}$ is larger than $T$. We can say that we have a censoring mechanism which works such that the observed $T$ is $T=\min(\tilde{T}, C)$, where $C$ is a certain censoring time. In the clinical trial example mentioned, the censoring time $C$ would be the end of the possible observation period of the trial, namely $\tau$.
-To go with the censoring mechanism, we need a censoring indicator, which we denote $d$. It is defined as
+An observed lifetime $T$ is censored if the actual lifetime $\tilde{T}$ is larger than $T$.
+We can say that we have a censoring mechanism which works such that the observed $T$ is $T=\min(\tilde{T}, C)$, where $C$ is a certain censoring time.
+In the clinical trial example mentioned, the censoring time $C$ would be the end of the possible observation period of the trial, namely $\tau$.
+To go with the censoring mechanism, we need a censoring indicator, which we denote $d$.
+It is defined as
 \begin{equation}\label{eq:censoring}
     d=\indicator(T=\tilde{T}),
 \end{equation}
@@ -25,7 +34,6 @@ indicating if we have observed the actual event. If the event has occurred, the 
 \begin{equation*}
     P(t|d)=P(t).
 \end{equation*}
-An example where we do not have independent censoring is ...
 
 \subsection{The survival function $S(t)$, the hazard function $\hz(t)$, and their estimators}
 In survival analysis, one of the things we are interested in is the survival function. The survival function $S(t)$ is the probability of surviving until time $t$,
@@ -39,7 +47,7 @@ We are also interested in the hazard function. This is the probability of the ev
     \hz(t)=\lim_{\epsilon\to0}\frac{\Pr(T<t+\epsilon|T>t)}{\epsilon}.
 \end{equation*}
 Estimating the hazard function is hard, and we do not achieve the usual $\sqrt{n}$ convergence.
-\todo[inline]{add citation}
+\todo[inline]{Find and add citation.}
 It is, however, typically the function we are most interested in, as we will see later, in subsection \ref{subsec:ph-reg}.
 Note that by observing
 \begin{equation*}
@@ -197,10 +205,12 @@ Furthermore, if the two covariate vectors differ in more elements, say, that, ea
 \begin{equation*}
     \frac{\exp(\x_2^T\bbeta)}{\exp(\x_1^T\bbeta)}=\exp((\x_2-\x_1)^T\bbeta)=\exp(\beta_1+\beta_2+\ldots+\beta_p)=\exp(\beta_1)\exp(\beta_2)\cdots\exp(\beta_p).
 \end{equation*}
-In other words, each unit increase in a covariate is a multiplicative factor in the hazard. Cox regression is used very much in applied research. We will here give a simple example to illustrate its use.
+In other words, each unit increase in a covariate is a multiplicative factor in the hazard.
+Cox regression is used very much in applied research.
+%We will here give a simple example to illustrate its use.
 
-\subsection{Cox regression example}
-Lorem ipsum.
+%\subsection{Cox regression example}
+%Lorem ipsum.
 
 \subsection{Issues with the proportional hazards assumption}
 Assuming \eqref{eq:PH}, i.e. $\hz(t|\x)=\hz_0(t)r(x|\bbeta)$, we are making a relatively strong assumption. Namely, we assume that the ratio between the hazard function of two individuals is the same \textit{at all times}, because the part of $\hz(t|\x)$ cancels out when we do regression, and because we assume that the covariate effects are constant in time, as $r(x|\bbeta)$ is not a function of time.
@@ -210,10 +220,8 @@ This assumption goes under the name of the proportional hazards (PH) assumption.
 \end{equation}
 where $\beta_j(t),j=1,\ldots,p$ is the increase in the hazard at time $t$ corresponding to a unit's increase in the $j$-th covariate. Another alternative model to the Cox model is the first hitting threshold model. In this thesis we will focus on this model, which has not seen methods developed for it so as to be able to use it in typical clinical settings for biomedical data, such as on gene expression data.
 
-\subsection{Robustness of Cox when the PH assumption is violated}
-Although the PH assumption is often not valid, in practice, Cox regression tends to work well. \todo[inline]{Need to find a citation here.}
-
 \subsection{Cox, proportional hazards, and variable selection}
+The PH assumption is very often not valid.
 Consider survival data with two covariates $x_1$ and $x_2$.
 With Cox regression, the hazard is
 \begin{equation*}
@@ -224,8 +232,9 @@ If we only observe $x_{i,1}$, and calculate the hazard $\alpha(t|x_{i,1})$, then
 
 In addition, if there is perfect Cox structure given $x_1$ alone, and perfect Cox structure given $x_2$ alone, one almost never has a Cox model $(x_1,x_2)$.
 That is, one almost never has the proportional hazards assumption actually satisfied.
+However, in practice, Cox regression is robust and tends to work well.
 
-Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models. 
+Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models.
 One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
 This is where first-hitting-time models come in.
 
@@ -270,7 +279,8 @@ Consult \citet{maller1996survival} for a book on this.
 
 \citet{eaton-whitmore} discuss FHTs as a general model for hospital stay. \citet{aalengjessing2001} provide an overview of much of this subject. \citet{lawless2011} provides a compact overview of the theory. \citet{leewhitmore2004a} provides an overview of first hitting time models for survival and time-to-event data. There is a large literature dealing with theoretical and mathematical aspects of FHT models.
 
-Models based on this view are called first hitting time models (FHT). FHT models were introduced in \citet{whitmore1986}, see \citet{leewhitmore2006} for a complete overview. Note that these authors use the term threshold regression when referring to regression for first hitting time models. We have, following \citet{caroni2017}, chosen to not use this term, as it is already referring to a well established, and quite different, topic in econometrics. First-hitting-time models have been applied to many different fields, including medicine, engineering, and economics, and used, for example to describe the survival time of a transplant patient\todo{citation needed}, the duration time of a strike \citep{lancaster}, the failure time of an engineering system \todo{citation needed}, and so on.
+Models based on this view are called first hitting time models (FHT). FHT models were introduced in \citet{whitmore1986}, see \citet{leewhitmore2006} for a complete overview. Note that these authors use the term threshold regression when referring to regression for first hitting time models. We have, following \citet{caroni2017}, chosen to not use this term, as it is already referring to a well established, and quite different, topic in econometrics.
+%First-hitting-time models have been applied to many different fields, including medicine, engineering, and economics, and used, for example to describe the survival time of a transplant patient\todo{citation needed}, the duration time of a strike \citep{lancaster}, the failure time of an engineering system \todo{citation needed}, and so on.
 
 \subsection{Examples of first-hitting-time models}
 The parent stochastic process may take many forms, from Wiener processes to Markov chains. Similarly, the boundary state may take various forms. For example, it may be a fixed threshold in a Wiener process or an absorbing state in a Markov chain. This choice in process and boundary shows that the FHT framework is highly flexible. The choice of boundary must fit the process, such that the boundary set is a subset of the state space.
@@ -386,7 +396,8 @@ From \eqref{eq:hfs}, we know that the hazard function can be seen as
 \begin{equation*}
     \hz(t)=f(t)/S(t).
 \end{equation*}
-The expression for this is rather unruly, but we can make some comments on its shape as it relates to different values for $y_0$ and $\mu$.
+If we insert the inverse Gaussian versions of $f(t)$ and $S(t)$, we would get a rather unruly expression.
+However, we can make some comments on its shape as it relates to different values for $y_0$ and $\mu$.
 If $y_0$ is close to zero, we essentially get a decreasing hazard rate.
 If $y_0$ is far from zero, however, we essentially get an increasing hazard rate.
 If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
@@ -399,14 +410,13 @@ Regardless of the initial value, the hazard rate converges to the same limiting 
 \begin{equation}
     \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2,
 \end{equation}
-as seen in \citet{ABG}.
-\todo[inline]{This is unclear}
-\todo[inline]{Add plots of hazard rates here. see page 401 in ABG}
-To get an intuitive feel for this, I have made an interactive website at \verb|vegarsti.shinyapps.io/FHT_Hazard|.
+as seen in \citet{ABG}. To get an intuitive feel for this, I have made an interactive website at \verb|vegarsti.shinyapps.io/FHT_Hazard|
+\todo[inline]{Add plots and more explanation here.}
+%\todo[inline]{Add plots of hazard rates here. see page 401 in ABG}
 
 \subsection{Comparison of hazard rates}
 It might be of particular interest to look at the ratio between two hazard rates. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. This feature is the same phenomenon as that observed in frailty models, where the relative hazards often decline \citep{ABG}.
-\todo[inline]{Explain better}
+\todo[inline]{Add plot and explain better.}
 It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards.
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
 \todo[inline]{Add plot here as well; also here see ABG page 402}
@@ -433,9 +443,10 @@ Inserting the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv}
 \end{align}
 
 \subsection{Fitting an IG FHT model}
-At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}. A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}. There does not exist any method to fit a \textit{regularized} model at the moment, nor to do automatic variable selection. \textbf{This is the reason for my thesis.}
+At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}. A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
+There does not exist any method to fit either a \textit{regularized} model at the moment, nor to do automatic variable selection.
 
-\todo[inline]{Add regression example}
+%\todo[inline]{Add regression example}
 
 %\subsection{Example of application}
 %Lorem ipsum some example. Just use numerical maximization.

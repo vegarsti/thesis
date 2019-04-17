@@ -1,4 +1,5 @@
 \chapter{Multivariate component-wise boosting on survival data}
+\label{ch:FHTboost}
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse gaussian first hitting time model to survival data.
 
 \section{FHTBoost}
@@ -104,8 +105,8 @@ Hence the offsets are estimated to be
     (\hat{\beta}_{1,0},\,\hat{\beta}_{2,0})=\argmin_{\beta_{1,0},\beta_{2,0}}R(\beta_{1,0},\beta_{2,0}).
 \end{equation}
 To do this in practice, we use the routine called \verb|nlm| which comes built-in with R.
-\begin{algorithm}
-\caption{FHT Boost with twodimensional loss function}
+%\begin{algorithm}
+\subsection{FHTBoost algorithm with fixed intercept}
 \label{algo:fhtboost}
 \begin{enumerate}
     \item
@@ -177,13 +178,97 @@ To do this in practice, we use the routine called \verb|nlm| which comes built-i
     \item Repeat steps \ref{algostep:FHT-init} to \ref{algostep:FHT-end} until $m=m_{\text{stop}}$.
     \item Return $\hat{\boldeta}(\cdot)=\hat{\boldeta}_M(\cdot)=\sum_{m=0}^M\boldeta_m(\cdot)$.
 \end{enumerate}
-\end{algorithm}
+%\end{algorithm}
 
 \section{Modification: Changing the intercept in each iteration}
 While developing the algorithm, I discovered that the algorithm as given above did not fully recover the known parameters.
 In particular, the estimated offset is not approximately equal to the original offset.
 In mboost, they seem to change the offset while boosting.
 This must surely be a problem others have encountered while deriving boosting algorithms.
+
+%\begin{algorithm}
+\subsection{FHTBoost algorithm with changing intercept}
+\label{algo:fhtboost-with-intercept}
+\begin{enumerate}
+    \item
+        Given a data set $D=\{\x_i, \z_i, t_i,d_i\}_{i=1}^N$, where for each observation $i$, $\x_i$ is a vector of clinical measurements,
+        $\z_i$ a vector of gene expressions, $t_i$ the possibly right-censored survival time, and $d_i$ the censoring indicator. 
+        If $\X$ and/or $\Z$ are not normalized, do this.
+        We wish to minimize the loss function $\rho(y,\boldeta(x,z))$, by proxy on the empirical risk, i.e., the loss function evaluated on the samples,
+        \begin{equation}
+            \hat{f}=\argmin_{f}R(f).
+        \end{equation}
+    \item
+        Set iteration counter $m$ to $0$.
+        Initialize additive predictors $\eta_1$ and $\eta_2$ to $\beta_{1,0}$ and $\beta_{2,0}$, respectively, by performing a numerical maximization of the likelihood, i.e.,
+        \begin{equation}
+            (\hat{\beta}_{1,0},\,\hat{\beta}_{2,0})=\argmin_{\beta_{1,0},\beta_{2,0}}\sum_{i=1}^n\rho(y_i,\boldeta).
+        \end{equation}
+    \item\label{algostep:FHT-intercept-base-learner}
+        Specify base learners $h_k$ for each dimension $k=1,\ldots,K$.
+        We use linear least squares base learners.
+    \item\label{algostep:FHT-intercept-init}
+        Increase $m$ by 1.
+    \item
+        Compute the negative partial derivative $-\frac{\partial\rho}{\partial \hat{\eta}_1}$
+        and evaluate at $\hat{\boldeta}^{[m-1]}(x_i,z_i),i=1,\ldots,N$, yielding negative gradient vector
+        \begin{equation}
+            \u^{[m-1]}_1=\left(-\frac{\partial}{\partial \hat{\eta}_1}\rho(y_i, \hat{\boldeta}^{[m-1]}(x_i))\right)_{i=1}^N
+        \end{equation}
+    \item
+        Fit the negative gradient vector to each of the $J_1=p$ components of $X$ (i.e. to each base learner) separately, using the base learners specified in step \ref{algostep:FHT-intercept-base-learner}.
+    \item
+        Select the best fitting base learner, $h_{1,\,j}$, by the inner loss,
+        i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
+        \begin{equation}
+            j^*=\argmin_{j\in 1,\ldots,p}\sum_{i=1}^N(u_1^{(i)}-\hat{h}_{1,j}(x^{(i)}))^2.
+        \end{equation}
+    \item
+        Compute the possible improvement of this update regarding the outer loss,
+        \begin{equation}
+            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{\boldeta}^{[m-1]}(x^{(i)}) + \nu \cdot \hat{h}_{1,\,j^*}(x^{(i)}) \right)
+        \end{equation}
+    \item
+        Compute the negative partial derivative $-\frac{\partial\rho}{\partial \hat{\eta}_2}$
+        and evaluate at $\hat{\boldeta}^{[m-1]}(x_i,z_i),i=1,\ldots,N$, yielding negative gradient vector
+        \begin{equation}
+            \u^{[m-1]}_1=\left(-\frac{\partial}{\partial \hat{\eta}_1}\rho(y_i, \hat{\boldeta}^{[m-1]}(x_i))\right)_{i=1}^N
+        \end{equation}
+    \item
+        Fit the negative gradient vector to each of the $J_2=D$ components of $Z$ (i.e. to each base learner) separately, using the base learners specified in step \ref{algostep:FHT-intercept-base-learner}.
+    \item
+        Select the best fitting base learner, $h_{2,\,j}$, by the inner loss,
+        i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
+        \begin{equation}
+            j^*=\argmin_{j\in 1,\ldots,d}\sum_{i=1}^N(u_2^{(i)}-\hat{h}_{2,\,j}(x^{(i)}))^2.
+        \end{equation}
+    \item
+        Compute the possible improvement of this update regarding the outer loss,
+        \begin{equation}
+            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{\boldeta}^{[m-1]}(x^{(i)}) + \nu \cdot \hat{h}_{2,\,j^*}(x^{(i)}) \right)
+        \end{equation}
+    \item\label{algostep:FHT-intercept-end}
+        Update, depending on the value of the loss reduction, $k^*=\argmin_{k\in\{1,2\}}\Delta\rho_k$
+        \begin{equation}
+            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}+\nu\cdot\hat{h}_{k^*j^*}(x),
+        \end{equation}
+        while for $k\neq k^*$,
+        \begin{equation}
+            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}.
+        \end{equation}
+        Find the best numerical constant to add to the intercept of the selected additive learner,
+        \begin{equation}
+            c=\argmin_c \sum_{i=1}^N\rho\left(y^{(i)},\,\hat{\boldeta}^{[m]}(x^{(i)}) + c \right).
+        \end{equation}
+        Add this $c$ to the selected parameter
+        \begin{equation}
+            \hat{\beta}_{k^*}\gets\hat{\beta}_{k^*}+c.
+        \end{equation}
+    \item Repeat steps \ref{algostep:FHT-intercept-init} to \ref{algostep:FHT-intercept-end} until $m=m_{\text{stop}}$.
+    \item Return $\hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\sum_{m=0}^{\mstop}\boldeta^{[m]}(\cdot)$.
+\end{enumerate}
+%\end{algorithm}
+This algorithm is exactly the same as the previous one, Algorithm \ref{algo:fhtboost}, except for in step \ref{algostep:FHT-intercept-end}, where we numerically maximize the likelihood so as to find the optimal intercept.
 
 \subsection{Example}
 We here simulate survival times from an inverse Gaussian FHT distribution.
@@ -216,94 +301,17 @@ The intercept in the additive predictor now becomes a sum of boosted intercepts,
 where each $\beta_{1,0}^{[m]}$ is a boost in the intercept estimated in step $m$ of the boosting algorithm.
 This means that in iteration step $m$, we wish to estimate a boost $\beta_{1,0}^{[m]}$.
 If we choose to boost parameter $k$, we change the intercept of $\eta_k$.
-If $k$ is 1, we 
+If $k$ is 1, we update the intercept for that parameter,
 \begin{equation}
-    \hat{\beta}_{1,0}^{[m]}=\argmin_{c}R(\eta_1^{[m]}+c,\eta_2^{[m]}).
+    \hat{\beta}_{1,0}^{[m]}=\argmin_{c}R(\eta_1^{[m]}+c,\eta_2^{[m]}),
 \end{equation}
-If $k$ is 2, we 
+and if $k$ is 2, we update that intercept,
 \begin{equation}
     \hat{\beta}_{2,0}^{[m]}=\argmin_{c}R(\eta_2^{[m]},\eta_2^{[m]}+c).
 \end{equation}
-The modified algorithm using intercepts is shown in
+The modified algorithm using intercepts is shown in the previous subsection, \ref{algo:fhtboost-with-intercept}.
 
-
-\begin{algorithm}
-\caption{FHT Boost with twodimensional loss function}
-\label{algo:fhtboost-with-intercept}
-\begin{enumerate}
-    \item
-        Given a data set $D=\{\x_i, \z_i, t_i,d_i\}_{i=1}^N$, where for each observation $i$, $\x_i$ is a vector of clinical measurements,
-        $\z_i$ a vector of gene expressions, $t_i$ the possibly right-censored survival time, and $d_i$ the censoring indicator. 
-        If $\X$ and/or $\Z$ are not normalized, do this.
-        We wish to minimize the loss function $\rho(y,\boldeta(x,z))$, by proxy on the empirical risk, i.e., the loss function evaluated on the samples,
-        \begin{equation}
-            \hat{f}=\argmin_{f}R(f).
-        \end{equation}
-    \item
-        Set iteration counter $m$ to $0$.
-        Initialize additive predictors $\eta_1$ and $\eta_2$ to $\beta_{1,0}$ and $\beta_{2,0}$, respectively, by performing a numerical maximization of the likelihood, i.e.,
-        \begin{equation}
-            (\hat{\beta}_{1,0},\,\hat{\beta}_{2,0})=\argmin_{\beta_{1,0},\beta_{2,0}}\sum_{i=1}^n\rho(y_i,\boldeta).
-        \end{equation}
-    \item\label{algostep:FHT-base-learner}
-        Specify base learners $h_k$ for each dimension $k=1,\ldots,K$.
-        We use linear least squares base learners.
-    \item\label{algostep:FHT-init}
-        Increase $m$ by 1.
-    \item
-        Compute the negative partial derivative $-\frac{\partial\rho}{\partial \hat{\eta}_1}$
-        and evaluate at $\hat{\boldeta}^{[m-1]}(x_i,z_i),i=1,\ldots,N$, yielding negative gradient vector
-        \begin{equation}
-            \u^{[m-1]}_1=\left(-\frac{\partial}{\partial \hat{\eta}_1}\rho(y_i, \hat{\boldeta}^{[m-1]}(x_i))\right)_{i=1}^N
-        \end{equation}
-    \item
-        Fit the negative gradient vector to each of the $J_1=p$ components of $X$ (i.e. to each base learner) separately, using the base learners specified in step \ref{algostep:FHT-base-learner}.
-    \item
-        Select the best fitting base learner, $h_{1,\,j}$, by the inner loss,
-        i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
-        \begin{equation}
-            j^*=\argmin_{j\in 1,\ldots,p}\sum_{i=1}^N(u_1^{(i)}-\hat{h}_{1,j}(x^{(i)}))^2.
-        \end{equation}
-    \item
-        Compute the possible improvement of this update regarding the outer loss,
-        \begin{equation}
-            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{\boldeta}^{[m-1]}(x^{(i)}) + \nu \cdot \hat{h}_{1,\,j^*}(x^{(i)}) \right)
-        \end{equation}
-    \item
-        Compute the negative partial derivative $-\frac{\partial\rho}{\partial \hat{\eta}_2}$
-        and evaluate at $\hat{\boldeta}^{[m-1]}(x_i,z_i),i=1,\ldots,N$, yielding negative gradient vector
-        \begin{equation}
-            \u^{[m-1]}_1=\left(-\frac{\partial}{\partial \hat{\eta}_1}\rho(y_i, \hat{\boldeta}^{[m-1]}(x_i))\right)_{i=1}^N
-        \end{equation}
-    \item
-        Fit the negative gradient vector to each of the $J_2=D$ components of $Z$ (i.e. to each base learner) separately, using the base learners specified in step \ref{algostep:FHT-base-learner}.
-    \item
-        Select the best fitting base learner, $h_{2,\,j}$, by the inner loss,
-        i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
-        \begin{equation}
-            j^*=\argmin_{j\in 1,\ldots,d}\sum_{i=1}^N(u_2^{(i)}-\hat{h}_{2,\,j}(x^{(i)}))^2.
-        \end{equation}
-    \item
-        Compute the possible improvement of this update regarding the outer loss,
-        \begin{equation}
-            \Delta\rho_k=\sum_{i=1}^N\rho\left(y^{(i)}, \hat{\boldeta}^{[m-1]}(x^{(i)}) + \nu \cdot \hat{h}_{2,\,j^*}(x^{(i)}) \right)
-        \end{equation}
-    \item\label{algostep:FHT-end}
-        Update, depending on the value of the loss reduction, $k^*=\argmin_{k\in\{1,2\}}\Delta\rho_k$
-        \begin{equation}
-            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}+\nu\cdot\hat{h}_{k^*j^*}(x),
-        \end{equation}
-        while for $k\neq k^*$,
-        \begin{equation}
-            \hat{\eta}^{[m]}_{k^*}=\hat{\eta}^{[m-1]}_{k^*}.
-        \end{equation}
-    \item Repeat steps \ref{algostep:FHT-init} to \ref{algostep:FHT-end} until $m=m_{\text{stop}}$.
-    \item Return $\hat{\boldeta}(\cdot)=\hat{\boldeta}_M(\cdot)=\sum_{m=0}^M\boldeta_m(\cdot)$.
-\end{enumerate}
-\end{algorithm}
-
-
-When using this algorithm, the algorithm was successful in recovering the maximum likelihood value and parameters.
+When using this algorithm with \textit{changing} intercepts, the algorithm was successful in recovering the maximum likelihood value and parameters.
 See table \ref{table:ML} for the values, and figure \ref{fig:boosting-ML-fixed-only} for a plot.
 \begin{table}\caption{Parameter values of a model which reaches ML}\label{table:ML}
 \begin{tabular}{l|rrrrrr}
@@ -323,5 +331,3 @@ Changing intercept    &    1.92 &    0.11 &    0.17 &    -0.93 &    -0.07 &     
 \caption{Boosting recovers the maximum likelihood estimates}
 \centering\includegraphics[scale=0.4]{figures/small_example.pdf}
 \end{figure}
-
-As we can see, our boosting method recovers the original parameters quite well. This is of course with data coming from the exact same kind of model.
