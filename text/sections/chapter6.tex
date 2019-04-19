@@ -1,21 +1,23 @@
-\chapter{Application on a neuroblastoma data set}
-We have shown that our newly developed algorithm, FHTBoost, manages to estimate true parameters in a simulated setting, where the data is generated according to the same model.
+\chapter{Application on real data}
+In the simulation we contrasted fixed/updating intercept versions.
+In general FHTBoost seems to provide a decent model for correlated, realistic survival data, with average deviance much smaller than 0.
+
+\todo[inline]{Make this paragraph better (merge)}
+
+We have shown that our newly developed algorithm, FHTBoost, where the data are generated according to a model.
 To truly be applicable in biomedical settings, we must explore if the algorithm manages to achieve predictive power.
-The goal is that it should be able to work in settings where we have a very large amount of covariates.
 In this chapter, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
-The data consists of a small number of patients, with around 10 000 gene expressions.
+The data consists of a small number of patients, with information on two covariates and around 10 000 gene expressions.
 We use our method on this data and assess performance.
-We also compare the predictive power of our method to Cox regression, which also has been adapted to the gradient boosting framework.
+We also compare the predictive power of our method to Cox regression, which also has been adapted to the gradient boosting framework (see, e.g., \citet{BinderSchumacher2008}).
 
 \section{Neuroblastoma}
 We consider survival data from \citet{oberthuer-data}, consisting of patients diagnosed with neuroblastoma.
 Neuroblastoma is a malignant pediatric tumor that accounts for about 8\% of all childhood cancers.
-One of the hallmarks of the disease is its contrasting biological behavior, which results in diverse clinical courses ranging from spontaneous regression to rapid and fatal tumor progression despite excessive treatment.
+One of the hallmarks of the disease is its contrasting biological behavior, which results in diverse clinical courses ranging from spontaneous regression to rapid and fatal tumor progression despite intensive treatment.
 
 In recent years, several markers have been reported to offer valuable prognostic information.
-Among these is the patient's age at diagnosis.
-These markers are routinely determined by the current German neuroblastoma trial NB2004 to stratify patients into groups of high risk (50\%),
-intermediate risk (10 \%) and low risk (40\%) of disease.
+These markers are routinely determined by the current German neuroblastoma trial NB2004 to stratify patients into groups of high risk (50\%)or low risk (50\%) of disease.
 Therapeutic strategies vary according to these risk categories and range from a wait-and-see approach for those in the low risk group,
 to intensive treatment for the high-risk group.
 
@@ -34,8 +36,8 @@ In this set, 29 of the samples were obtained from German patients enrolled in Ge
 %Here the age of patients at diagnosis ranged from 0 to 125 months, with a median at 15 months.
 %For patients without fatal events, the median follow-up time was 4.4 years, and ranged from 0.4 to 18.1 years.
 
-In keeping with \citet{bovelstad2009}, we merge what was originally a ``training set'' of 256 patients and a ``test set'' of 120 patients into one data set.
-The combining was done due to few events in the two lower NB2004 risk groups.
+Following \citet{bovelstad2009}, we merge what was originally a ``training set'' of 256 patients and a ``test set'' of 120 patients into one data set.
+The combining was done due to few events in the NB2004 low risk group.
 
 In total, the data consists of 362 patients suffering from neuroblastoma.
 There are 9978 gene expressions measurements, comprised of those measurements which are in probes from both the ``training set'' and the ``test set.''
@@ -48,25 +50,19 @@ So $N=273$.
 In addition to the aforementioned risk group, the patient's age at diagnosis is recorded, resulting in two clinical covariates per patient.
 Of these 273, 86 are classified as high-risk patients, while the remaining 187 are not.
 High-risk is coded as a binary variable, where both low risk and intermediate risk are coded as 0.
-42 of the 273 experienced a recurrence, a proportion of 31.5\%.
+42 of the 273 experienced a recurrence within the follow up, a proportion of 31.5\%.
 
-\begin{figure}\label{fig:age-scatter}
+\begin{figure}
 \caption{Scatterplot of age in the dataset from \citet{oberthuer-data}.}
+\label{fig:age-scatter}
 \centering\includegraphics[scale=0.4]{age_scatter.pdf}
 \end{figure}
 
-\begin{figure}\label{fig:age-hist}
-\caption{Histogram of age in the dataset from \citet{oberthuer-data}.}
-\centering\includegraphics[scale=0.4]{age_hist_finer.pdf}
-\end{figure}
-
 \citet{bovelstad2009} generated 50 random splits of training (240 patients) and test (122 patients) sets from the data.
-We first generate one split of train and test data to give an example of how to interpret the estimated parameters.
+We repeat the same procedure 100 times, but first we report the analyses of one single (the first) split of train and test data, to give an example of how to interpret the results.
 
-\section{Example}
-The division is done by first setting a particular seed, then dividing, stratified by censoring status, into 3 almost equally sized parts.
-We say that the first part is the test set, and the second and third parts are joined to make up the training set.
-We then perform cross-validation on the training set.
+\section{Single split}
+Data are split in a training set (2/3) and test set (1/3).
 
 \subsection{Cross-validation on training set}
 As has been shown previously, cross-validation should be repeated with different division of folds, to achieve a more accurate estimate of a minimizing $\mstop$.
@@ -74,11 +70,11 @@ We perform a repeated (10 times) 5-fold cross validation to find the optimal num
 We first performed a 10-fold repeated cross-validation, but this parameter search did not converge, i.e., the log-likelihood kept increasing.
 Upon further inspection, we found that one of the folds was the main cause of this, as the log-likelihood for that particular fold continued to increase, even after 400 iterations, while the other folds were in overfitting territory.
 We concluded that splitting a training set of around 180 into 10 folds would eventually cause a problem in one of the folds, as there was too little information left.
-We find $\mstop=20$ to be optimal in this case, as seen in Figure \ref{fig:neuroblastoma-cv}.
+We find $\mstop=20$ to be optimal in this case, as shown in Figure \ref{fig:neuroblastoma-cv}.
 Each dotted gray line is the sum of the negative log-likelihood of a model trained on 4 folds and applied to the last fold, as a function of iteration number.
 The solid black line is the mean of these 10 gray lines, and the red vertical line indicates the optimal $\mstop$, i.e., the minimizing iteration number.
-182 91
-In this case $\mstop$ is 20.
+%182 91
+%In this case $\mstop$ is 20.
 Note the impact of running the 5-fold cross-validation in a repeated fashion:
 The optimal $\mstop$ is different between these different runs.
 
@@ -88,9 +84,9 @@ The optimal $\mstop$ is different between these different runs.
 \centering\includegraphics[scale=0.4]{example_cv_loglik.pdf}
 \end{figure}
 
-\subsection{Interpretation of parameters estimated on training set}
+\subsection{Results}
 After estimating the optimal stopping iteration, $\mstop=20$, we run the boosting algorithm with $\mstop$ iterations, to estimate the model parameters on the entire training set.
-The estimated parameters are reported in tables \ref{tab:oberthuer-beta} and \ref{tab:oberthuer-gamma}, for gene and clinical data, respectively.
+
 \begin{table}
 \caption{Estimated intercept values}
 \label{tab:neuroblastoma-intercepts}
@@ -105,8 +101,8 @@ $\gamma_0$ & 0.077 \\
 \end{tabular}
 \end{table}
 
-\subsubsection{Results: Baseline, null model, interpretation}
-We first look at the intercepts, reported in table \ref{tab:neuroblastoma-intercepts}.
+\subsubsection{Baseline, null model, interpretation}
+We first look at the intercepts, reported in Table \ref{tab:neuroblastoma-intercepts}.
 Here we see that the estimated intercept for the gene data, $\beta_0$, is 0.692.
 We remember that in our FHT model, the vector $\bbeta$ corresponds to the initial level $y_0$ of the health process, with the log link function.
 The null model, without any covariate effects, therefore has a $y_0$ of $\exp(0.692)=1.998$.
@@ -121,7 +117,7 @@ The resulting health process is
 where $W(t)\sim N(0,\sqrt{t})$,
 i.e.,
 $Y(t)\sim N(1.998+0.077t,\sqrt{t})$.
-To get a feeling of the variability of this process, and potential trajectories of such a process, we plot 10 realizations of this process in Figure \ref{fig:neuroblastoma-wiener}.
+To get a feeling of the variability of it, and potential trajectories of such a process, we plot 10 realizations of this process in Figure \ref{fig:neuroblastoma-wien}.
 Of these particular 10 processes, 8 processes at some point go below 0.
 In the FHT interpretation, then, these health processes would cause a death, or, a recurrence of the neuroblastoma cancer.
 To get a better estimate, we need to sample more processes.
@@ -136,9 +132,11 @@ meaning about three in four should have a recurrence during their lifetime.
 For our training set, 28 out of 182 are observed events, meaning only 0.154 have experienced a recurrence.
 Note that this is with a medium follow-up of 4.5 years.
 This is still a bit off from the null model prediction of the cure rate, but at least our model predicts a non-zero proportion of long-term survivors.
-\begin{figure}\label{fig:neuroblastoma-wiener}
-\caption{Wiener processes with parameters $y_0=1.998$ and $\mu=0.077$, corresponding to the estimated null model from neuroblastoma data set \citep{oberthuer-data}.}
-\centering\includegraphics[scale=0.4]{example_wieners.pdf}
+\begin{figure}
+\caption{Wiener processes with parameters $y_0=1.998$ and $\mu=0.077$, corresponding to the estimated null model from the neuroblastoma data set \citep{oberthuer-data}.}
+\label{fig:neuroblastoma-wien}
+\centering
+\includegraphics[scale=0.4]{example_wieners.pdf}
 \end{figure}
 
 
@@ -154,7 +152,7 @@ Now consider the fact that the drift $\mu$ is positive.
 Keeping in mind that the individuals in the study are young children.
 The health level of some of these children should indeed increase after the surgery, when looking at a timeframe that does not comprise the length of a typical human life.
 
-\subsubsection{Results: Estimated covariates}
+\subsubsection{Estimated covariates}
 Let us further look at estimated covariate effects.
 We see that the boosting algorithm has included both covariates into the model.
 Before performing boosting, we centered and scaled each column of the covariate matrices, meaning that if you look at the covariate $j$, we have that the mean is (approximately) 0,
@@ -176,7 +174,7 @@ We calculate the drift parameter for those individuals designated as high-risk, 
 \begin{equation}
     \mu_{\text{high-risk}}=0.077-0.189\cdot1.472=-0.202.
 \end{equation}
-Whereas for those not designated as high-risk, it is
+Whereas for those designated as low and intermediate risk, it is
 \begin{equation}
     \mu_{\text{low-risk}}=0.077-0.189\cdot-0.677=0.205.
 \end{equation}
@@ -195,9 +193,9 @@ The minimum standardized age is -0.724, and so the effect of age is bounded abov
 \end{equation*}
 Hence, crucially, this means that the model predicts that all high-risk individuals will eventually have a recurrence of neuroblastoma cancer.
 This seems to resonate with the fact that these are indeed characterized as having a high risk.
-Those not designated as high-risk, on the other hand, thus have a probability of not experiencing recurrence as high as
+Those not designated as high-risk, on the other hand, have a probability of not experiencing recurrence, using the formula seen previously,
 \begin{equation*}
-    \Pr{(T=\infty)}=1-\Pr{(T<\infty)}=1-\exp{(-2\cdot 1.998\cdot 0.205)}=0.559.
+    1-\Pr{(T<\infty)}=1-\exp{(-2y_0\mu)}=1-\exp{(-2\cdot 1.998\cdot 0.205)}=0.559.
 \end{equation*}
 In other words, we should expect that more than half of the not-high-risk patients should recover.
 
@@ -208,17 +206,17 @@ In other words, we should expect that more than half of the not-high-risk patien
 \centering
 \begin{tabular}{cc}
 \toprule
-$j$ & $\beta_j$ \\
+Gene      & $\beta_j$ \\
 \hline
-0 & 0.692 \\
-49 & -0.010 \\
-1447 & -0.069 \\
-2442 & 0.012 \\
-5527 & -0.073 \\
-5725 & -0.009 \\
-6532 & -0.011 \\
-6701 & 0.015 \\
-6901 & 0.011 \\
+Intercept &  0.692    \\
+Gene 49   & -0.010    \\
+Gene 1447 & -0.069    \\
+Gene 2442 &  0.012    \\
+Gene 5527 & -0.073    \\
+Gene 5725 & -0.009    \\
+Gene 6532 & -0.011    \\
+Gene 6701 &  0.015    \\
+Gene 6901 &  0.011    \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -229,11 +227,11 @@ $j$ & $\beta_j$ \\
 \centering
 \begin{tabular}{cc}
 \toprule
-$j$ & $\gamma_j$\\
+          & $\gamma_j$\\
 \hline
-0 &  0.077  \\
-1 &  -0.189 \\
-2 &   -0.029 \\
+Intercept &   0.077   \\
+Risk      &  -0.189   \\
+Age       &  -0.029   \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -245,7 +243,7 @@ However, a larger parameter does not necessarily mean that the effect of this ge
 
 
 
-\section{Test set performance}
+\subsection{Difference of deviance on the test set}
 The test set consists of 91 individuals.
 14 of the individuals in the test set have experienced recurrence.
 We calculate the log-likelihood on the test set, with the model estimated from the training set, and similarly using the estimated null model of the training set.
@@ -254,26 +252,24 @@ Remember that the performance of a model is good when the difference in deviance
 We obtain a difference of deviance on -95.2.
 Genetic however gets an even better difference of deviance, of -104.4.
 
-\subsection{Assessing predictive power with brier scores}
-\subsection{Brier scores on survival data}
-In order to assess predictive performance, we need what's called a proper scoring rule: One which is 1 if the actual data is inserted as predictions.
+\subsection{Assessing predictive power with the Brier score}
 
-\subsection{Brier scores}
-The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts. While it is also able to handle multiple categories, we will here give the definition for the binary case.
-We start by assuming that we are in a situation with no censoring, which we are in with the survival analysis context.
-We have $N$ individuals in a test set.
-We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,N$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$.
+\subsection{Brier score}
+The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts, and then translated into survival analysis \citep{graf}.
+Let us first consider, for ease of presentation, the case with no censoring.
+We have $N_{\text{test}}$ individuals in a test set.
+We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,N_{\text{test}}$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$.
 The error made in predicting the event status $I(t>t^*)$ for a patient in the test set can be given as
 \begin{align*}
-BS(t^*)&=\frac{1}{N}\sum_{i=1}^N\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
-    &=\frac{1}{N}\sum_{i=1}^N\left[\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*)+(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)\right].
+BS(t^*)&=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
+    &=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left[\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*)+(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)\right].
 \end{align*}
 In the first formulation, the Brier score looks like a version of an RSS measure, where one sums the squared error between the observed event and the estimated probability.
 In the case of censored data, the above is not enough.
 
 The Brier score was adapted to handle censored survival times by \citet{graf}, assuming independent censoring.
 They showed that the loss of information due to censoring can be accounted for by using an inverse probability of censoring weighting \citep{bovelstadborgan}.
-This Brier score for censored data is defined as
+This version of the Brier score for censored data is defined as
 \begin{equation*}
     BS^c(t^*)=\frac{1}{N}\sum_{i=1}^N\left[\frac{\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*,\delta_i=1)}{\hat{G}(t_i)}+\frac{(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)}{\hat{G}(t^*)}\right].
 \end{equation*}
@@ -291,7 +287,7 @@ The Brier score may also be used to define an $R^2$ measure, where one can bench
 \begin{equation*}
     R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
 \end{equation*}
-where $BS^c_0(t^*)$ is the Brier score for the null model, in other words, one which assigns equal probability to all individuals.
+where $BS^c_0(t^*)$ is the Brier score for the null model.
 One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
 Note, though, that this $R^2$ measure is model specific, since it is based on a comparison between two models of the same kind.
 It should therefore be used to assess how well a specific model, such as FHTBoost, improves with covariates.
@@ -305,7 +301,7 @@ However, to compare the predictive power of different models, such as FHTBoost a
 
 
 \section{Comparing a clinical-genetic model to clinical-only and genetic-only models}
-\citet{bovelstad2009} did analysis of the neuroblastoma data \citep{oberthuer-data} and tried ways of combining clinical and genomic data in Cox models.
+\citet{bovelstad2009} did analysis of the neuroblastoma data and tried ways of combining clinical and genomic data in Cox models.
 As mentioned previously, the FHT model lends itself easily to combining genomic and clinical data, at least in a naive way.
 \citet{bovelstad2009} perform a comparison of Cox models which use both types of data, to Cox models using only genomic, or only clinical data.
 Our boosting method FHTBoost offers a simple way to combine clinical and genetic data in estimating.
@@ -344,6 +340,12 @@ We see here that, in fact, the genomic model performs best, and quite strikingly
 \end{figure}
 
 \section{Comparison with the Cox model}
+We compared our model with the Cox model as implemented in CoxBoost \citep{...}, setting
+\begin{equation}\label{eq:lambda-nu}
+    \lambda=N\frac{1-\nu}{\nu},
+\end{equation}
+as suggestd in \citet{DeBin2016}.
+\todo[inline]{The below is not true!}
 The Cox model which has been discussed previously, in Chapter 2.
 There exist two packages in R for estimating boosted Cox models.
 One, called \verb|mboost|, uses gradient boosting.
