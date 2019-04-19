@@ -1,0 +1,142 @@
+\chapter{Evaluation measures}
+
+\section{Difference in deviance}
+Difference in deviance is a measurement for comparing models of the same type, e.g., between different parameter vectors of an FHT model.
+The objective of the measurement is to assess how much the model improves when adding covariates.
+We estimate the parameters of the FHT model on the training set.
+When doing so, we first find the intercepts of the covariate vectors, $\beta_0$ and $\gamma_0$, respectively,
+and the initial covariate vectors, i.e., the covariate vectors before starting boosting, are
+\begin{equation*}
+    \hat{\bbeta}^{[0]}_{\text{train}}=(\beta_0^{[0]},0,0,\ldots,0)
+\end{equation*}
+and
+\begin{equation*}
+    \hat{\bgamma}^{[0]}_{\text{train}}=(\gamma_0^{[0]},0,0,\ldots,0)
+\end{equation*}
+We denote the concatened vector of these as
+\begin{equation*}
+    \hat{\btheta}^{[0]}_{\text{train}}=\left(\bbeta^{[0]},\bgamma^{[0]}\right).
+\end{equation*}
+We call this the \textit{null model}, because it incorporates no covariate information, and will therefore predict and perform the same for every individual.
+Similarly, the fully estimated covariate vectors, boosted with $\mstop$ steps, on the training set, are
+\begin{equation*}
+    \hat{\bbeta}^{[\mstop]}_{\text{train}}=(\beta_0^{[\mstop]},\beta_1^{[\mstop]},\beta_2^{[\mstop]},\ldots,\beta_p^{[\mstop]})
+\end{equation*}
+and
+\begin{equation*}
+    \hat{\bgamma}^{[\mstop]}_{\text{train}}=(\gamma_0^{[\mstop]},\gamma_1^{[\mstop]},\gamma_2^{[\mstop]},\ldots,\gamma_d^{[\mstop]}).
+\end{equation*}
+Again let their concatenation be denoted as
+\begin{equation*}
+    \hat{\btheta}^{[\mstop]}_{\text{train}}=\left(\hat{\bbeta}^{[\mstop]}_{\text{train}},\hat{\bgamma}^{[\mstop]}_{\text{train}}\right).
+\end{equation*}
+We call this the model.
+The deviance of a model $\btheta$ is
+\begin{equation}
+    \text{dev}(\btheta)=2l(\btheta),
+\end{equation}
+where $l(\btheta)$ is the log-likelihood value attained by an estimated covariate vector $\btheta$.
+Deviance is used a lot in the generalized linear models (GLM) framework, where there exist a lot of results.
+The difference of deviance between two models $\btheta_1$ and $\btheta_2$ is
+\begin{equation}
+    d=\text{dev}(\btheta_1)-\text{dev}(\btheta_2)=2l(\btheta_1)-2l(\btheta_2)=2\left(l(\btheta_1)-l(\btheta_2)\right).
+\end{equation}
+In our case, the likelihood of the null model on the test set is
+\begin{equation}
+    l^{\text{test}}\left(\hat{\btheta}^{[0]}_{\text{train}}\right).
+\end{equation}
+The notation here is a bit overloaded to make it explicitly clear that the covariate vector is estimated based on the \textit{training} set, and that the log-likelihood value is calculated on the \textit{test} set.
+We wish to measure how much better $\hat{\btheta}_{\text{train}}^{[\mstop]}$ explains the variation in the test set than $\hat{\btheta}_{\text{train}}^{[0]}$ does.
+Further, the trained model, with covariates, is a model $\hat{\btheta}^{[\mstop]}_{\text{train}}$, i.e., a model boosted with $\mstop$ steps.
+The estimated model which incorporates covariates has a likelihood of
+\begin{equation}
+    l^{\text{test}}\left(\hat{\btheta}^{[\mstop]}_{\text{train}}\right).
+\end{equation}
+It is conventional to put the least complex model first, and the more complex model last.
+Since a more complex model should achieve a better, and thus higher, log-likelihood, the difference of deviance should be negative. 
+Hence the difference in deviance between a fitted model and the null model containing no covariates is
+\begin{equation*}
+    d=2\left(l^{\text{test}}\left(\hat{\btheta}^{[0]}_{\text{train}}\right)-l^{\text{test}}\left(\hat{\btheta}^{[\mstop]}_{\text{train}}\right)\right).
+\end{equation*}
+The performance of a model is good when $d$ is small, meaning ``very negative.''
+In some of the results in this section, we end up with a \textit{positive} difference of deviance.
+This means that the null model achieved a higher log-likelihood value than the fully estimated model.
+This is the typical effect of overfitting, where the model follows too much random variability in the training set, and performs badly on the test set.
+
+
+\section{Variable selection}
+As shown in section \ref{sec:variable-selection}, a component-wise gradient boosting algorithm, such as FHTBoost,
+performs data-driven variable selection.
+
+We denote a variable selected by the algorithm as ``positive,'' or $P$ for short, and a variable that is not selected as ``negative,'' or $N$ for short.
+Since we know which variables actually affect the response, we know how many of the variables selected are selected correctly, in the sense
+that they are selected and they have an effect. We call these ``true positives,'' or $TP$ for short.
+Similarly, we know which variables do not affect the response, and so we can calculate the number of non-informative variables
+which were not selected, i.e., true negative, or $TN$ for short.
+Furthermore, we say that variables which have been selected but which do not actually have an effect, are false positives, $FP$.
+Similarly, false negatives, $FN$, are variables which do actually have an effect, but which were not selected in the boosting model.
+Here follows the definition of three metrics that we use to determine how well the model performs variable selection.
+
+\textbf{Sensitivity} measures the proportion of the selected variables which are informative.
+Ideally, this is 1.
+\begin{equation}\label{eq:sensitivity}
+    \text{Sensitivity}=\frac{TP}{P}
+\end{equation}
+
+\textbf{Specificity} measures the proportion of variables \textit{not} selected which were not informative.
+Ideally, this is 1.
+\begin{equation}\label{eq:specificity}
+    \text{Specificity}=\frac{TN}{N}
+\end{equation}
+
+\textbf{False discovery rate} measures the proportion of selected variables which are in truth not informative.
+Ideally, this is 0.
+\begin{equation}\label{eq:accuracy}
+    \text{FDR}=\frac{FP}{FP+TP}
+\end{equation}
+
+\section{Brier score}
+The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts, and then translated into survival analysis \citep{graf}.
+Let us first consider, for ease of presentation, the case with no censoring.
+We have $N_{\text{test}}$ individuals in a test set.
+We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,N_{\text{test}}$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$.
+The error made in predicting the event status $I(t>t^*)$ for a patient in the test set can be given as
+\begin{align*}
+BS(t^*)&=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
+    &=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left[\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*)+(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)\right].
+\end{align*}
+In the first formulation, the Brier score looks like a version of an RSS measure, where one sums the squared error between the observed event and the estimated probability.
+In the case of censored data, the above is not enough.
+
+The Brier score was adapted to handle censored survival times by \citet{graf}, assuming independent censoring.
+They showed that the loss of information due to censoring can be accounted for by using an inverse probability of censoring weighting \citep{bovelstadborgan}.
+This version of the Brier score for censored data is defined as
+\begin{equation*}
+    BS^c(t^*)=\frac{1}{N}\sum_{i=1}^N\left[\frac{\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*,\delta_i=1)}{\hat{G}(t_i)}+\frac{(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)}{\hat{G}(t^*)}\right].
+\end{equation*}
+Here $\hat{G}$ is the Kaplan-Meier estimate of the censoring distribution, defined as
+\begin{equation*}
+    \hat{G}(t)=\prod_{i\in \overline{R}(t)}\left(1-\frac{1-\delta_i}{\sum_{i=1}^NY_i(t)}\right),
+\end{equation*}
+where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$, and where $\overline{R}(t)$ is the set of individuals \textit{not} at risk at time $t$, i.e.,
+\begin{equation*}
+    \overline{R}(t)=\{i\colon t_i<t,i=1,2,\ldots,N\}.
+\end{equation*}
+
+\subsection{$R^2$ measure based on Brier score}
+The Brier score may also be used to define an $R^2$ measure, where one can benchmark the performance of a fitted model to a so-called null model, i.e., one where each regression coefficient is set to zero. A measure of explained variation can be found by calculating the gain in accuracy when adding covariates. Thus we define the Brier $R^2$ measure as
+\begin{equation*}
+    R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
+\end{equation*}
+where $BS^c_0(t^*)$ is the Brier score for the null model.
+One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
+Note, though, that this $R^2$ measure is model specific, since it is based on a comparison between two models of the same kind.
+It should therefore be used to assess how well a specific model, such as FHTBoost, improves with covariates.
+However, to compare the predictive power of different models, such as FHTBoost and CoxBoost, one should use the ``raw'' Brier score $BS^c(\cdot)$.
+
+\subsection{Integrated Brier score}
+\todo[inline]{Explain!!}
+\begin{align*}
+    \text{IBS}(t_{\text{start}}, t_{\text{end}})&=\int_{t_{\text{start}}}^{t_{\text{end}}}BS^c(t)\d t \\
+    &\approx\sum_{i}BS^c(t_i)\cdot(t_{i+1}-t_{i}).
+\end{align*}

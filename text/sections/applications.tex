@@ -252,55 +252,6 @@ Remember that the performance of a model is good when the difference in deviance
 We obtain a difference of deviance on -95.2.
 Genetic however gets an even better difference of deviance, of -104.4.
 
-\subsection{Assessing predictive power with the Brier score}
-
-\subsection{Brier score}
-The Brier score \citep{brier1950} was first introduced as a way to measure the accuracy of weather forecasts, and then translated into survival analysis \citep{graf}.
-Let us first consider, for ease of presentation, the case with no censoring.
-We have $N_{\text{test}}$ individuals in a test set.
-We denote their observed survival times by $t_i$, and their covariate vector as $\x_i$, as usual, with $i=1,\ldots,N_{\text{test}}$. The Brier score aims at evaluating how well the estimated patient specific survival probability $\hat{\pi}(t^*|\x)$, obtained from a prediction model, is able to predict the event status $I(t>t^*)$ of an individual at a given time $t^*$.
-The error made in predicting the event status $I(t>t^*)$ for a patient in the test set can be given as
-\begin{align*}
-BS(t^*)&=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left(I(t_i>t^*)-\hat{\pi}(t^*|\x_i)\right)^2 \\
-    &=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}}\left[\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*)+(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)\right].
-\end{align*}
-In the first formulation, the Brier score looks like a version of an RSS measure, where one sums the squared error between the observed event and the estimated probability.
-In the case of censored data, the above is not enough.
-
-The Brier score was adapted to handle censored survival times by \citet{graf}, assuming independent censoring.
-They showed that the loss of information due to censoring can be accounted for by using an inverse probability of censoring weighting \citep{bovelstadborgan}.
-This version of the Brier score for censored data is defined as
-\begin{equation*}
-    BS^c(t^*)=\frac{1}{N}\sum_{i=1}^N\left[\frac{\hat{\pi}(t^*|\x_i)^2I(t_i\leq t^*,\delta_i=1)}{\hat{G}(t_i)}+\frac{(1-\hat{\pi}(t^*|\x_i))(I(t_i>t^*)}{\hat{G}(t^*)}\right].
-\end{equation*}
-Here $\hat{G}$ is the Kaplan-Meier estimate of the censoring distribution, defined as
-\begin{equation*}
-    \hat{G}(t)=\prod_{i\in \overline{R}(t)}\left(1-\frac{1-\delta_i}{\sum_{i=1}^NY_i(t)}\right),
-\end{equation*}
-where $Y_i(t)$ is an indicator of whether individual $i$ is at risk at time $t$, and where $\overline{R}(t)$ is the set of individuals \textit{not} at risk at time $t$, i.e.,
-\begin{equation*}
-    \overline{R}(t)=\{i\colon t_i<t,i=1,2,\ldots,N\}.
-\end{equation*}
-
-\subsection{$R^2$ measure based on Brier score}
-The Brier score may also be used to define an $R^2$ measure, where one can benchmark the performance of a fitted model to a so-called null model, i.e., one where each regression coefficient is set to zero. A measure of explained variation can be found by calculating the gain in accuracy when adding covariates. Thus we define the Brier $R^2$ measure as
-\begin{equation*}
-    R^2_{\text{Brier}}(t^*)=1-\frac{BS^c(t^*)}{BS^c_0(t^*)},
-\end{equation*}
-where $BS^c_0(t^*)$ is the Brier score for the null model.
-One advantage with $R^2_{\text{Brier}}$ is that it adjusts for variation due to the specific data under study, which the Brier score itself does not \citep{bovelstadborgan}.
-Note, though, that this $R^2$ measure is model specific, since it is based on a comparison between two models of the same kind.
-It should therefore be used to assess how well a specific model, such as FHTBoost, improves with covariates.
-However, to compare the predictive power of different models, such as FHTBoost and CoxBoost, one should use the ``raw'' Brier score $BS^c(\cdot)$.
-
-\subsection{Integrated Brier score}
-\todo[inline]{Explain!!}
-\begin{align*}
-    \text{IBS}(t_{\text{start}}, t_{\text{end}})&=\int_{t_{\text{start}}}^{t_{\text{end}}}BS^c(t)\d t \\
-    &\approx\sum_{i}BS^c(t_i)\cdot(t_{i+1}-t_{i}).
-\end{align*}
-
-
 \section{Comparing a clinical-genetic model to clinical-only and genetic-only models}
 \citet{bovelstad2009} did analysis of the neuroblastoma data and tried ways of combining clinical and genomic data in Cox models.
 As mentioned previously, the FHT model lends itself easily to combining genomic and clinical data, at least in a naive way.
