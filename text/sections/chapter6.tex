@@ -153,7 +153,7 @@ Keeping in mind that the individuals in the study are young children.
 The health level of some of these children should indeed increase after the surgery, when looking at a timeframe that does not comprise the length of a typical human life.
 
 \subsubsection{Estimated covariates}
-Let us further look at estimated covariate effects.
+Let us further look at estimated covariate effects (Table \ref{tab:oberthuer-beta} and Table \ref{tab:oberthuer-gamma})
 We see that the boosting algorithm has included both covariates into the model.
 Before performing boosting, we centered and scaled each column of the covariate matrices, meaning that if you look at the covariate $j$, we have that the mean is (approximately) 0,
 %\begin{equation}
@@ -294,6 +294,7 @@ It should therefore be used to assess how well a specific model, such as FHTBoos
 However, to compare the predictive power of different models, such as FHTBoost and CoxBoost, one should use the ``raw'' Brier score $BS^c(\cdot)$.
 
 \subsection{Integrated Brier score}
+\todo[inline]{Explain!!}
 \begin{align*}
     \text{IBS}(t_{\text{start}}, t_{\text{end}})&=\int_{t_{\text{start}}}^{t_{\text{end}}}BS^c(t)\d t \\
     &\approx\sum_{i}BS^c(t_i)\cdot(t_{i+1}-t_{i}).
