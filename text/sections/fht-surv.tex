@@ -21,7 +21,7 @@ Luckily, not every patient relapses during that time, and so the actual time to 
 Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
 We could throw away these observations without an observed event. But we at least know that these patients survived until time $\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data.
 
-\subsection{Independently censored survival data}
+\subsection{Independently censored survival data}\label{subsec:survdata}
 An observed lifetime $T$ is censored if the actual lifetime $\tilde{T}$ is larger than $T$.
 We can say that we have a censoring mechanism which works such that the observed $T$ is $T=\min(\tilde{T}, C)$, where $C$ is a certain censoring time.
 In the clinical trial example mentioned, the censoring time $C$ would be the end of the possible observation period of the trial, namely $\tau$.
@@ -260,8 +260,9 @@ There is a model inconsistency problem here.
 If we only observe $x_{i,1}$, and calculate the hazard $\alpha(t|x_{i,1})$, then this will not be of Cox regression form, regardless of the distribution of $x_2|x_1$.
 
 In addition, if there is perfect Cox structure given $x_1$ alone, and perfect Cox structure given $x_2$ alone, one almost never has a Cox model in the joint space $(x_1,\,x_2)$.
-That is, one almost never has the proportional hazards assumption actually satisfied \citep{bretagnolle}.
+That is, one almost never has the proportional hazards assumption actually satisfied.
 However, in practice, Cox regression is robust and tends to work well.
+\todo[inline]{Find citation for this paragraph!}
 
 Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models.
 One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
@@ -498,6 +499,9 @@ Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-sur
 \subsection{Fitting an IG FHT model}
 At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}. A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
 There does not exist any method to fit either a \textit{regularized} model at the moment, nor to do automatic variable selection.
+
+\subsection{Constructing survival probabilities based on estimates}
+\todo[inline]{}
 
 %\todo[inline]{Add regression example}
 
