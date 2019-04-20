@@ -46,3 +46,5 @@ text/sections-old/*
 
 # the package
 code/FHT-IG-R-package/
+text/venv
+text/*.py
