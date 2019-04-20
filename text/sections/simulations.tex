@@ -1,39 +1,50 @@
 \chapter{Simulation study}
-One way to verify that the FHTBoost algorithm which we have developed and discussed in chapter \ref{ch:FHTboost} works, is to test it on simulated data.
-Simulation studies are used for many different purposes.
-In particular to simulate survival data from the ``true model'' (in this case, our first-hitting-time model), for which we know the true values of the parameters.
-We can then use our developed method to estimate these parameters, and see how well it selects the true parameters in the final model.
-This is one common way to use a simulation study \citep{simulation-studies}.
+After developing FHTBoost (see chapter \ref{ch:FHTboost}), we wish to verify that it works, i.e. that it has predictive power and selects correct variables.
+Not only that, but we wish to see which of the two versions of the algorithm works best, namely the fixed intercept version and the version with an iteratively changing intercept.
+
+One way to verify that a statistical estimation method works, is to test it on simulated data.
+Simulation studies are used for many different purposes, but a particularly common purpose is to simulate survival data from the ``true model'' (in this case, our first-hitting-time model), for which we know the true values of the parameters.
+We can then use our developed method to estimate these parameters, and see how well it recovers the true parameters in the final model, and how well the model fits the simulated data.
+The model should fit the simulated data well, because the data generating mechanism \textit{is} the model.
+
+In addition to verifying that the algorithm works, 
+The fixed intercept version or the changing intercept version.
+
 
 \section{Simulation design}
 In this chapter we describe two scenarios, a highly correlated scenario and an uncorrelated scenario. 
-For each scenario, we estimate parameters based on the FHTBoost algorithm, and assess its performance.
-In both scenarios, we have a high-dimensional covariate matrix $\X$.
-In a biomedical setting, this would realistically be gene expressions.
-We also have a low-dimensional covariate matrix $\Z$, which mimics clinical measurements.
+The purpose of each scenario is to estimate FHT parameters, using the FHTBoost algorithm, on data simulated according to the scenario, and then to assess the model's performance on this data.
+In both scenarios, we generate a high-dimensional covariate matrix $\X$ consisting of covariate vectors
+\begin{equation}
+    \x_1,\x_2,\ldots,\x_{p_1},
+\end{equation}
+which is supposed to mimic gene expression data.
+We also have a low-dimensional covariate matrix $\Z$, which similarly consist of covariate vectors
+\begin{equation}
+    \z_1,\z_2,\ldots,\z_{p_2},
+\end{equation}
+and which is supposed to mimic clinical measurements.
 We link each covariate to a parameter in a parameter vector, where $\X$ corresponds to $\bbeta$, and $\Z$ corresponds to $\bgamma$.
-In each parameter vector, we set a small number of parameters to a non-zero value, and all the rest to zero.
-%To be clear: In the parameter vector $\bbeta$, which is linked to gene expressions, only a very small proportion is set to non-zero.
-This means that only a very small number of covariates have an effect.
-Given these parameter vectors and covariate matrices, we can calculate a specific $y_0$ and a $\mu$ for each individual.
-With the FHT perspective, which we have discussed previously, in section \ref{fht-idea} and onward, these are parameters which represent the health process of each individual.
-As shown, this means that an individual $i$ with initial level $y_{0,i}$ and drift $\mu_i$ has a lifetime which follows the distribution $\IG(y_{0,i},\mu_i)$.
-We can then easily draw a lifetime for each individual from its respective inverse Gaussian distribution.
+In each parameter vector, $\bbeta$ and $\bgamma$, we set only a small number of parameters to a non-zero value, and we set all the rest to zero.
+Thus only a very small number of covariates will have an effect.
+Given these parameter vectors and covariate matrices, we can calculate a specific $y_{0,i}$ and a specific $\mu_i$ for each individual $i$, $i=1,2,\ldots,N$, where $N$ is the size of the data set.
+From the FHT perspective, discussed previously in section \ref{fht-idea} and onward, these are parameters which represent the health process of each individual.
+To reiterate, an individual $i$ has a stochastic health process, a Wiener process, with an initial level $y_{0,i}$ and a drift $\mu_i$.
+Consequently its lifetime follows the lifetime probability distribution $\IG(y_{0,i},\mu_i)$.
+This relationship allows us to easily draw a lifetime for each individual from its respective inverse Gaussian distribution.
 
-In addition to verifying that the algorithm works, i.e., has predictive power and selects correct variables, we wish to see which of the two versions of the algorithm works best.
-The fixed intercept version or the changing intercept version.
-
-As previously discussed, it is important to evaluate the model/algorithm performance (both in terms of predictive ability and variable selection) on a separate and unseen test set.
+It is important to evaluate the model/algorithm performance (both in terms of predictive ability and variable selection) on a separate and unseen test set.
 Each training set will be generated by drawing $N=500$ individuals as described above, with a specific seed.
 Since we are simulating, it is simple to generate a test set by drawing from a unique seed.
-We are therefore also able to make the test set quite large, and larger than the training sets.
-Here we set $N_{\text{test}}=1000$ observations.
+We are therefore also able to decide the size of the test set.
+We set $N_{\text{test}}=1000$ observations.
 
 We generate $B\approx500$ data sets by drawing survival data according to algorithm \ref{algo:clinical-sim}, such that each data set has $N=500$ observations. 
 We treat each data set as a separate training data set, and thus estimate $B$ models.
 To estimate each model, we first a perform repeated 5-fold cross validation procedure (see subsection \ref{subsec:K-fold}), with 5 repeats, on the training data set.
-As shown in section ..., this should provide a reasonably stable $\mstop$ (near the ``true'' $\mstop$) for that specific data set.
+As shown in subsection \ref{subsec:iterations}, this should provide a reasonably variance reduced estimate of $\mstop$ (near the ``true'' $\mstop$).
 We then estimate a model on the training set, by running FHTBoost with $\mstop$ number of iterations.
+
 The boosting algorithm has two main purposes: Selection of variables, and minimizing test error.
 To assess variable selection, we look at some well known metrics.
 To assess the test/generalization error, we finally calculate the difference of deviance on the test set.
@@ -47,7 +58,7 @@ To censor the data, we draw censoring times $w_i\sim f(\cdot),i=1,\ldots,N$ from
 We let the observed survival times then be $t_i=\min(\tilde{t}_i,w_i)$.
 The corresponding censoring indicator, $d_i$, is then set equal to 1 if the actual survival time was observed, i.e., if $\ti<w_i$.
 We end up with a set of $N$ tuples $(t_i,d_i),i=1,\ldots,N$.
-Note that this prcedure simulates censored time under independent censoring, indeed the censoring time is independent of the survival times.
+Note that this prcedure simulates censored time under independent censoring, since indeed the censoring times are independent of the survival times.
 
 \begin{algorithm}
 \caption{Generating survival data from Inverse Gaussian FHT distribution}
@@ -78,7 +89,7 @@ Note that this prcedure simulates censored time under independent censoring, ind
 To create a realistic scenario where we have data looking like gene expression data and clinical data, we need to define a proper correlation structure.
 We can draw covariate matrices from a normal distribution with a suitable covariance matrix.
 
-We consider a scenario where for each individual , we have a covariate matrix $X$ consisting of $p$ gene expressions, and a covariate matrix $Z$ consisting of $d$ clinical measurements.
+We consider a scenario where we have a covariate matrix $X$ consisting of $p$ gene expressions, and a covariate matrix $Z$ consisting of $d$ clinical measurements.
 We can imagine that some of the genes in $X$ are highly correlated.
 One way to imagine this is to imagine that we have blocks of genes,
 where inside one block, the genes are highly correlated, whereas genes in one block are not correlated to other genes.
