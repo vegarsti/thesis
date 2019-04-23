@@ -2,6 +2,7 @@
 In this chapter, we will explain different evaluation measures which we will use to assess different aspects of models, later in the thesis.
 
 \section{Assessing model fit with difference in deviance between an estimated model and a null model}
+\label{sec:deviance}
 To comparing the performance of two models of the same kind, e.g., two different estimated FHT models, we can calculate their difference in deviance.
 
 \subsection{Deviance}
@@ -77,6 +78,7 @@ This is the typical effect of overfitting, where the model ``follows'' too much 
 
 
 \section{Variable selection measures}
+\label{sec:variable-selection}
 As shown in section \ref{sec:variable-selection}, a component-wise gradient boosting algorithm, like FHTBoost, performs data-driven variable selection.
 The two major objectives of a component-wise gradient boosting algorithm is to perform selection of variables, and shrinkage of variables.
 We may wish to measure the first of these two, namely the effectiveness of the variable selection.
