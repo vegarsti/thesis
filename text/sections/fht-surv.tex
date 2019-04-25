@@ -15,7 +15,7 @@ While these events are a relapse and a birth, respectively, we will collectively
 The time-to-event $T$ is a stochastic variable and of a non-negative domain.
 Clearly, to observe such data in real life, we must wait until the event actually happens.
 This might in some cases never happen, or it might take a very long time.
-Consider a clinical trial of $n$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,n$, is the time until their relapse.
+Consider a clinical trial of $N$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,N$, is the time until their relapse.
 Such a trial can only last a certain amount of time, say, until $\tau$.
 Luckily, not every patient relapses during that time, and so the actual time to their relapse, $\tilde{T}_i$, is not observed.
 Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
@@ -45,7 +45,9 @@ In survival analysis, one of the things we are interested in is the survival fun
 Here $F(t)$ is the familiar cumulative distribution function.
 If the derivative of $F(t)$ exists, we denote it $f(t)$, and then the lifetime $T$ has probability distribution function (pdf) $f(t)$.
 
-We are also interested in the hazard function. This is the probability of the event happening at time $t$, conditioned on the event not having happened yet. More formally, the hazard function is defined as
+We are also interested in the hazard function.
+This is the probability of the event happening at time $t$, conditioned on the event not having happened yet.
+More formally, the hazard function is defined as
 \begin{equation*}
     \hz(t)=\lim_{\epsilon\to0}\frac{\Pr(T<t+\epsilon|T>t)}{\epsilon}.
 \end{equation*}
@@ -61,7 +63,8 @@ and inserting this into the hazard function we have the relation
 \label{eq:hfs}
     \hz(t)=\frac{1}{S(t)}\lim_{\epsilon\to0}\frac{F(t+\epsilon)-F(t)}{\epsilon}=\frac{f(t)}{S(t)}=\frac{-S^\prime(t)}{S(t)},
 \end{equation}
-where the probability distribution function $f(t)$ is obtained by its limit definition, and we note that $S^\prime(t)$ is the derivative of $1-F(t)$, which is $-f(t)$. We further note that by interchanging the notation for derivation, we obtain
+where the probability distribution function $f(t)$ is obtained by its limit definition, and we note that $S^\prime(t)$ is the derivative of $1-F(t)$, which is $-f(t)$.
+We further note that by interchanging the notation for derivation, we obtain
 \begin{equation}\label{eq:alpha-diff}
 \alpha(t)=\frac{S^{\prime}(t)}{S(t)}=\frac{\frac{\d S}{\d t}}{S(t)}.
 \end{equation}
@@ -76,7 +79,7 @@ and we insert \eqref{eq:alpha-diff} into \eqref{eq:cumulative-hazard-1},
 \end{split}
 \end{equation}
 which is an important relationship.
-Given survival data $(t_i,d_i)_{i=1}^n$, we introduce the \textit{risk set} $R(t)$, which gives the set of all individuals at risk at time $t$,
+Given survival data $(t_i,d_i)_{i=1}^N$, we introduce the \textit{risk set} $R(t)$, which gives the set of all individuals at risk at time $t$,
 \begin{equation*}
     R(t)=\{i\colon t_i\geq t\}.
 \end{equation*}
@@ -84,11 +87,11 @@ We further introduce the function $Y(t)$, which is equal to the number of indivi
 \begin{equation*}
     Y(t)=\#R(t)=\#\{i\colon t_i\geq t\},
 \end{equation*}
-where $\#(\cdot)$ is the counting operator over a set. Note that $Y(t)$ does not depend on the censoring indicators, since
-an individual is at risk at time $t$ even though it turns out that it did not die, i.e., its censoring indicator $d_i$ is 0.
+where $\#(\cdot)$ is the counting operator over a set.
+Note that $Y(t)$ does not depend on the censoring indicators, since an individual is at risk at time $t$ even though it turns out that it did not die, i.e., its censoring indicator $d_i$ is 0.
 Estimating the survival function $S(t)$ is usually done by the Kaplan-Meier estimator \citep{kaplan-meier},
 \begin{equation*}
-    \hat{S}(t)=\prod_{i:\{t_i\leq t\}}1-\frac{d_i}{Y(t_i)},
+    \hat{S}_{\text{KM}}(t)=\prod_{i:\{t_i\leq t\}}1-\frac{d_i}{Y(t_i)},
 \end{equation*}
 and the cumulative hazard function $A(t)$ by the Nelson-Aalen estimator \citep{nelson, aalen1978},
 \begin{equation*}
@@ -98,13 +101,21 @@ and the cumulative hazard function $A(t)$ by the Nelson-Aalen estimator \citep{n
 \section{Classical inference approaches}
 \subsection{Likelihood regression}
 Consider survival data $(t_i,d_i),\,i=1,2,\ldots,N$, where $t_i$ is the time to event of individual $i$, and $d_i$ is a censoring indicator of the usual type, meaning it is 1 if the event has been observed, and 0 if not.
-To make inference on what affects the time to event, we need to consider covariates. Covariates are information about an individual. In medical applications, typical covariates are age, gender, disease status, as well as clinical measurements.
+To make inference on what affects the time to event, we need to consider covariates.
+Covariates are information about an individual.
+In medical applications, typical covariates are age, gender, disease status, as well as clinical measurements.
 Denote the covariates, i.e., the information, of an individual $i$ by $x_{i,1},x_{i,2},\ldots,x_{i,p}$, where $p$ is the total number of pieces of information.
-We gather these in a vector $\x_i=(x_{i,1},x_{i,2},\ldots,x_{i,p})$. We may now consider a data set of complete tuples of survival data with covariates,
+We gather these in a vector $\x_i=(x_{i,1},x_{i,2},\ldots,x_{i,p})$.
+We may now consider a data set of complete tuples of survival data with covariates,
 \begin{equation}\label{eq:surv-D}
     D=(t_i,d_i,\x_i)_{i=1}^N.
 \end{equation}
-Now, consider a survival time distribution $\psi(\bbeta)$, which has a vector of regression parameters $\bbeta=(\beta_1,\beta_2,\ldots,\beta_p)$, with one parameter $\beta_j,\,j=1,2,\ldots,p$ corresponding to one covariate $x_j$. This distribution has a parameterized survival function
+Now, consider a survival time distribution
+\begin{equation}\label{eq:surv-time-dist}
+    \psi(\bbeta),
+\end{equation}
+which has a vector of regression parameters $\bbeta=(\beta_1,\beta_2,\ldots,\beta_p)$, with one parameter $\beta_j,\,j=1,2,\ldots,p$ corresponding to one covariate $x_j$.
+This distribution has a parameterized survival function
 \begin{equation*}
     S(t|\bbeta,\x)
 \end{equation*}
@@ -117,17 +128,17 @@ One way to do this, having assumed a specific survival distribution $\psi(\bbeta
 The likelihood is a function of the parameters $\bbeta$ in the distribution, given the observed sample.
 The likelihood is maximized at the parameters which have the highest probability of yielding the observed sample.
 If all censoring indicators are 1, meaning all observations are actual events, we are in the usual statistical regression landscape.
-For each observation, its likelihood is a the probability of observing its event at $t_i$ given the parameters and the data,
+For each observation, its likelihood is the probability of observing its event at $t_i$ given the parameters and the data,
 \begin{equation*}
     f(t_i|\bbeta,\x_i).
 \end{equation*}
 A typical assumption when setting up a (joint) likelihood is to assume that the conditional distribution of each observation is independent and identically distributed (\textit{iid}), given the data.
 Hence the joint likelihood is the product of all the single likelihood contributions,
-\begin{equation}
+\begin{equation*}
     L(\bbeta)=\prod_{i=1}^N f(t_i|\bbeta,\x_i).
-\end{equation}
+\end{equation*}
 But we need to consider the case of censored survival data, and we wish to set up a joint likelihood for such a data set.
-Again assume that the observations $D=\{\x_i,y_i\}_{i=1}^n$ are independent and identically distributed from a survival distribution $\psi(\bbeta)$.
+Again assume that the observations $D=\{\x_i,y_i\}_{i=1}^N$ are independent and identically distributed from a survival distribution $\psi(\bbeta)$.
 In the case of an uncensored observation $i$, meaning $d_i=1$, the single contribution to the likelihood is
 \begin{equation}\label{eq:f}
     f(t_i|\bbeta,\xi)
@@ -153,21 +164,23 @@ The complete likelihood becomes
     L(\bbeta)=\prod_{i=1}^N f(t_i|\x_i,\bbeta)^{d_i} S(t_i|\x_i,\bbeta)^{1-d_i}.
 \end{equation}
 It is more convenient to work with the log likelihood,
-\begin{align}\label{eq:surv-log-lik}
+\begin{align*}%\label{eq:surv-log-lik-1}
 \begin{split}
     l(\bbeta)&=\log L(\bbeta) \\
     &=\sum_{i=1}^N\left[ d_i \log f(t_i|\x_i,\bbeta) + (1-d_i)\log S(t_i|\x_i,\bbeta)\right].
 \end{split}
-\end{align}
+\end{align*}
 Note that since $A(t)=-\log S(t)$ and $f(t)=\alpha(t)S(t)$, see \eqref{eq:cumulative-hazard} and \eqref{eq:hfs}, respectively, \eqref{eq:surv-log-lik} further simplifies to
-\begin{equation*}
+\begin{equation*}%\label{eq:surv-log-lik-2}
     l(\bbeta)=\sum_{i=1}^n\left[ d_i \log \hz(t_i|\x_i,\bbeta) - A(t_i|\x_i,\bbeta)\right].
 \end{equation*}
+For any survival distribution $\psi(\bbeta)$ \eqref{eq:surv-time-dist} for which either form of $l(\bbeta)$ can be calculated, we can perform maximum likelihood estimation of its parameters.
 
 \subsection{Proportional hazards regression}\label{subsec:ph-reg}
 In other fields of statistics, we are often most interested in modelling the probability distribution function
 and the cumulative distribution function.
-In survival analysis, however, we are typically more interested in modelling the hazard function. The reasons for this will become clear in a minute.
+In survival analysis, however, we are typically more interested in modelling the hazard function.
+The reasons for this will become clear.
 
 In this subsection, we consider the effect of covariates on the hazard function $\hz(\cdot)$.
 How may we use a covariate vector $\x$ in modelling the hazard rate?
@@ -176,15 +189,14 @@ A very common model to choose here is a proportional hazards model, which assume
     \hz(t|\x)=\hz_0(t)r(\x|\bbeta),
 \end{equation}
 where $\hz_0(t)$ is an \textit{unspecified} baseline hazard function shared between all individuals, and $r(\x|\beta)$ is a so-called relative risk function parameterized with regression coefficients $\bbeta=(\beta_1,\ldots,\beta_p)$. We choose $r(\x)$ such that it is appropriately normalized, meaning $r(\0)=1$.
-A crucial assumption here is that the effects of the covariates are fixed in time. In this setup, it turns out that we can do regression without specifying the baseline hazard. This is a major advantage, because we then do not have to think about modelling effects in time. Given data $D=(t_i,d_i),i=1,\ldots,n$, we may set up a so-called partial likelihood \citep{cox-model}.
+A crucial assumption here is that the effects of the covariates are fixed in time. In this setup, it turns out that we can do regression without specifying the baseline hazard. This is a major advantage, because we then do not have to think about modelling effects in time. Given data $D=(t_i,d_i,\x_i)_{i=1}^N$, we may set up a so-called partial likelihood \citep{cox-model}.
 
 The idea behind the partial likelihood is as follows.
-We have observed data $D$ with at least some censoring indicators $d_i$ equal to 1. In partial likelihood regression, we simply ignore the censored observations.
-Informally, the probability of the event happening at a time $t$ for some individual $j$ is the probability of an event happening to individual $i$ at
-time $t$, divided by the total probability of an event happening at time $t$,
-the instantaneous probability of an event happening to that individual at that time, i.e., the hazard function of that individual at that time,
+We have observed data $D$ with at least some censoring indicators $d_i$ equal to 1.
+In partial likelihood regression, we simply ignore the censored observations.
+Informally, the probability of the event happening at a time $t$ for some individual $j$ is the probability of an event happening to individual $i$ at time $t$, divided by the total probability of an event happening at time $t$, the instantaneous probability of an event happening to that individual at that time, i.e., the hazard function of that individual at that time,
 \begin{equation}\label{eq:hazard-frac-informal}
-    \frac{\Pr(\text{event happens to individual }i\text{ at time }t)}{\Pr(\text{event happens to any individual }j\text{ at time }t)}.
+    \frac{\Pr(\text{event happens to individual }i\text{ at time }t)}{\Pr(\text{event happens to \textit{any} individual }j\text{ at time }t)}.
 \end{equation}
 More formally, we look at the instantaneous probability of an event happening for the individual $i$, which is the hazard function $\hz(t|\x_i)$.
 Thus the total probability of an event happening at time $t$ is the sum of the hazard functions of all individuals in the risk set
@@ -192,7 +204,7 @@ $R(t)$, which, again, is defined as
 \begin{equation*}
     R(t)=\{i\colon t_i\geq t\,,i=1,2,\ldots,n\}.
 \end{equation*}
-From all the uncensored observations, we know that events happened at times $\{t_i\colon d_i=1,\,i=1,2,\ldots,n\}$. Therefore, we can construct expressions for \eqref{eq:hazard-frac-informal} at all the observed, uncensored, times.
+From all the uncensored observations, we know that events happened at times $\{t_i\colon d_i=1,\,i=1,2,\ldots,N\}$. Therefore, we can construct expressions for \eqref{eq:hazard-frac-informal} at all the observed, uncensored, times.
 Inserting the probabilities into the informal expression in \eqref{eq:hazard-frac-informal}, an individual with an observed event at $t_i$ 
 contribues to the likelihood with
 \begin{equation}\label{eq:hazard-frac}
@@ -201,17 +213,20 @@ contribues to the likelihood with
 Now, assuming that observations are independent and identically distributed, we say that the \textit{partial likelihood} of the model
 given the observed data is the product of all ratios \eqref{eq:hazard-frac}, namely
 \begin{equation}\label{eq:pl}
-    \pl(\bbeta)=\prod_{i\colon d_i=1}\frac{\hz_0(t_i)r(\x_i)}{\sum_{j\in R(t_i)} \hz_0(t_i)r(\x_j)}=\prod_{i\colon d_i=1}\frac{\hz_0(t_i)r(\x_i)}{\hz_0(t_i)\sum_{j\in R(t_i)}r(\x_j)},
+    \pl(\bbeta)=\prod_{i\colon d_i=1}\frac{\hz_0(t_i)r(\x_i)}{\sum_{j\in R(t_i)} \hz_0(t_i)r(\x_j)}=\prod_{i\colon d_i=1}\frac{\hz_0(t_i)r(\x_i)}{\hz_0(t_i)\sum_{j\in R(t_i)}r(\x_j)}.
 \end{equation}
-In the expression above, \eqref{eq:pl}, we took out the baseline hazard of individual $i$, $\hz_0(t_i)$, from the sum in the denominator, since it depends on individual $i$, while we sum over $j$.
+In the expression above, \eqref{eq:pl}, we rearrange the denominator such that the baseline hazard of individual $i$, $\hz_0(t_i)$, is moved out of the sum.
+This hazard depends on individual $i$, while the sum is a sum over all individuals $j$.
 It therefore cancels out, and we are left with just the relative risk functions,
 \begin{equation*}
     \pl(\bbeta)=\prod_{i\colon d_i=1}\frac{r(\x_i)}{\sum_{j\in R(t_i)}r(\x_j)}.
 \end{equation*}
-The fact that the baseline hazard cancels out is quite powerful. Even though proportional hazards regression is not fully parametric,
-the canceling means that we can fully model the effect of covariates without having to consider the baseline hazard.
+The fact that the baseline hazard cancels out is quite powerful.
+Even though proportional hazards regression is not fully parametric,
+the canceling means that we can model the effect of covariates in a fully parametric way, and without having to consider the baseline hazard.
 
-We have not said anything about what $r(\x)$ looks like. The most common choice, by far, for $r(\x)$ is
+Consider now possible choices for the relative risk function $r(\x)$.
+The most common choice, by far, for $r(\x)$ is
 \begin{equation*}
     r(\x)=\exp(\x^T\bbeta),
 \end{equation*}
@@ -242,15 +257,15 @@ In any case, it is very difficult to verify, in case of multivariate analysis, e
 In the literature, there exist alternative models, that do not require the PH assumption.
 One of these is Aalen's additive model, which is an example of additive hazard modelling.
 In Aalen's model, the hazard function takes the form
-\begin{equation}
+\begin{equation*}
     \alpha(t|\x)=\beta_0(t)+\beta_1(t)x_1(t)+\beta_2(t)x_2(t)+\ldots+\beta_p(t)x_p(t),
-\end{equation}
+\end{equation*}
 where $\beta_j(t),j=1,\ldots,p$ is the increase in the hazard at time $t$ corresponding to a unit's increase in the $j$-th covariate. Another alternative model to the Cox model is the first hitting threshold model.
 In this thesis we will focus on the latter, focusing on the analysis of high-dimensional data.
 To our best knowledge, this is the first study which tries to combine FHT models and high-dimensional data.
 
 \subsection{Cox, proportional hazards, and variable selection}
-The PH assumption is very often not valid.
+The PH assumption \eqref{eq:PH} is very often not valid.
 Consider survival data with two covariates $x_1$ and $x_2$.
 With Cox regression, the hazard is
 \begin{equation*}
@@ -269,25 +284,33 @@ One may attempt to start the model building task at a deeper level, taking biolo
 This is where first-hitting-time models come in.
 
 \section{First hitting time models}\label{sec:FHT}
-So far we have done regression by modelling the hazard rate $\hz(\cdot)$.
+So far we have done regression by modelling the log-likelihood $l(\cdot)$ and the hazard rate $\hz(\cdot)$.
 Therefore we have not thought much about how a time-to-event is \textit{generated}, other than the fact that it arises from a survival distribution $S(\cdot)$ with a corresponding hazard function $\hz(\cdot)$.
 In this context, an individual is alive at one time.
 Slightly later, it is either still alive, or it may have died.
-One way to think about how these times are generated, without thinking about probability distributions just yet, is to imagine that each individual has an underlying stochastic process, a health process $Y(t)$.
+
+Instead, another way to approach survival analysis is to model the process which generates the survival data.
+We can imagine that each individual has an underlying stochastic process $Y(t)$, which we call a health process.
 When this health process reaches a barrier, or an end state, the individual dies.
-This is a conceptual appealing framework, because, instead of just a stochastic lifetime, it introduces
-the concept of distance to event.
+This is a conceptually appealing framework:
+Instead of just being a stochastic lifetime with a binary status of an event having happened or not or alive, it introduces the concept of distance to the event.
 We may call the time the health process hits the barrier or the end state the \textit{first hitting time} (FHT) of a boundary or threshold state, by sample paths of a stochastic health process.
-This health process may be latent, i.e., unobservable, or it may be observable.
+This health process may be observable, but for most purposes it will be latent, i.e., unobservable.
+
 Many types of time-to-death data may, in fact, be interpreted as FHTs.
 FHT models have a long history of application in diverse fields, including medicine and engineering.
-FHT models have been used to describe the length of a hospital stay \citep{whitmore1975,eaton-whitmore}, and to model the duration of a strike \citep{lancaster}.
-They have also been used to estimate degradation in components \citep{whitmore1995}, and to assess lung cancer risk in railroad workers \citep{leewhitmore2004}.
+They have been used to describe the length of a hospital stay \citep{whitmore1975,eaton-whitmore}, to model the duration of a strike \citep{lancaster}, to estimate degradation in components \citep{whitmore1995}, and to assess lung cancer risk in railroad workers \citep{leewhitmore2004}.
 
-\citet{eaton-whitmore} discuss FHTs as a general model for hospital stay. \citet{aalengjessing2001} provide an overview of much of this subject. \citet{lawless2011} provides a compact overview of the theory. \citet{leewhitmore2004a} provides an overview of first hitting time models for survival and time-to-event data. There is a large literature dealing with theoretical and mathematical aspects of FHT models.
+\citet{eaton-whitmore} discuss FHTs as a general model for hospital stay.
+\citet{aalengjessing2001} provide an overview of much of this subject.
+\citet{lawless2011} provides a compact overview of the theory.
+\citet{leewhitmore2004a} provides an overview of first hitting time models for survival and time-to-event data.
+There is a large literature dealing with theoretical and mathematical aspects of FHT models.
 
-Models based on this view are called first hitting time models (FHT). FHT models were introduced in \citet{whitmore1986}, see \citet{leewhitmore2006} for a complete overview. Note that these authors use the term threshold regression when referring to regression for first hitting time models. We have, following \citet{caroni2017}, chosen to not use this term, as it is already referring to a well established, and quite different, topic in econometrics.
-%First-hitting-time models have been applied to many different fields, including medicine, engineering, and economics, and used, for example to describe the survival time of a transplant patient\todo{citation needed}, the duration time of a strike \citep{lancaster}, the failure time of an engineering system \todo{citation needed}, and so on.
+Models based on this view are called first hitting time models (FHT).
+FHT models were introduced in \citet{whitmore1986}, see \citet{leewhitmore2006} for a complete overview.
+Note that these authors use the term threshold regression when referring to regression for first hitting time models.
+We have, following \citet{caroni2017}, chosen to not use this term, as it is also used to refer to a well established, and quite different, topic in econometrics.
 
 \subsection{General idea}\label{fht-idea}
 A first-hitting-time (FHT) model has two basic components:
@@ -305,7 +328,7 @@ Taking the initial value $Y(0)=y_0$ of the process to lie outside the boundary s
 Thus, the first hitting time is the time when the stochastic process first encounters the boundary set $\setB$. The boundary set defines a stopping condition for the process. Note that when the parent process is latent, there is no direct way of observing the FHT even in the state space of the process.
 
 In some versions of the FHT model, there is no guarantee that the process $\{Y(t)\}$ will reach the boundary set $\setB$, so $P(T<\infty)<1$. We will let $T=\infty$ denote the absence of a finite hitting time with
-\begin{equation}
+\begin{equation}\label{eq:T-is-infinity}
     P(T=\infty)=1-P(T<\infty).
 \end{equation}
 This condition is sometimes plausible and a desirable model feature.
@@ -324,34 +347,56 @@ For example, it may be a fixed threshold in a Wiener process or an absorbing sta
 The freedom in the choice of these quantities show how flexible the FHT framework is.
 The choice of boundary must fit the process, such that the boundary set is a subset of the state space.
 We will now briefly mention some examples of choices of health processes and corresponding boundaries, before focusing on the most studied case, which uses as a choice of health process the Wiener process.
+These examples are taken from \citet{leewhitmore2006}.
 \begin{enumerate}
-    \item \textit{Bernoulli process and negative binomial first hitting time.} The number of trials $S$ required to reach the $m$-th success in a Bernoulli process $\{B_t,t=1,2,\ldots\}$ has a negative binomial distribution with parameters $m$ and $p$, where $p$ is the success probability of each trial. To give this setup our standard representation, we consider a parent process
-    \begin{equation*}
-        \{Y(t),\,t=0,1,2,\ldots\}
-    \end{equation*}
-    with initial value $Y_0=y_0=m$ and let
-    \begin{equation*}
-        Y_t=y_0-B_t,\,t=1,2,\ldots,
-    \end{equation*}
-    where $\{B_t\}$ is the aforementioned Bernoulli process. The first hitting time is the first Bernoulli trial $t=T$ for which $Y_t$ equals 0. The number of rocket launches to get $m$ satellites in orbit is an example of this FHT model.
-    \item \textit{Gamma process and inverse gamma first hitting time.} Consider a parent process
-    \begin{equation*}
-        \{Y(t),\,t\leq0\}
-    \end{equation*}
-    with initial value $Y(0)=y_0>0$. Let
-    \begin{equation*}
-        Y(t)=y_0-Z(t),
-    \end{equation*}
-    where $Z(t),\,t\leq0$ is a gamma process with a scale parameter $\beta$, a shape parameter $\alpha$ and a starting point $Z(0)=0$. The first hitting time of the zero level in the parent process ($Y=0$) has an inverse gamma cumulative distribution function (cdf), defined by the identity
-    \begin{equation}
-        P(T>t)=P(Z(t)<y_0).
-    \end{equation}
-    The identity follows from the fact that a gamma process has monotonic, nondecreasing sample paths.
-    Computational routines for the gamma cdf allows the cdf of T to be computed readily.
-    \citet{singpurwalla1995} and \citet{lawless2004} consider the gamma process as a model for degradation.
-    A gamma process is a good choice if we want a monotonic restriction on the movement of the health process \citep{leewhitmore2006}. 
-    It might, for example, make sense if the health process is meant to model e.g. the breakdown of a structure.
-    \item \textbf{Add another example here!!!!}
+    \item
+        \textit{Bernoulli process and negative binomial first hitting time.}
+        The number of trials $S$ required to reach the $m$-th success in a Bernoulli process $\{B_t,t=1,2,\ldots\}$ has a negative binomial distribution with parameters $m$ and $p$, where $p$ is the success probability of each trial. To give this setup our standard representation, we consider a parent process
+        \begin{equation*}
+            \{Y(t),\,t=0,1,2,\ldots\}
+        \end{equation*}
+        with initial value $Y_0=y_0=m$ and let
+        \begin{equation*}
+            Y_t=y_0-B_t,\,t=1,2,\ldots,
+        \end{equation*}
+        where $\{B_t\}$ is the aforementioned Bernoulli process. The first hitting time is the first Bernoulli trial $t=T$ for which $Y_t$ equals 0. The number of rocket launches to get $m$ satellites in orbit is an example of this FHT model.
+    \item
+        \textit{Gamma process and inverse gamma first hitting time.}
+        Consider a parent process
+        \begin{equation*}
+            \{Y(t),\,t\leq0\}
+        \end{equation*}
+        with initial value $Y(0)=y_0>0$. Let
+        \begin{equation*}
+            Y(t)=y_0-Z(t),
+        \end{equation*}
+        where $Z(t),\,t\leq0$ is a gamma process with a scale parameter $\beta$, a shape parameter $\alpha$ and a starting point $Z(0)=0$. The first hitting time of the zero level in the parent process ($Y=0$) has an inverse gamma cumulative distribution function (cdf), defined by the identity
+        \begin{equation*}
+            P(T>t)=P(Z(t)<y_0).
+        \end{equation*}
+        The identity follows from the fact that a gamma process has monotonic, nondecreasing sample paths.
+        Computational routines for the gamma cdf allows the cdf of T to be computed readily.
+        \citet{singpurwalla1995} and \citet{lawless2004} consider the gamma process as a model for degradation.
+        A gamma process is a good choice if we want a monotonic restriction on the movement of the health process \citep{leewhitmore2006}. 
+        It might, for example, make sense if the health process is meant to model e.g. the breakdown of a structure.
+    \item
+        \textit{Poisson process and Erlang first hitting time.}
+        The time $S$ until the occurrence of the $m$-th event in a Poisson process
+        \begin{equation*}
+            \{N(t),\,t\geq 0\}
+        \end{equation*}
+        with rate parameter $\lambda$ has an Erlang distribution with parameters $m$ and $\lambda$.
+        Again, to give this setup our standard representation, we consider a parent process
+        \begin{equation*}
+            \{Y(t),\,t\geq 0\}
+        \end{equation*}
+        with initial value $Y(0)=y_0=m$ and let $Y(t)=y_0-N(t$, where
+        \begin{equation*}
+            \{N(t),\,t\geq 0\}
+        \end{equation*}
+        is the preceding Poisson process.
+        The first hitting time is the earliest time $t=S$ when $Y(t)=0$.
+        This FHT model is illustrated by the time to failure of an engineering system consisting of $m$ components in parallel, having identical and independent exponential lifetimes, that are placed in service successivelu as failures occur.
 \end{enumerate}
 We are to choose a stochastic process to model a person's health process.
 A person's health, although generally decreasing over longer periods of time, will fluctuate, at times going up, and at times going down.
@@ -368,39 +413,24 @@ Consider a continuous stochastic process $W(t)$ defined for $t\in[0,\infty)$, ta
 \begin{equation*}
     \E[W(s+t)-W(t)]=0\text{   and   }\Var[W(s+t)-W(t)]=s,
 \end{equation*}
-we call $W$ a Wiener process. In other words, each increment has expectation 0 and has standard deviation proportional to the length of the time interval. The position of the process at time $t$ always follows a Gaussian distribution $N(0, t)$ \citep{ABG}. To increase the flexibility of the Wiener process, we can introduce a new process $Y$,
+we call $W$ a Wiener process.
+In other words, each increment has expectation 0 and has standard deviation proportional to the square root of the length of the time interval.
+The position of the process at time $t$ always follows a Gaussian distribution $N(0, \sqrt{t})$ \citep{ABG}.
+To increase the flexibility of the Wiener process, we can introduce a new process $Y$,
 \begin{equation}\label{wiener}
-    Y(t)=y_0-\mu t+\sigma W(t),
+    Y(t)=y_0+\mu t+\sigma W(t),
 \end{equation}
-which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$. A good introduction to Wiener processes can be found in \citet{cox1965}.
-\begin{figure}[H]
-\label{plot:wiener}
-\caption{Example of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=1$.}
-\centering
-\includegraphics[scale=0.4]{figures/wiener_processes.pdf}
-\end{figure}
-\noindent{}Clearly, for a Wiener process starting in $y_0>0$ and with a downwards drift, i.e. $\mu>0$, the movement is markedly in the direction of zero. If $\sigma^2$ is small in comparison to the drift, as well as that the initial level is sufficiently high in comparison to $\sigma^2$, then the process will move in almost a straight line, such that
+which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$.
+A good introduction to Wiener processes can be found in \citet{cox1965}.
+
+\subsection{Wiener process and inverse Gaussian first hitting time}
+If we choose the stochastic process to be a Wiener process with intercept and drift \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then \eqref{eq:fht-t} becomes
 \begin{equation*}
-    X(t)\approx y_0-\mu t.
+    T=\min_t\left(t\colon Y(t)<0\right),
 \end{equation*}
-Consequently, the first hitting time will be nearly a deterministic function of $y_0$ and $\mu$,
-\begin{equation}
-    T\approx \frac{y_0}{\mu}.
-\end{equation}
-This is quite visible in Figure \ref{plot:wiener}, which shows examples of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=1$. If $\sigma^2$ is relatively large compared to the drift, the diffusion part is more dominant and thus the hitting time is less predictable \citep{ABG}.
-
-\subsection{Inverse Gaussian distribution and different parameterizations}
-This parameterization is not in the exponential family, and hence it is not a generalized linear model.
-
-
-\subsection{Wiener process and Inverse Gaussian first hitting time}
-If we choose the stochastic process to be a Wiener process like in \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then \eqref{eq:fht-t} becomes
-\begin{equation}
-    T=\min_t\left(t\colon Y(t)\in\setB\right),
-\end{equation}
 i.e. the first hitting time is the time it takes for the process to first reach a non-positive value.
 (Note that since the Wiener process is continuous, there is no difference between $\leq$ and $<$. We therefore use $<$ for convenience.)
-It can be shown that the first hitting time of the Wiener process follows an inverse Gaussian distribution \citep{chhikara1988}, with probability distribution function (pdf)
+It can be shown that the first hitting time of such a Wiener process follows an inverse Gaussian distribution \citep{chhikara1988}, with probability distribution function (pdf)
 \begin{equation}
 \label{eq:ig-pdf}
     f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right],
@@ -410,11 +440,16 @@ and cumulative distribution function (cdf)
 \label{eq:ig-cdf}
     F(t|\mu,\sigma^2,y_0)=\Phi\sqb*{-\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}+\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}}.
 \end{equation}
-As previously discussed in subsection \ref{fht-idea}, note that if the drift $\mu$ is positive, then it is not certain that the process will ever reach 0. Hence the probability distribution function in \eqref{eq:ig-pdf} is improper. In this case, the probability of the time not being finite is
+As previously discussed in subsection \ref{fht-idea}, it is possible that the process does not reach the boundary set and thus cause an event.
+In this case, this means that the Wiener health process never reaches 0.
+This will happen if the drift $\mu$ is positive.
+If so, the probability distribution function in \eqref{eq:ig-pdf} is improper, and the probability of the time not being finite is
 \begin{equation}\label{eq:P-inf-FHT}
-    \Pr{(T=\infty)}=1-\Pr{(T<\infty)}=1-\exp{(-2y_0\mu)},
+    \Pr{(T=\infty)}=1-\Pr{(T<\infty)}=1-\exp{(-2\cdot y_0\cdot\mu)},
 \end{equation}
-see \citet{cox1965}. Since we in survival analysis prefer working with the survival function $S(t)=1-F(t)$ rather than the cdf $F(t)$, we note that $S(t)$ becomes
+see \citet{cox1965}.
+
+Since we in survival analysis prefer working with the survival function $S(t)=1-F(t)$ rather than the cdf $F(t)$, we note that $S(t)$ becomes
 \begin{equation}
 \label{eq:ig-surv}
     S(t|\mu,\sigma^2,y_0)=\Phi\sqb*{\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\sqb*{\frac{\mu t-y_0}{\sqrt{\sigma^2t}}},
@@ -424,9 +459,9 @@ where $\Phi(x)$ is the cumulative distribution function of the standard normal,
     \Phi(x)=\int_{-\infty}^x\phi(y)\dy,
 \end{equation*}
 and $\phi(x)$ is the pdf of the standard normal, defined as
-\begin{equation}
+\begin{equation*}
     \phi(x)=\frac{\exp\left(-x^2/2\right)}{\sqrt{2\pi}}.
-\end{equation}
+\end{equation*}
 Note that in \eqref{eq:ig-surv} we used the fact that the cdf of the standard normal distribution is symmetric around 0,
 meaning that we were able to swap
 \begin{equation*}
@@ -437,14 +472,46 @@ with
     \Phi\sqb*{\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}.
 \end{equation*}
 
+\subsection{Effects of parameters in the Wiener process}
+Assume now that the process will reach 0 with certainty, such that $P(T=\infty)$ \eqref{eq:T-is-infinity} is 0.
+Again, this will happen if the drift is non-positive.
+Let us consider a case where $\mu$ is strictly negative, and not zero.
+Clearly, for such a Wiener process, starting in $y_0>0$ and with a downwards drift $\mu<0$, the movement is markedly in the direction of zero.
+If the variance $\sigma^2$ of the process is small in comparison to the drift, and the initial level is sufficiently large in comparison to $\sigma^2$, then the process $Y(t)$ will move in an almost straight line, such that
+\begin{equation*}
+    Y(t)\approx y_0+\mu t.
+\end{equation*}
+Consequently, the first hitting time will be nearly a deterministic function of $y_0$ and $\mu$, such that
+\begin{equation*}
+    T\approx -\frac{y_0}{\mu}.
+\end{equation*}
+This is quite visible in Figure \ref{plot:wiener}, which shows examples of 5 Wiener process paths with diffusion parameter $\sigma^2=1$, initial value $y_0=10$, and drift $\mu=-1$.
+If $\sigma^2$ is relatively large compared to the drift, however, the diffusion part is more dominant and thus the hitting time is less predictable \citep{ABG}.
+
+Furthermore, if the diffusion is relatively small, such that $T\approx -y_0/\mu$, then either increasing $y_0$ or decreasing $\mu$ will have the same outcome, namely a larger lifetime $T$.
+Conversely, either choice of decreasing the initial level or increasing the drift will cause a smaller lifetime $T$.
+
+\begin{figure}
+\label{plot:wiener}
+\caption{Example of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=-1$.}
+\centering
+\includegraphics[scale=0.4]{figures/wiener_processes.pdf}
+\end{figure}
+
+\section{Properties of the inverse Gaussian}
+
+\subsection{Inverse Gaussian distribution and different parameterizations}
+The typical inverse Gaussian parameterization is.
+\todo[inline]{Add this parameterization!}
+We will use ...
+This parameterization is not in the exponential family, and hence it is not a generalized linear model.
+
 \subsection{The inverse gaussian is overdetermined if the health process is latent}
 There are three parameters in the inverse Gaussian distribution, namely $y_0, \mu$ and $\sigma$.
 We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through the ratios $\mu/\sigma$ and $y_0/\sigma$.
 Hence, in reality there are only two free parameters.
 In other words, we can without loss of generality fix one parameter.
 The conventional way to proceed is to set $\sigma$ equal to 1 \citep{leewhitmore2006}, and in this thesis we follow the convention.
-
-\section{Properties of the inverse Gaussian}
 
 \subsection{The shape of the hazard function in the inverse Gaussian model}
 From \eqref{eq:hfs}, we know that the hazard function can be seen as
@@ -462,9 +529,9 @@ It is not as simple as the peak being at the mean lifetime, i.e., $y_0/\mu$.
 Although the height of the peak will change both by changing both parameters, to simplify it a lot, $y_0$ mostly impacts at what time the
 peak is, whereas $\mu$ mostly affects the height of the peak.
 Regardless of the initial value, the hazard rate converges to the same limiting hazard, which is
-\begin{equation}
+\begin{equation*}
     \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2,
-\end{equation}
+\end{equation*}
 as seen in \citet{ABG}. To get an intuitive feel for this, I have made an interactive website at \verb|vegarsti.shinyapps.io/FHT_Hazard|
 \todo[inline]{Add plots and more explanation here.}
 %\todo[inline]{Add plots of hazard rates here. see page 401 in ABG}
@@ -472,11 +539,13 @@ as seen in \citet{ABG}. To get an intuitive feel for this, I have made an intera
 \subsection{Comparison of hazard rates}
 It might be of particular interest to look at the ratio between two hazard rates. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. This feature is the same phenomenon as that observed in frailty models, where the relative hazards often decline \citep{ABG}.
 \todo[inline]{Add plot and explain better.}
-It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different. The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}. Keep in mind here that levelling off means getting to proportional hazards.
+It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different.
+The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}.
+Keep in mind here that levelling off means getting to proportional hazards.
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
 \todo[inline]{Add plot here as well; also here see ABG page 402}
 
-\section{Regression}\label{subsec:IG-reg}
+\section{Regression with first-hitting-time models}\label{subsec:IG-reg}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$.
 A simple and much used model \citep{leewhitmore2006, caroni2017} is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since in our framework it must be positive:
 \begin{equation}\label{eq:y0}
@@ -485,7 +554,8 @@ A simple and much used model \citep{leewhitmore2006, caroni2017} is to simply us
 \begin{equation}\label{eq:mu}
     y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\sum_{j=1}^d \gamma_jz_j.
 \end{equation}
-Here $\bbeta\in\R^p$ and $\bgamma\in\R^d$ are vectors of regression coefficients. Note that we may let $\x$ and $\z$ share none, some, or all elements. We will discuss consequences of this later.
+Here $\bbeta\in\R^p$ and $\bgamma\in\R^d$ are vectors of regression coefficients.
+Note that we may let $\x$ and $\z$ share none, some, or all elements.
 
 Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse gaussian FHT model, is
 \begin{align}\label{eq:loglik}
@@ -497,12 +567,17 @@ Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-sur
 \end{align}
 
 \subsection{Fitting an IG FHT model}
-At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}. A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
+At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}.
+A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
 There does not exist any method to fit either a \textit{regularized} model at the moment, nor to do automatic variable selection.
 
 \subsection{Constructing survival probabilities based on estimates}
-\todo[inline]{}
-
+Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct parametric estimates of the survival probability at time $t$, by plugging in estimates the parameters, $\hat{y}_0$ and $\hat{\mu}$.
+Since $\sigma^2$ is 1, we remove it from the expression as well.
+We denote the estimated probability for $\hat{S}(t)$,
+\begin{equation*}
+    \hat{S}(t|\hat{\mu},\hat{y}_0)=\Phi\sqb*{\hat{\mu} t+\hat{y}_0}-\exp\p*{-2\cdot\hat{y}_0\cdot\hat{\mu}}\Phi\sqb*{\hat{\mu} t-\hat{y}_0}.
+\end{equation*}
 %\todo[inline]{Add regression example}
 
 %\subsection{Example of application}
