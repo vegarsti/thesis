@@ -1,22 +1,56 @@
 \chapter{Introduction and outline of the thesis}
 \label{sec:intro}
+Survival data are an important part of biomedical statistics.
+Almost all modelling of survival data is done with the Cox regression model \citep{cox1965}.
+Competing frameworks exist, but are not widely adopted.
+An important part of modern biomedical statistics is the ability to incorporate genetic data when modelling.
+Models lacking this ability suffer from less adoption.
+In the 1970s, a framework called first hitting time models was developed.
+It is a rich and flexible modelling framework where one models the process underlying an individual before it experiences an event.
+Practitioners wanting to use first hitting time models are at a loss of models where genetic data can easily be used.
+However, Cox regression makes assumptions which are not always true.
+Therefore there is a need for methods which are more flexible.
 
-In this thesis, we work with boosting for regression in the first hitting time model.
-First hitting time is a model in survival analysis which serves as an alternative to proportional hazards model, where Cox regression is by far the most prominent.
-Developments in FHT regression are relatively recent, and there has to our knowledge been no attempt at tackling it in the high-dimensional case, in which boosting is an appropriate choice of method.
+Genetic data is nowadays widely available, and typical data sets include gene expressions from genes numbering in the tens of thousands.
+Such data is an example of so-called high-dimensional data, because one can think of the genes from one individual as one point in a high-dimensional space where each gene spans one dimension.
+Somewhat counterintuitively, virtually all points in high-dimensional space will be far apart.
+This makes it difficult to generalize on the structure.
+It also makes it very easy for statistical models to overfit, i.e., to explain the variation in the data in a way that is not really true, and that would not carry over to unseen data of a similar kind.
+Furthermore, many classical statistical models are simply unable to use so many predictors, at least directly.
+Specifically, a scenario where the number of covariates $p$, is much larger than the number of predictors, $n$, which is often referred to as the $p>>n$ scenario.
+
+In recent years, an algorithmical framework called gradient boosting has been very successful in $p>>n$ scenarios.
+It is a method that originated around 2000, in the field of machine learning.
+\citet{friedman2001} later connected it to a statistical view.
+Gradient boosting algorithms are iterative algorithms for performing penalized maximum likelihood estimation.
+About 20 years later, gradient boosting is still very much an active field of research, and various methods exist for model fitting.
+Most traditional gradient boosting algorithms are concerned with modelling one parameter.
+In more recent years, gradient boosting methods for regression of parameters beyond the mean have also been introduced.
+
+In this thesis, we develop such a multidimensional gradient boosting algorithm, to fit an FHT model which depends on two parameters.
+There has to our knowledge been no attempt at developing any methods for first hitting time regression in a high-dimensional setting.
+
+In chapter 2, we give an overview of survival data and existing models, primarily Cox regression.
+We then discuss first hitting time models and in particular a specific instance of such models, where a Wiener process is used.
+Chapter 3 introduces boosting, and reviews existing methods for modelling one parameter, before concluding with methods for estimating several parameters using boosting.
+In chapter 4, we derive such a multidimensional algorithm for fitting the FHT model discussed in chapter 2, which we call FHTBoost.
+Chapter 5 gives an overview of evaluation measures that we then use in subsequent chapters.
+In chapter 6 we perform a simulation study of FHTBoost, where we look at two high-dimensional survival data scenarios.
+Chapter 7 looks at a survival data set consisting children diagnosed with neuroblastoma.
+We estimate an FHT model and discuss the results, before we compare its predictive performance with that of a Cox regression performed on the same data.
+We conclude the thesis with discussion and remarks on possible future work.
+
+
 
 High-dimensional survival analysis.
 
 These days, genetic information is cheap.
 The cost of perform gene sequencing is very low, at the point where it is feasible to perform it on many patients.
 
-The Cox regression model \citep{cox1965} is widely used to model survival data.
-
 
 The main goal of this thesis is to adapt first-hitting-time models for survival analysis to a high-dimensional setting.
 This will be done by implementing a gradient boosting algorithm.
-Gradient boosting algorithms are iterative algorithms for performing penalized maximum likelihood estimation.
-Most traditional gradient boosting algorithms are concerned with modelling one parameter.
+
 We will estimate two parameters.
 To this end, we will review recent developments in gradient boosting for multidimensional likelihood functions.
 

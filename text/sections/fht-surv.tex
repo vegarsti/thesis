@@ -1,51 +1,56 @@
 \chapter{First-hitting-time models}
 
-\section{Survival data and basic definitions}
-Survival analysis is the field of studying lifetime and time-to-event data.
-It has very important applciations in biomedical statistics, where we are often interested in, for example, the factors contributing to why some cancer patients recover, and others experience recurrence.
-An overview of modelling survival data is \citet{ABG}.
-\todo[inline]{Figure out where the citation should be put.}
-
-\subsection{General idea}
-Consider studying the time to an event of interest.
-You might be a doctor performing a study of cancer patients, and monitoring them for possible relapse.
+\section{Survival data}
+Time to event data are seen in many different contexts, including medicine, engineering, biology, and sociology.
+One considers a set of individuals $i$, $i=1,2,\ldots,N$, for which an event can happen.
+The term \textit{survival data} is used to refer to time to event data where such events only can happen once.
+An overview of modelling of survival data can be found in for example \citet{ABG}.
+Althought the term survival data sounds like it refers to deaths only, the event in question may be anything of interest.
+%Large Important applications in biomedical statistics, where we are often interested in, for example, the factors contributing to why some cancer patients recover, and others experience recurrence.
+%\subsection{General idea}
+You might, for example, be a doctor performing a study of cancer patients, and monitoring them for possible relapse.
 In this case, the event is the relapse.
 Or, possibly, you are a demographer looking at all parents who have only one child, and you are monitoring the time that elapses before they have a second child.
-While these events are a relapse and a birth, respectively, we will collectively refer to them as events.
-The time-to-event $T$ is a stochastic variable and of a non-negative domain.
 Clearly, to observe such data in real life, we must wait until the event actually happens.
 This might in some cases never happen, or it might take a very long time.
-Consider a clinical trial of $N$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,N$, is the time until their relapse.
-Such a trial can only last a certain amount of time, say, until $\tau$.
+Consider, for example, a clinical trial of $N$ patients who have been treated for some disease, and where $T_i$, $i=1,\ldots,N$, is the time until their relapse.
+Such a trial can only last a certain amount of time, say, until a time $\tau$.
 Luckily, not every patient relapses during that time, and so the actual time to their relapse, $\tilde{T}_i$, is not observed.
-Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
-We could throw away these observations without an observed event. But we at least know that these patients survived until time $\tau$. We therefore work with the concept of incomplete data, which we call \textit{censored} data.
+%Note that it might turn out that the actual $\tilde{T}_i$ does not exist.
+We could throw away these observations without an observed event, and consider them irrelevant.
+But we at least know that these patients survived until time $\tau$.
+We therefore work with the concept of incomplete data, which we call \textit{censored} survival data \citep{ABG}.
 
 \subsection{Independently censored survival data}\label{subsec:survdata}
-An observed lifetime $T$ is censored if the actual lifetime $\tilde{T}$ is larger than $T$.
-We can say that we have a censoring mechanism which works such that the observed $T$ is $T=\min(\tilde{T}, C)$, where $C$ is a certain censoring time.
-In the clinical trial example mentioned, the censoring time $C$ would be the end of the possible observation period of the trial, namely $\tau$.
-To go with the censoring mechanism, we need a censoring indicator, which we denote $d$.
-It is defined as
-\begin{equation}\label{eq:censoring}
-    d=\indicator(T=\tilde{T}),
-\end{equation}
-indicating if we have observed the actual event. If the event has occurred, the indicator $d$ is 1, and if not, it is 0.
-An important definition is the concept of \textit{independent censoring}, also called \textit{random censoring}.
-We say that we have independent censoring if the censoring indicator $d$ is independent of the time, meaning that
+The time-to-event $\tilde{T}$ is a random variable of a non-negative domain.
+This time-to-event has a corresponding random variable $W$ which represents the censoring time of the time-to-event.
+The observed, and possibly censored, survival time is
 \begin{equation*}
-    P(t|d)=P(t).
+    T=\min(\tilde{T},\,W).
 \end{equation*}
+We also operate with a corresponding censoring indicator
+\begin{equation*}
+    D=\indicator(\tilde{T}=T),
+\end{equation*}
+which is 1 if the observed survival time is not censored, and 0 if it is.
+In the clinical trial example mentioned, the censoring time $W$ would be the end of the possible observation period of the trial, namely $\tau$.
+An important property of survival data is the concept of \textit{independent censoring}, also called \textit{random censoring}.
+We say that we have independent censoring if the censoring indicator $D$ is independent of the time, meaning that
+\begin{equation*}
+    P(T|D)=P(T).
+\end{equation*}
+What we have so far called censored data is in truth \textit{right-censored} survival data.
+Left-censoring is also possible, but we will not discuss it in this thesis, and so we continue to simply use the term ``censoring.''
 
 \subsection{The survival function $S(t)$, the hazard function $\hz(t)$, and their estimators}
-In survival analysis, one of the things we are interested in is the survival function. The survival function $S(t)$ is the probability of surviving until time $t$,
+When studying censored survival data, we are interested in estimating the probability of surviving until time $t$, which is called the survival function, and is defined as
 \begin{align*}
     S(t)=\Pr(T>t)=1-\Pr(T<t)=1-F(t).
 \end{align*}
 Here $F(t)$ is the familiar cumulative distribution function.
 If the derivative of $F(t)$ exists, we denote it $f(t)$, and then the lifetime $T$ has probability distribution function (pdf) $f(t)$.
 
-We are also interested in the hazard function.
+Another function we are interested in is the hazard function.
 This is the probability of the event happening at time $t$, conditioned on the event not having happened yet.
 More formally, the hazard function is defined as
 \begin{equation*}
@@ -164,24 +169,21 @@ The complete likelihood becomes
     L(\bbeta)=\prod_{i=1}^N f(t_i|\x_i,\bbeta)^{d_i} S(t_i|\x_i,\bbeta)^{1-d_i}.
 \end{equation}
 It is more convenient to work with the log likelihood,
-\begin{align*}%\label{eq:surv-log-lik-1}
+\begin{align}\label{eq:surv-log-lik-1}
 \begin{split}
     l(\bbeta)&=\log L(\bbeta) \\
     &=\sum_{i=1}^N\left[ d_i \log f(t_i|\x_i,\bbeta) + (1-d_i)\log S(t_i|\x_i,\bbeta)\right].
 \end{split}
-\end{align*}
-Note that since $A(t)=-\log S(t)$ and $f(t)=\alpha(t)S(t)$, see \eqref{eq:cumulative-hazard} and \eqref{eq:hfs}, respectively, \eqref{eq:surv-log-lik} further simplifies to
+\end{align}
+Note that since $A(t)=-\log S(t)$ and $f(t)=\alpha(t)S(t)$, see \eqref{eq:cumulative-hazard} and \eqref{eq:hfs}, respectively, \eqref{eq:surv-log-lik-1} further simplifies to
 \begin{equation*}%\label{eq:surv-log-lik-2}
     l(\bbeta)=\sum_{i=1}^n\left[ d_i \log \hz(t_i|\x_i,\bbeta) - A(t_i|\x_i,\bbeta)\right].
 \end{equation*}
 For any survival distribution $\psi(\bbeta)$ \eqref{eq:surv-time-dist} for which either form of $l(\bbeta)$ can be calculated, we can perform maximum likelihood estimation of its parameters.
 
 \subsection{Proportional hazards regression}\label{subsec:ph-reg}
-In other fields of statistics, we are often most interested in modelling the probability distribution function
-and the cumulative distribution function.
+In other fields of statistics, we are often most interested in modelling the probability distribution function and the cumulative distribution function.
 In survival analysis, however, we are typically more interested in modelling the hazard function.
-The reasons for this will become clear.
-
 In this subsection, we consider the effect of covariates on the hazard function $\hz(\cdot)$.
 How may we use a covariate vector $\x$ in modelling the hazard rate?
 A very common model to choose here is a proportional hazards model, which assumes
@@ -408,7 +410,7 @@ This is attractive because it has closed-form probability and cumulative density
 There are also no restrictions on the movements of the process, meaning, it is non-monotonic.
 We will first give an introduction to the Wiener process.
 
-\subsection{Wiener process as health process}
+\subsection{Wiener process}
 Consider a continuous stochastic process $W(t)$ defined for $t\in[0,\infty)$, taking values in $\R$, and with initial value $W(0)=0$. If $W$ has increments that are independent and normally distributed with
 \begin{equation*}
     \E[W(s+t)-W(t)]=0\text{   and   }\Var[W(s+t)-W(t)]=s,
@@ -423,7 +425,7 @@ To increase the flexibility of the Wiener process, we can introduce a new proces
 which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$.
 A good introduction to Wiener processes can be found in \citet{cox1965}.
 
-\subsection{Wiener process and inverse Gaussian first hitting time}
+\subsection{Wiener process as health process causes an inverse Gaussian first hitting time}
 If we choose the stochastic process to be a Wiener process with intercept and drift \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then \eqref{eq:fht-t} becomes
 \begin{equation*}
     T=\min_t\left(t\colon Y(t)<0\right),
@@ -433,7 +435,7 @@ i.e. the first hitting time is the time it takes for the process to first reach 
 It can be shown that the first hitting time of such a Wiener process follows an inverse Gaussian distribution \citep{chhikara1988}, with probability distribution function (pdf)
 \begin{equation}
 \label{eq:ig-pdf}
-    f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(y_0+\mu t)^2}{2\sigma^2t}\right],
+    f(t|y_0,\mu,\sigma^2)=\frac{y_0}{\sqrt{2\pi\sigma^2t^3}}\exp\left[-\frac{(\mu t+y_0)^2}{2\sigma^2t}\right],
 \end{equation}
 and cumulative distribution function (cdf)
 \begin{equation}
@@ -473,23 +475,21 @@ with
 \end{equation*}
 
 \subsection{Effects of parameters in the Wiener process}
-Assume now that the process will reach 0 with certainty, such that $P(T=\infty)$ \eqref{eq:T-is-infinity} is 0.
-Again, this will happen if the drift is non-positive.
-Let us consider a case where $\mu$ is strictly negative, and not zero.
+Let us consider a a Wiener health process where its drift $\mu$ is strictly negative, and not zero.
+Such a health process will reach 0 with certainty, such that $P(T=\infty)$ \eqref{eq:T-is-infinity} is 0.
 Clearly, for such a Wiener process, starting in $y_0>0$ and with a downwards drift $\mu<0$, the movement is markedly in the direction of zero.
 If the variance $\sigma^2$ of the process is small in comparison to the drift, and the initial level is sufficiently large in comparison to $\sigma^2$, then the process $Y(t)$ will move in an almost straight line, such that
 \begin{equation*}
     Y(t)\approx y_0+\mu t.
 \end{equation*}
-Consequently, the first hitting time will be nearly a deterministic function of $y_0$ and $\mu$, such that
+Consequently, the first hitting time will be a near-deterministic function of $y_0$ and $\mu$, such that
 \begin{equation*}
     T\approx -\frac{y_0}{\mu}.
 \end{equation*}
 This is quite visible in Figure \ref{plot:wiener}, which shows examples of 5 Wiener process paths with diffusion parameter $\sigma^2=1$, initial value $y_0=10$, and drift $\mu=-1$.
-If $\sigma^2$ is relatively large compared to the drift, however, the diffusion part is more dominant and thus the hitting time is less predictable \citep{ABG}.
-
 Furthermore, if the diffusion is relatively small, such that $T\approx -y_0/\mu$, then either increasing $y_0$ or decreasing $\mu$ will have the same outcome, namely a larger lifetime $T$.
 Conversely, either choice of decreasing the initial level or increasing the drift will cause a smaller lifetime $T$.
+If $\sigma^2$ is relatively large compared to the drift, however, the diffusion part is more dominant and thus the hitting time is less predictable \citep{ABG}.
 
 \begin{figure}
 \label{plot:wiener}
@@ -511,20 +511,29 @@ There are three parameters in the inverse Gaussian distribution, namely $y_0, \m
 We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through the ratios $\mu/\sigma$ and $y_0/\sigma$.
 Hence, in reality there are only two free parameters.
 In other words, we can without loss of generality fix one parameter.
-The conventional way to proceed is to set $\sigma$ equal to 1 \citep{leewhitmore2006}, and in this thesis we follow the convention.
+The conventional way to proceed is to set $\sigma$ equal to 1 \citep{leewhitmore2006}, and in this thesis we follow this convention.
 
-\subsection{The shape of the hazard function in the inverse Gaussian model}
+\subsection{The shape of the hazard function in the inverse Gaussian FHT model}
 From \eqref{eq:hfs}, we know that the hazard function can be seen as
 \begin{equation*}
     \hz(t)=f(t)/S(t).
 \end{equation*}
 If we plug in the inverse Gaussian versions of $f(t)$ and $S(t)$, we would get a rather intractable expression.
 However, we can make some comments on its shape as it relates to different values of $y_0$ and $\mu$.
-If $y_0$ is close to zero, we essentially get a decreasing hazard rate.
-If $y_0$ is far from zero, however, we essentially get an increasing hazard rate.
-If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
-In all three cases, the hazard has a peak.
-This peak is dependent on both the initial level and the drift, of course. 
+Consider the shape of the hazard rate in three different cases for the initial level $y_0$:
+\begin{enumerate}
+    \item
+        If $y_0$ is close to zero, we essentially get a decreasing hazard rate.
+    \item
+        If $y_0$ is far from zero, however, we essentially get an increasing hazard rate.
+    \item
+        If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
+\end{enumerate}
+These three examples are clearly observed in Figure ..., where we have plotted the hazard function arising from three FHT models.
+All three have drift as $\mu=X$.
+The first has $y_0=X$, the second has $y_0=Y$, and the third has $y_0=Z$.
+\todo[inline]{add figure!}
+In all three of these cases, the hazard function has a pronounced peak, which is dependent on both the initial level and the drift, of course. 
 It is not as simple as the peak being at the mean lifetime, i.e., $y_0/\mu$.
 Although the height of the peak will change both by changing both parameters, to simplify it a lot, $y_0$ mostly impacts at what time the
 peak is, whereas $\mu$ mostly affects the height of the peak.
@@ -547,20 +556,22 @@ We see that the FHT framework with a Wiener process is a highly flexible paramet
 
 \section{Regression with first-hitting-time models}\label{subsec:IG-reg}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$.
-A simple and much used model \citep{leewhitmore2006, caroni2017} is to simply use the identity link function for the drift $\mu$, and to use the logarithm link function for the initial level $y_0$, since in our framework it must be positive:
+A simple and much used model \citep{leewhitmore2006, caroni2017} is to simply use the identity link function for the drift $\mu$,
 \begin{equation}\label{eq:y0}
     \mu(\bbeta)=\bbeta^\T\x=\sum_{j=1}^p \beta_jx_j,
 \end{equation}
+and to use the logarithm link function for the initial level $y_0$, since $y_0$ must be positive in our framework,
 \begin{equation}\label{eq:mu}
     y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\sum_{j=1}^d \gamma_jz_j.
 \end{equation}
 Here $\bbeta\in\R^p$ and $\bgamma\in\R^d$ are vectors of regression coefficients.
-Note that we may let $\x$ and $\z$ share none, some, or all elements.
+Note that we use separate names for the vectors $\x$ and $\z$ corresponding to $\mu$ and $y_0$, respectively.
+We may let these share none, some, or all elements.
 
 Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse gaussian FHT model, is
 \begin{align}\label{eq:loglik}
 \begin{split}
-    l(y_0,\mu,\sigma)=\sum_{i=1}^n&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
+    l(y_0,\mu,\sigma)=\sum_{i=1}^n&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\sigma^2\ti}} \\
     &+
     (1-d_i)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}.
 \end{split}
@@ -568,16 +579,23 @@ Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-sur
 
 \subsection{Fitting an IG FHT model}
 At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}.
-A few software packages for doing this exist.For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
-There does not exist any method to fit either a \textit{regularized} model at the moment, nor to do automatic variable selection.
+A few software packages for performing this maximization exist.
+For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
+However, the software ``only'' performs unpenalized maximization likelihood estimation.
+In modern data sets, it is necessary to perform some sort of penalized or regularized estimation.
+It is also necessary to be able to perform variable selection, as in the case of using data sets containing genetic information, the number of covariates $p$ will typically be far larger than the number of individual observations $N$.
+To the best of our knowledge, there does not exist any such method for FHT models.
 
 \subsection{Constructing survival probabilities based on estimates}
-Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct parametric estimates of the survival probability at time $t$, by plugging in estimates the parameters, $\hat{y}_0$ and $\hat{\mu}$.
-Since $\sigma^2$ is 1, we remove it from the expression as well.
+Consider a case where we have performed estimation of an FHT model, such that we have estimated parameters $\hat{y}_0$ and $\hat{\mu}$, which can be obtained by using the inverse link functions.
+Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct parametric estimates of the survival probability at time $t$, by plugging in these estimates.
+Recall that $\sigma^2$ is 1, so it is removed from the expression.
 We denote the estimated probability for $\hat{S}(t)$,
 \begin{equation*}
     \hat{S}(t|\hat{\mu},\hat{y}_0)=\Phi\sqb*{\hat{\mu} t+\hat{y}_0}-\exp\p*{-2\cdot\hat{y}_0\cdot\hat{\mu}}\Phi\sqb*{\hat{\mu} t-\hat{y}_0}.
 \end{equation*}
+With an estimate of the probability of an individual at time $t$, we are for example able to use the Brier score to assess the predictive performance of the estimated model.
+We will discuss the Brier score later in the thesis, in section \ref{sec:brier}.
 %\todo[inline]{Add regression example}
 
 %\subsection{Example of application}
@@ -585,12 +603,19 @@ We denote the estimated probability for $\hat{S}(t)$,
 
 %\subsection{Identification problems}
 
-\subsection{Combining clinical and genetic data in the Inverse Gaussian FHT model}
+\subsection{Combining clinical and genetic data in the inverse Gaussian FHT model}
 \label{subsec:FHT-combine}
-Combining clinical and genetic data in biomedical survival analysis is a large and important goal.
-The IG FHT model lends itself nicely to combining clinical and genetic data.
-As discussed in \citet{aalengjessing2001}, an a priori decision of splitting covariates as those relating to ``fixed'' covariates, e.g. genes, and covariates related to ``lifestyle,'' would be an instance of this combining of data.
-With this perspective, it would be reasonable to let the initial health level $y_0$ be a function of the ``fixed'' covariates, while the drift would be a function of the ``lifestyle'' ones.
-Furthermore, since genes are high-dimensional, this yields an easy way to combine high-dimensional data and low-dimensional data in the same model.
-Other approaches used, e.g. related to Cox regression, require tuning and weighting of parameters.
-\todo[inline]{more here}
+Classical survival analysis models have considered a small number of predictors, and they have often been clinical variables.
+In recent years, much effort has been put into being able to use genetic information to make predictions of survival, and it has become cheap and feasible to obtain genetic data.
+Rather than only using genetic data in models, it would be best to be able to combine such data with clinical data and other types of data, which might typically be shown to be predictive.
+There exist various schemes for making such models in Cox regression settings, see e.g. \citet{bovelstad2007}.
+It is, however, not straightforward to perform such a combination.
+If, for example, we simply merge the clinical data and genetic data into one group, and subsequently standardize the data, as we often need to do for proper model performance, then we might very well miss important effects of the genomic data.
+Some approaches used require tuning and weighting of parameters.
+\todo[inline]{Ask Riccardo about this; he wrote something about this}
+
+The FHT model, however, lends itself nicely to combining clinical and genetic data.
+Especially if, as \citet{aalengjessing2001} suggest, we make a priori splitting of covariates into two groups.
+One group is related to ``fixed'' covariates, e.g. genes, and the other group of covariates is related to ``lifestyle,'' e.g., indicators about smoking, or measurements, such as weight.
+If we incorporate this split of covariates in FHT models, it seems reasonable to let the initial level $y_0$ of the health process be a function of the ``fixed'' covariates, while letting the drift $\mu$ be a function of the ``lifestyle'' covariates.
+With the fact that the two groups relate to two separate parameters, they can be standardized separately, and thus we might more easily be able to extract explanatory power from both the genetic data and the clinical data.
