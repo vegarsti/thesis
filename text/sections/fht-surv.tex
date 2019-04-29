@@ -410,7 +410,7 @@ This is attractive because it has closed-form probability and cumulative density
 There are also no restrictions on the movements of the process, meaning, it is non-monotonic.
 We will first give an introduction to the Wiener process.
 
-\subsection{Wiener process}
+\subsection{Wiener process}\label{subsec:wiener}
 Consider a continuous stochastic process $W(t)$ defined for $t\in[0,\infty)$, taking values in $\R$, and with initial value $W(0)=0$. If $W$ has increments that are independent and normally distributed with
 \begin{equation*}
     \E[W(s+t)-W(t)]=0\text{   and   }\Var[W(s+t)-W(t)]=s,
@@ -473,6 +473,7 @@ with
 \begin{equation*}
     \Phi\sqb*{\frac{\mu t+y_0}{\sqrt{\sigma^2t}}}.
 \end{equation*}
+Note that for the sake of brevity, when we talk about FHT from now on, we mean this particular FHT model, where the Wiener process is chosen as health process.
 
 \subsection{Effects of parameters in the Wiener process}
 Let us consider a a Wiener health process where its drift $\mu$ is strictly negative, and not zero.
