@@ -1,9 +1,9 @@
 \chapter{Application on real data}
 In the simulation study in the previous chapter, we contrasted the fixed intercept version and the updating intercept version of FHTBoost.
-In general, FHTBoost seems to provide a decent model for correlated, realistic survival data, with average deviance much smaller than 0.
-To truly be applicable in biomedical settings, however, FHTBoost must manage to achieve predictive power in a real study.
-In this chapter, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
-The data consists of a relatively small number of patients, with information on two clinical covariates and around 10 000 gene expressions.
+In general, FHTBoost seems to provide a decent model for correlated, realistic survival data, with average difference of deviance much smaller than 0, meaning that including covariates increases model fit.
+We now evaluate its performance in a real data example.
+In particular, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
+The dataset includes a relatively small number of patients, with information on two clinical covariates and around 10 000 gene expressions.
 We use FHTBoost on this data to estimate an FHT model, and assess its performance.
 Finally, we compare the predictive power of FHTBoost to CoxBoost, which is a method to estimate a Cox regression model using a boosting framework (see, e.g., \citet{BinderSchumacher2008}).
 
@@ -18,37 +18,31 @@ Therapeutic strategies vary according to these risk categories, and they range f
 to intensive treatment for the high-risk group.
 However, common clinical experience suggests that such risk classification is still suboptimal for a substantial number of patients.
 
-Originally, the data consists of two separate data sets:
-A larger training set, collected from Germany, and a smaller test set, collected from several countries.
+Originally, the data consist of two separate data sets:
+A larger training set, collected in Germany, and a smaller test set, collected in several countries.
 The training set consists of 256 patients of the German Neuroblastoma Trials NB90-NB2004, where the patients were diagnosed between 1989 and 2004.
-%Patients' age at diagnosis ranged from 0 to 296 months, with a median age at 15 months.
-%Median follow-up for patients without fatal events was 4.5 years, with a range from 0.8 to 15.6 years.
-The test set is an independent set of 120 patients from centers in several countries (including Germany).
-In this set, 29 of the samples were obtained from German patients enrolled in German neuroblastoma trials, while the remaining samples are from patients enrolled in national trials in other countries.
-%Here the age of patients at diagnosis ranged from 0 to 125 months, with a median at 15 months.
-%For patients without fatal events, the median follow-up time was 4.4 years, and ranged from 0.4 to 18.1 years.
-
-Due to few events in the NB2004 low risk group, and following \citet{bovelstad2009}, we merge the ``training set'' and the ``test set'' into one data set.
+The test set is an independent set of 120 patients from national trials in several countries (including 29 from Germany).
+Due to a low number of events in the NB2004 low risk group, and following \citet{bovelstad2009}, we merge the ``training set'' and the ``test set'' into one data set.
 Hence, in total, the data consists of 362 patients suffering from neuroblastoma.
 There are 9978 gene expressions measurements, comprised of those measurements that are in probes from both the ``training set'' and the ``test set.''
 From each patient, we have information on their risk group according to the current German neuroblastoma trial, as well as the patient's age at diagnosis.
-In this data set, 89 out of the 362 observations have a missing age.
+In this data set, 89 out of the 362 observations have missing values.
 We remove all of these observations, and are left with a data set of 273 individuals with full observations.
 Finally, for each individual we have the possibly censored survival time.
 This survival time was defined as time from diagnosis to first recurrence, and was censored at 5 years.
 42 of the 273 children experienced a recurrence within the follow up, which is a proportion of 31.5\%.
 Of these, 86 children were classified as having high-risk, while the remaining 187 were not.
-The risk indicator is coded as a binary variable, where both low risk and intermediate risk are coded as 0, and high risk as 1.
+The risk indicator is coded as a binary variable, where low risk is coded as 0, and high risk as 1.
 
 Due to the lack of data, \citet{bovelstad2009} generated 50 random splits of training and test sets from the merged data set.
 We do the same, and generate 100 random splits times.
 First, however, we report the analyses of one single (the first) split of train and test data, to give an example of how to interpret the results.
 
 \section{Single split}
-We standardize the data to ensure FHTBoost works.
-The data are then split in a training set (2/3) and test set (1/3), stratified by the event status.
+The data are split in a training set (2/3) and test set (1/3), stratified by the event status.
 The training set consists of 182 patients, where 28 are observed events.
 The test set consists of 91, where 14 are observed events.
+The data are standardized.
 
 \subsection{Cross-validation on training set}
 As has been shown previously, cross-validation should be repeated with different division of folds, as this reduces variance in the estimate of $\mstop$.
@@ -61,10 +55,15 @@ We would not have selected the same $\mstop$ in all of the 10 single 5-fold cros
 We find $\mstop=20$ to be optimal, i.e., the minimizing iteration number.
 It is down as the red vertical line in Figure \ref{fig:neuroblastoma-cv}.
 Each dotted gray line in the figure is the sum of the negative log-likelihood of a model trained on 4 folds and applied to the last fold, as a function of the iteration number $m$, while the solid black line is the mean of these 10 gray lines.
-We see that there is indeed eventual overfitting.
+As we can see, in this example the boosting algorithm, in contrast to the original AdaBoost, eventually overfits, so it is important to select the number of boosting stpes by cross-validation.
 
 \begin{figure}
-\caption{Repeated 5-fold cross validation on training set generated from neuroblastoma data set \citep{oberthuer-data}.}
+\caption{
+    Repeated 5-fold cross validation on training set generated from neuroblastoma data set \citep{oberthuer-data}.
+    The grey lines refer to the cross validation error for a single 5-fold CV implementation,
+    the black line is the average of 10 such replications.
+    The red vertical line highlights the best value for the number of boosting steps.
+}
 \label{fig:neuroblastoma-cv}
 \centering\includegraphics[scale=0.4]{example_cv_loglik.pdf}
 \end{figure}
@@ -88,9 +87,9 @@ $\gamma_0$ & 0.077 \\
 \end{table}
 
 \subsubsection{Null model interpretation}
-We first look at the intercepts, reported in Table \ref{tab:neuroblastoma-intercepts}, meaning, the null model parameters.
+We first look at the intercepts, reported in Table \ref{tab:neuroblastoma-intercepts}, basically the parameters of the null model.
 The estimated intercept for the gene data, $\beta_0$, is 0.692.
-We recall that in the FHT model, the vector $\bbeta$ corresponds to the initial level $y_0$ of the health process, with the log link function.
+Remember that in the FHT model, the vector $\bbeta$ corresponds to the initial level $y_0$ of the health process, through the log link function.
 The null model, without any covariate effects, therefore has a $y_0$ of $\exp(0.692)=1.998$.
 The intercept $\gamma_0$ corresponding to the clinical data is estimated to be 0.077.
 This means that the health process with the FHT interpretation that arises from our estimation is a Wiener process with a relatively small initial level of 1.998, and with a \textit{positive} drift, albeit slightly, of 0.077.
@@ -108,10 +107,11 @@ i.e.,
 \end{equation*}
 To get a feeling of the variability of $Y(t)$, and potential trajectories of such a process, we plot 10 realizations of this process in Figure \ref{fig:neuroblastoma-wien}.
 Of these particular 10 processes, 8 processes at some point go below 0.
-These are given a red color in figure \label{fig:neuroblastoma-wien}.
+These are given a red color in figure \ref{fig:neuroblastoma-wien}.
 In the FHT interpretation, then, these health processes would cause an event, or rather, a recurrence of the neuroblastoma cancer in the child.
-To get a better estimate of the proportion of health processes not dying, we need to sample more processes.
+To get a better estimate of the proportion of health processes not hitting the death state, we need to sample more processes.
 We sampled 10000, and 6221 of these went below 0 within $t=40$, i.e., a proportion of 0.378 did not experience recurrence.
+\todo[inline]{Check time here ... and in paper}
 In section \ref{sec:FHT}, specifically in equation \eqref{eq:P-inf-FHT}, we stated the probability of an IG FHT lifetime not ending, i.e., the cure rate.
 We will have a non-zero cure rate if the drift is positive, like we have here in our null model.
 We calculate the cure rate for our estimated null model, obtaining
@@ -124,7 +124,7 @@ For this training set, 28 out of 182 are observed events, meaning only 0.154 hav
 Note that this is with a medium follow-up on patients of 4.5 years.
 It is still a bit off from the cure rate obtained from the estimated null model, but our model does predict a non-zero proportion of long-term survivors, which is good.
 \begin{figure}
-\caption{Wiener processes with parameters $y_0=1.998$ and $\mu=0.077$, corresponding to the estimated null model from the neuroblastoma data set \citep{oberthuer-data}.}
+\caption{Curves for 10 randomly generated Wiener processes with parameters $y_0=1.998$ and $\mu=0.077$, corresponding to the estimated null model from the neuroblastoma data set \citep{oberthuer-data}.}
 \label{fig:neuroblastoma-wien}
 \centering
 \includegraphics[scale=0.4]{example_wieners.pdf}
@@ -140,9 +140,9 @@ However, as mentioned, and as clinicians experience, the survival probability of
 We therefore must look at estimated covariates to understand variability.
 
 \subsubsection{Estimated covariate effects}
-Let us further look at estimated covariate effects in Table \ref{tab:oberthuer-beta} and Table \ref{tab:oberthuer-gamma}.
+Let us further look at estimated covariate effects in Table \ref{tab:oberthuer-gamma} and Table \ref{tab:oberthuer-beta}.
 We first observe that the boosting algorithm has included both clinical covariates into the model, and it has included 8 genes.
-Before splitting into training and test sets, we centered each column of the covariate matrices, such that the mean across all individuals is (approximately) 0 for each covariate $j$.
+Remember that we centered each column of the covariate matrices, such that the mean across all individuals is (approximately) 0 for each covariate $j$.
 %\begin{equation}
 %    \overline{x}_j=\frac{1}{n}\sum_{i=1}^n x_{i,j}\approx 0,
 %\end{equation}
@@ -207,6 +207,7 @@ Some effects are estimated to be positive, some to be negative.
 Again, the gene expression measurements have been centered and scaled.
 However, a larger parameter does not necessarily mean that the effect of this gene is in general larger than others, as that still depends on the distribution of these.
 It is more difficult here to say how much the genomic data helps in explaining the variance.
+\todo[inline]{Why???}
 
 \begin{table}
 \caption{Results of estimated gene coefficients on neuroblastoma data \citep{oberthuer-data}.}
@@ -230,28 +231,7 @@ Gene 6901 &  0.011  &      0  \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-
-\subsection{Difference of deviance on the test set}
-The test set consists of 91 individuals, of which 14 have experienced recurrence.
-We calculate the difference in deviance for the estimated FHT model, as seen in Section \ref{sec:deviance}.
-Recall that the performance of a model is good when the difference in deviance is small (i.e. negative with a large absolute value).
-We obtain a difference of deviance on -95.2.
-This is good, it means that under the assumption that the FHT model is true, a lot of variation is explained by covariates.
-
-\section{Comparing a clinical-genetic model to clinical-only and genetic-only models}
-\citet{bovelstad2009} analysed the neuroblastoma data and compared different ways of combining clinical and genomic data in Cox models.
-As mentioned in subsection \ref{subsec:FHT-combine}, the FHT model lends itself easily to combining genomic and clinical data, and this holds for FHTBoost as well.
-There is also a straightforward way to only use one kind of covariest, i.e., only clinical covariates or only genetic covariates.
-To do this, we can use the cyclical version of the algorithm, where we boost both parameters in each step, but each has its own tuning parameter.
-This lets us fix the number of boosting steps of the parameter not to be boosted to 0.
-In other words, we make a genomic version of FHTBoost, or $y_0$-only version of FHTBoost, by only boosting the initial level $y_0$.
-This version of FHTBoost has $m_{\text{stop},1}$, corresponding to $\mu$, fixed at 0, while we perform cross-validation in the usual way to find the optimal $m_{\text{stop},2}$, corresponding to $y_0$.
-Similarly, the clinical version fixes $m_{\text{stop},2}$ at 0, and tunes the other, $m_{\text{stop},1}$, corresponding to $\mu$.
-In this way, we can compare the performance of our model across the genetic and clinical data, in a similar way as in \citet{bovelstad2009}.
-
-We do the estimation and the test set calculation, and we get the difference of deviance results shown in table \ref{tab:deviances}.
-We see here, in fact, that in this case the full model is beaten by the genomic model, with difference of deviance of -95.2 and -104.4, respectively.
+\todo[inline]{Check Riccardo's comments on table here}
 
 \begin{table}
 \caption{Difference of deviance results.}
@@ -268,12 +248,34 @@ Genetic ($\mu$) only & -104.4 \\
 \end{tabular}
 \end{table}
 
+\subsection{Difference of deviance on the test set}
+The test set consists of 91 individuals, of which 14 have experienced recurrence.
+We calculate the difference in deviance for the estimated FHT model, as seen in Section \ref{sec:deviance}.
+Recall that the performance of a model is good when the difference in deviance is small (i.e. negative with a large absolute value).
+We obtain a difference of deviance on -95.2.
+It means that under the assumption that the FHT model is true, a lot of variation is explained by covariates.
+
+\section{Comparing a clinical-genetic model to clinical-only and genetic-only models}
+\citet{bovelstad2009} analysed the neuroblastoma data and compared different statistical methods to combine clinical and genomic data in Cox models.
+As mentioned in subsection \ref{subsec:FHT-combine}, the FHT model lends itself easily to combining genomic and clinical data, and this holds for FHTBoost as well.
+There is also a straightforward way to only use one kind of covariates, i.e., only clinical covariates or only genetic covariates.
+To do this, we can use the cyclical version of the algorithm, where we boost both parameters in each step, but each has its own tuning parameter.
+This lets us fix the number of boosting steps of the parameter not to be boosted to 0.
+In other words, we make a genomic version of FHTBoost, or $y_0$-only version of FHTBoost, by only boosting the initial level $y_0$.
+This version of FHTBoost has $m_{\text{stop},1}$, corresponding to $\mu$, fixed at 0, while we perform cross-validation in the usual way to find the optimal $m_{\text{stop},2}$, corresponding to $y_0$.
+Similarly, the clinical version fixes $m_{\text{stop},2}$ at 0, and tunes the other, $m_{\text{stop},1}$, corresponding to $\mu$.
+In this way, we can compare the performance of our model across the genetic and clinical data, in a similar way as in \citet{bovelstad2009}.
+
+We do the estimation and the test set calculation, and we get the difference of deviance results shown in Table \ref{tab:deviances}.
+We see here, in fact, that in this specific case the full model is beaten by the genomic model, with difference of deviance of -95.2 and -104.4, respectively.
+
 Furthermore, we calculate the Brier scores (Section \ref{sec:brier}) of these models on the test set, see Figure \ref{fig:brier-FHT}.
 Interestingly, the full FHT model is quite consistently better than the genomic model, even though it achieves a worse difference of deviance.
 Furthermore, the Brier score of the full FHT model is mostly equal to the clinical one, except in the middle, where it is somewhat better.
 It is perhaps easiest to compare the performance if we have a number, and we get that by calculating the integrated Brier score, explained in subsection \ref{subsec:integrated-brier}, and which is effectively the average Brier score over a given range of time, in this case the times from the entire test set.
 
 We find that the integrated Brier score for the full FHT model is 0.0679, while the estimated FHT null model achieves 0.1226, which is almost the double.
+Note, however that large part of the additional error refers to the right part of the error curve (see Figure \ref{fig:brier-FHT}), where the computations are more unstable due to the reduced number of events (larger proportion of censored data).
 And the genomic model attains an integrated Brier score of 0.1015, while the clinical attains 0.0708.
 
 \begin{figure}
@@ -283,12 +285,12 @@ And the genomic model attains an integrated Brier score of 0.1015, while the cli
 \end{figure}
 
 \section{Comparison with the Cox model}
-The Cox model which has been discussed previously, in Chapter 2.
-We compared our model with the Cox model as implemented in CoxBoost, setting
+We compared our model with the Cox model (see subsection \ref{subsec:ph-reg}) as implemented in CoxBoost \citep{}, setting
 \begin{equation}\label{eq:lambda-nu}
     \lambda=N\frac{1-\nu}{\nu},
 \end{equation}
-as suggested in \citet{DeBin2016}, where $N$ is the number of individuals in the data set on which the estimator is applied, and $\nu$ is the step length mentioned in the various boosting algorithms in chapter \ref{ch:boosting}, which we by convention always set to 0.1.
+\todo[inline]{Add citation for CoxBoost!!!!!!!}
+as suggested in \citet{DeBin2016}, where $N$ is the number of individuals in the data set on which the estimator is applied, and $\nu$ is the step length mentioned in the various boosting algorithms in Chapter \ref{ch:boosting}, which we by convention always set to 0.1.
 
 We calculate the Brier score for these models (again, see Section \ref{sec:brier} for an explanation).
 Consider now a comparison of the Brier score for the full FHT model and the Cox model, which can be seen in Figure \ref{fig:brier-cox-both}.
@@ -320,10 +322,14 @@ We first estimate parameters based on the training set, and then calculate the m
 
 \subsection{Difference of deviance results}
 We now consider the difference of deviance across all 100 splits of training and test sets.
-See Figure \ref{fig:neuroblastoma-deviances} for a boxplot comparing these, but the main measure of interest is the mean of difference of deviance.
-It is -47.217 for the full model, and -19.890 for the clinical model, and -35.53302 for the genomic model.
-See Figure \ref{fig:neuroblastoma-deviances} for a boxplot of these.
+The main measure of interest is the mean of difference of deviance.
+It is -47.217 for the full model, and -19.890 for the clinical model, and -35.533 for the genomic model.
+See Figure \ref{fig:neuroblastoma-deviances} for a boxplot comparing these.
 Interestingly, the median for the clinical model is -21.600, while it is 4.009 for the genomic.
+So the median of the clinical model is lower than the median of the genomic model, but the \textit{mean} of the clinical model is higher than the mean of the genomic model.
+Since the mean is more sensitive to extreme values, and more extreme negative values than extreme positive values will here push the mean more down, than the median will be.
+It seems, therefore, that the genomic model sometimes achieves very good performance with regard to the difference of deviance.
+The clinical model, on the other hand, often does not achieve that high of a deviance, but it is more stable.
 
 
 \begin{figure}
@@ -353,7 +359,7 @@ Interestingly, the median for the clinical model is -21.600, while it is 4.009 f
 
 
 \subsection{Integrated Brier scores results}
-We now calculate integrated Brier scores for all 100 splits.
+We now calculate the integrated Brier scores for all 100 splits, for all of the mentioned methods.
 A boxplot can be seen in Figure \ref{fig:neuroblastoma-integrated-brier}.
 \begin{figure}
 \caption{Boxplot of integrated Brier scores.}
@@ -361,32 +367,10 @@ A boxplot can be seen in Figure \ref{fig:neuroblastoma-integrated-brier}.
 \centering
 \includegraphics[scale=0.4]{integrated_brier_boxplot.pdf}
 \end{figure}
-With regard to this integrated Brier score, the full model performs slightly better than the clinical model.
-It might therefore appear as if the genomic data sometimes improves performance, and sometimes does not.
-However, the genomic-only model is vastly outperformed by the full FHT model.
-We get a median integrated Brier score of 3.9 for the full FHT model, only slightly beating the clinical one at 3.7.
-The genomic model, however, achieves 6.8, whereas the Cox model performs best, at 7.7.
+For the FHT models, the full model performs best on average, with a mean of 0.0737, the clinical has 0.0791, genomic 0.0987.
+For reference, the FHT null model, using only the maximum likelihood intercepts, gets 0.1185.
+We might at least be relieved by the fact that the full model performs best, since it is able to incorporate all information.
+This also shows that the model should be a good fit for survival data such as what we have used here.
 
-\section{Conclusion}
-Applying the FHT model to this data set has been a partly fruitful effort.
-The model is able to incorporate covariate information to improve the model fit.
-However, the predictive power is quite off from the Cox model.
-
-%\section{Colon cancer}
-%We now consider data originating from \citet{marisa-data}, consisting of patients diagnosed with colon cancer.
-%Colon cancer is the third most common cancer, and the fourth leading cause of cancer death worldwide \citep{marisa-data}.
-%Pathological staging is the only prognostic
-
-%The French national CIT program involves a multicenter cohort of 750 patients with stage I to IV CC.
-
-%About the data.
-
-%We remove observations where any covariate is missing.
-
-%We have four clinical measurements.
-%These are sex, which is coded as a dummy variable $x_{\text{sex}}\in\{-1,1\}$, age, subtype, and finally stage.
-
-%In the original data set, some survival times are originally 0.
-%We first tried setting these to $10^{-9}$, but it resulted in numerical instability when using numerical optimization to find the maximum likelihood intercepts.
-%We then tried setting these successively to $10^{-9},\,10^{-8},\,\cdot$, and not until 0.1 did we achieve numerical stability.
-%Note that this likely has a large effect on the estimated parameters.
+The FHT models are, however, beaten by boosted Cox regression models.
+The regular Cox model has a mean of 0.0692, while the mandatory Cox model has 0.0574.
