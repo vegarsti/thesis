@@ -3,6 +3,13 @@
 \usepackage[SDATA, 60]{masterfrontpage}
 
 
+% Fix margins?
+\let\tmp\oddsidemargin
+\let\oddsidemargin\evensidemargin
+\let\evensidemargin\tmp
+\reversemarginpar
+
+
 \usepackage{style}      % Custom style
 \usepackage{mymacros}   % Custom defined macros and commands
 
@@ -20,7 +27,6 @@
     %    \maketitle
     %\end{titlingpage}
     \masterfrontpage
-    % Remove this!
 
     \input{sections/abstract}
     \input{sections/acknowledgements}
