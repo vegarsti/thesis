@@ -521,70 +521,17 @@ We will discuss it more in-depth in Section \ref{sec:stop}.
 %\section{likelihood-based boosting}
 %Lorem ipsum. \citep{DeBin2016} \citep{gamboost}.
 
-\section{$L_2$Boost}
-With the generic functional gradient boosting algorithm seen in section \ref{sec:FGD}, it is quite straightforward to derive specific algorithms to use for specific models:
-It is just a matter of plugging in a chosen loss function and deriving its negative gradient.
-This gives great flexibility.
-
-In the original paper \citep{friedman2001}, Friedman derived an algorithm for the standard regression setting, which he called $L_2$Boost.
-$L_2$Boost is a computationally simple variant of boosting, constructed from a functional gradient descent algorithm for the $L_2$ loss function,
-\begin{equation*}
-    \rho(y, \hat{y})=\frac{1}{2}(y-\hat{y})^2.
-\end{equation*}
-The reason it is simple is that the generalized residual $u_i$ of an observation $y_i,x_i$, i.e., the negative derivative of the loss function with regard to an estimate $\hat{y}_i=\hat{f}(x_i)$, is
-\begin{equation*}
-    -\frac{\partial}{\partial\hat{y}}\rho(y_i, \hat{y}_i)=y_i-\hat{y}_i,
-\end{equation*}
-that is, the so-called residual. The negative gradient vector $\u$ then becomes simply the residual vector,
-\begin{equation*}
-    \u=\left(\frac{\partial\loss(y,f(\x))}{\partial x_i}\right)_{i=1}^n=(y-f(x_i))_{i=1}^n,
-\end{equation*}
-and hence the algorithm results in repeated refitting of residuals \citep{friedman2001,buhlmann-yu}.
-With $M=2$ iterations, this had in fact been proposed already, under the name of ``twicing'' \citep{tukey}.
-See Algorithm \ref{algo:L2} for an overview of the algorithm. Note that we here use the algorithm given in \citet{buhlmann-yu}, who do not use a step length, i.e., they let $\nu_m=\nu=0.1$ for all iterations $m=1,\ldots,M$.
-\begin{algorithm}
-\caption{$L_2$Boost}
-\label{algo:L2}
-\begin{enumerate}
-    \item
-        Start with a data set $D=\{x_i, y_i\}_{i=1}^N$. Set the loss function $\rho(y,\hat{f}(x))=\frac{1}{2}(y-\hat{f}(x))^2$, for which we wish to minimize the empirical risk, i.e., the loss function evaluated on the samples,
-        \begin{equation*}
-            \hat{f}=\argmin_{f}R(f)=\argmin_{f}\sum_{i=1}^n y_i-\hat{f}(x_i).
-        \end{equation*}
-    \item Set $m=0$.
-        Initialize $f_0(\x)$, e.g., by setting it to zero for all components, or by finding the best constant, i.e.,
-        \begin{equation*}
-            f_0(\cdot)=\argmin_c R(c).
-        \end{equation*}
-    \item Specify the base learner class $h$, e.g. least squares.
-    \item Increase $m$ by 1.
-    \item Compute the negative gradient vector, i.e., the residuals, with the model evaluated at the previous estimate
-        \begin{equation*}
-            \u^{[m-1]}=\left(y_i-\hat{f}(x_i)\right)_{i=1}^N
-        \end{equation*}
-    \item Estimate $\hat{h}_m$ by fitting $(\x_i,u_i^{[m-1]})$ using the base learner $h$ (like in the previous algorithm):
-        \begin{equation*}
-            \bbeta_m=\argmin_{\bbeta}\sum_{i=1}^N\loss(u_i^{[m-1]},h(\x_i;\bbeta))
-        \end{equation*}
-        This estimation can be viewed as an approximation of the negative gradient vector, and as the projection of the negative gradient vector onto the space spanned by the base learner.
-    \item Update $f_m(\cdot)=f_{m-1}(\cdot)+h(\cdot;\bbeta_m)$.
-    \item Repeat steps 4 to 7 (inclusive) until $m=M$.
-    \item Return $\hat{f}(\cdot)=\hat{f}_{\mstop}(\cdot)=\sum_{m=0}^{\mstop}f_m(\cdot)$.
-\end{enumerate}
-\end{algorithm}
-%They also prove some nice important theoretical results for L2Boost.
-%\todo[inline]{more on L2Boost!!}
-%\subsection{$L_2$Boost example}
-%Lorem ipsum.
-
 \section{High dimensions and component-wise gradient boosting}\label{sec:component}
 % add this to component-wise
+\subsection{Problems in high dimensions}
 In modern biomedical statistics, it is crucial to be able to handle high-dimensional data.
 In some situations, a data set consists of more predictors $p$ than observations $N$.
 When $p$ is much larger than $N$ ($p>>N$), we talk about high-dimensional settings.
 In order to address the issue of analyzing high-dimensional data sets, a variety of regression techniques have been developed over the past years.
 Many of these techniques are characterized by a built-in mechanism for regularization.
 Regularization is a way to reduce the complexity of a model.
+
+\subsection{Regularization}
 In methods with built-in regularization, shrinkage of coefficient estimates or selection of relevant predictors is carried out \textit{simultaneously} with the estimation of the model parameters.
 Both shrinkage and variable selection will typically improve prediction accuracy:
 In case of shrinkage, coefficient estimates tend to have a slightly increased bias but a decreased variance, while in case of variable selection, overfitting the data is avoided by selecting only the most informative predictors.
@@ -597,7 +544,7 @@ Similarly, for variable selection, typical regimes such as \textit{forward stepw
 It is also clearly impossible to perform an exhaustive search of all combinations, as the number of models will suffer from the combinatorial explosion, i.e. that the number of models increases incredibly fast as the number of predictors $p$ increases.
 Note that regularization is not only useful in the high-dimensional data setting, but also tends to improve prediction accuracy in low-dimensional settings where $p\leq N$.
 
-\subsection{The component-wise approach}
+\subsection{The component-wise boosting approach}
 Component-wise gradient boosting is an algorithm which works very well in these settings.
 In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches \citep{buhlmann2006}.
 The component-wise approach was first proposed in \citep{buhlmann-yu}, and component-wise boosting is a very active field of research \citep{buhlmann2006, mayr14a, mayr14b, mayr17}.
@@ -616,6 +563,7 @@ However, we will now let $\theta$ be an additive predictor, meaning it is a sum 
 \end{equation*}
 These partial effects of the covariates will be estimated by component-wise learners in an iterative fashion.
 
+\subsection{The component-wise boosting algorithm}
 The structure of the component-wise boosting algorithm is very much the same as the generic functional gradient boosting algorithm (Algorithm \ref{algo:fgd}), but with some additional steps.
 As mentioned, instead of using a base learner which incorporates all predictors, we use a set $\mathcal{H}$ of base learners consisting of a separate base learner for each component of the covariates.
 The learners typically share the same structure, i.e., are they are the same base learner, only using different covariates, but it is not necessarily the case.
@@ -734,7 +682,7 @@ For a schematic overview of the algorithm, see Algorithm \ref{algo:component-wis
 \end{enumerate}
 \end{algorithm}
 
-\section{Component-wise boosting performs data-driven variable selection}
+\subsection{Component-wise boosting performs data-driven variable selection}
 \label{sec:variable-selection}
 Stopping the algorithm before every base-learner was at least selected once effectively excludes all non-selected base-learners, and thus also the corresponding covariates, from the final model.
 The algorithm is therefore able to perform variable selection and model fitting simultaneously.
@@ -751,7 +699,7 @@ We will now discuss the tuning parameter $\mstop$.
 
 %\citep{mayr-hofner}.
 
-\section{Selecting $\mstop$}
+\section{Selecting the iteration number $\mstop$}
 \label{sec:stop}
 As we have mentioned in subsection \ref{subsec:iterations}, the crucial tuning parameter in boosting is the number of iterations, $\mstop$. 
 Stopping a boosting procedure early enough will lead to variable selection and shrinks the parameter estimates toward zero, compared to if the algorithm was to run to convergence

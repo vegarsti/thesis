@@ -172,19 +172,14 @@ If we look closely at \eqref{eq:brier}, we see that the $BS^c(t^*)$ measure is a
 
 \subsection{Integrated Brier score}\label{subsec:integrated-brier}
 The Brier score $BS^c(\cdot)$ \eqref{eq:brier} only considers a given timepoint.
-We might also be interested in a time interval, say, from time $t_1$ to time $t_2$.
+We might also be interested in a time interval, say, from time $t_{\text{start}}$ to time $t_{\text{end}}$, 
 The integrated Brier score is simply the Brier score integrated over this time interval,
 \begin{equation*}
-    \text{IBS}(t_1, t_2)=\frac{1}{t_2-t_1}\int_{t_1}^{t_2}BS^c(t)\d t.
+    \text{IBS}(t_{\text{start}}, t_{\text{end}})=\frac{1}{t_{\text{end}}-t_{\text{start}}}\int_{t_{\text{start}}}^{t_{\text{end}}}BS^c(t)\d t.
 \end{equation*}
-In practice, we can obtain this by computing the Brier score \ref{eq:brier} over a fine grid of time points $t\in[t_1,t_2]$, and then taking the average of these values.
-
-By partitioning this time interval into smaller adjoint time intervals
+This can be seen as the average Brier score over this interval.
+In practice, we can obtain $\text{IBS}(t_{\text{start}},t_{\text{end}})$ by computing the Brier score \ref{eq:brier} over a grid of time points $t\in[t_{\text{start}},t_{\text{start}}]$, and then numerically integrating these.
+If we have survival times $t_1,\ldots,t_N$, we can calculate an approximation of $\text{IBS}(t_1,t_N)$, by numerical integration per the rec
 \begin{equation*}
-    t_{\text{start}}=t_0<t_1<\cdots<t_k=t_{\text{end}},
+    \widehat{\text{IBS}}(t_1, t_N)\approx\frac{1}{t_N-t_1}\sum_{k=1}^{N-1} BS^c(t_k)\cdot(t_{k+1}-t_{k}).
 \end{equation*}
-we can construct an approximation of the integrated Brier score by
-\begin{equation*}
-    \text{IBS}(t_{\text{start}}, t_{\text{end}})\approx\sum_{j=1}^k BS^c(t_j)\cdot(t_{j+1}-t_{j}).
-\end{equation*}
-\todo[inline]{This needs work still}
