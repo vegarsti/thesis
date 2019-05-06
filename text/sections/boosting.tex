@@ -20,7 +20,7 @@ In the binary classification problem, we are given a set of observations
     D=(\x_i,y_i)_{i=1}^N,
 \end{equation*}
 where $\x_i\in\R^p$ is a vector of covariates, and $y_i\in\{-1,1\}$ is a binary response, i.e., positive or negative; yes or no.
-We want to find a rule which best separates these observations into the correct classes $\{-1,1\}$, as well as being able to classify new, unseen observations $\x_{\text{new}}$ of the same form.
+We want to find a rule which best separates these observations into the correct classes $\{-1,1\}$, as well as being able to classify new, unseen observations of the same form.
 Some observations are hard to classify, whereas some are not.
 One way to look at binary classification is to imagine the $p$-dimensional space of the observations $\x$, and think of the classifier as finding the hyperplane which best splits the observations into their corresponding label. 
 Some observations are not at all close to the boundary, and so they are easily classified.
@@ -33,20 +33,18 @@ We now give an explanation of the algorithm.
 AdaBoost is an iterative algorithm.
 In a given step $m$, we use a weak learner $h(\cdot)$ to estimate a classifier $\hat{h}^{[m]}(\cdot)$, that minimizes the weighted sum of misclassified points.
 Finally, based on the misclassification rate of this classifier, calculate a weight $\alpha^{[m]}$ to assign to this classifier $\hat{h}^{[m]}(\cdot)$.
-Currently, the classifier is $F_1(\cdot)=\alpha_1h_1(\cdot)$.
+Currently, the classifier is $F_1(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)$.
 Using this initial classifier, some points will be correctly classified, and some will be misclassified.
 We therefore increase the weights of the misclassified ones, and normalize the weights afterwards, to ensure that the sum of the weights is always the same.
 This results in the correctly classified observations having a reduced weight, and with misclassified observations having an increased weight, compared to their previous weights.
-In the next iteration, apply again a weak learner which minimizes the weighted sum of the observations, and reweight observations accordingly as before.
-Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F_2(\cdot)=\alpha_1h_1(\cdot)+\alpha_2h_2(\cdot)$.
+In the next iteration, we again apply a weak learner which minimizes the weighted sum of the observations, and we reweight the observations accordingly, in the same manner as before.
+Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F_2(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)+\alpha^{[2]}h^{[2]}(\cdot)$.
 Continue iterating in this fashion until an iteration number $\mstop$.
-The resulting final classifier, the AdaBoost classifier, becomes
+The resulting AdaBoost classifier $\hat{F}(\cdot)$ becomes
 \begin{equation*}
-    \hat{F}(\cdot)=F_{\mstop}(\cdot)=\sum_{m=1}^{\mstop}\alpha_mh_m(\cdot).
+    \hat{F}(\cdot)=F^{[\mstop]}(\cdot)=\sum_{m=1}^{\mstop}\hat{\alpha}^{[m]}\hat{h}^{[2]}(\cdot),
 \end{equation*}
-$\hat{F}(\cdot)$ is a linear combination of the weak classifiers.
-It is in essence a weighted majority vote of weak learners given the observations.
-See ... for a schematic overview of the algorithm.
+i.e. a linear combination of the weak classifiers, or in essence a weighted majority vote of weak learners given the observations.
 
 The AdaBoost algorithm often carries out highly accurate prediction.
 In practice, it is often used with stumps, which are decision trees with one split.
@@ -526,7 +524,7 @@ We will discuss it more in-depth in Section \ref{sec:stop}.
 \subsection{Problems in high dimensions}
 In modern biomedical statistics, it is crucial to be able to handle high-dimensional data.
 In some situations, a data set consists of more predictors $p$ than observations $N$.
-When $p$ is much larger than $N$ ($p>>N$), we talk about high-dimensional settings.
+When $p$ is much larger than $N$ ($p\gg N$), we talk about high-dimensional settings.
 In order to address the issue of analyzing high-dimensional data sets, a variety of regression techniques have been developed over the past years.
 Many of these techniques are characterized by a built-in mechanism for regularization.
 Regularization is a way to reduce the complexity of a model.
@@ -627,6 +625,8 @@ Hence the resulting additive predictor is a sum of component-wise predictors in 
     \hat{\eta}(\x)=\beta_0+\sum_{j=1}^p \hat{f}_j(x_j).
 \end{equation*}
 For a schematic overview of the algorithm, see Algorithm \ref{algo:component-wise}.
+This algorithm has been implemented in R as \verb|mboost| \citep{mboost, mboost1, mboost2}.
+
 \begin{algorithm}
 \caption{Component-wise gradient boosting}\label{algo:component-wise}
 \begin{enumerate}
@@ -803,7 +803,7 @@ We will here explain the \textit{gamboostLSS} algorithm, as presented in \citet{
 A key feature of the GAMLSS model family is that every parameter of the conditional response distribution is modelled by its own predictor and associated link function.
 Traditional GAMs \citep{gam-book} are typically restricted to modelling the conditional mean of the response variable, and treats possible other distributional parameters as fixed.
 GAMLSS, on the other hand, allows for regression of each distribution parameter on the covariates.
-Common distribution parameters are location, scale, skewness and kurtosis, but degrees of freedom (of a $t$-distribution) and zero inflation probabilities can be modelled as well \citep{gamboostlss-paper}.
+Common distribution parameters are location, scale, skewness and kurtosis, but degrees of freedom (of a $t$-distribution) and zero inflation probabilities can be modelled as well \citep{gamboostlss-paper, gamboostLSS-manual}.
 Thus, in the GAMLSS approach, the full conditional distribution of a multiparameter model is related to a set of predictor variables of interest.
 Similarly to in GAMs, in GAMLSS the structure of each predictor is assumed to be additive.
 Hence a wide variety of functional predictors can be included in each predictor.

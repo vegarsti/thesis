@@ -1,6 +1,22 @@
 \chapter{Discussion and future work}
 \label{sec:discussion}
-Future work.
+In this thesis, we have looked at problems in survival data, and specifically first hitting time models.
+While Cox regression is by far the most popular method used to estimate survival data models, there are shortcomings with the Cox model.
+The first hitting time model is more flexible.
+However there were no existing methods for estimating FHT models with high-dimensional data.
+We have therefore discussed ways of estimating models that work well in such a setting.
+In particular, we have discussed gradient boosting \citep{friedman2001}, both methods for estimating one parameter, and extensions to several parameters.
 
-One fruitful extension of FHTBoost is to add other base learners.
-We might try using regularized splines to achieve more.
+Our goal with the thesis work was therefore to combine FHT models and gradient boosting.
+We have therefore developed an algorithm for fitting an FHT model with linear additive predictors.
+The estimation algorithm works as follows.
+It starts by initializing the additive predictors to intercepts, specifically the intercepts that maximize the log-likelihood of the training set.
+We then perform iterations where we in each step include a regularized linear least squares function in \textit{one} of the covariates and \textit{one} of the parameters, namely the combination of covariate and parameter which leads to the largest increase in the log-likelihood function.
+The algorithm was implemented from scratch as a package which we called \textit{FHTBoost}, and it is freely available for download at \verb|https://github.com/vegarsti/fhtboost|.
+It can be installed directly in R by using a command in the DevTools R package \citep{devtools} called \verb|install_github|, namely \verb|install_github("vegarsti/fhtboost")|.
+
+There are several interesting avenues for further work.
+One is to apply FHTBoost on other real-life high-dimensional survival data sets.
+This would allow for a broader view of its usefulness and predictive power on real-life problems.
+Another hopeful avenue of further work would be to incorporate the FHT model into the existing ecosystem of gradient boosting packages in R.
+This would mean including the parameterization which we use in this thesis into the package concerning censored GAMLSS models, \verb|gamboostLSS.cens| \citep{gamlsscens}.
