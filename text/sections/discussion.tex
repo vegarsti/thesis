@@ -2,7 +2,7 @@
 \label{sec:discussion}
 In this thesis, we have looked at problems in survival data, and specifically first hitting time models.
 While Cox regression is by far the most popular method used to estimate survival data models, there are shortcomings with the Cox model.
-The first hitting time model is more flexible.
+First hitting time models are flexible models which.
 However there were no existing methods for estimating FHT models with high-dimensional data.
 We have therefore discussed ways of estimating models that work well in such a setting.
 In particular, we have discussed gradient boosting \citep{friedman2001}, both methods for estimating one parameter, and extensions to several parameters.
@@ -15,8 +15,32 @@ We then perform iterations where we in each step include a regularized linear le
 The algorithm was implemented from scratch as a package which we called \textit{FHTBoost}, and it is freely available for download at \verb|https://github.com/vegarsti/fhtboost|.
 It can be installed directly in R by using a command in the DevTools R package \citep{devtools} called \verb|install_github|, namely \verb|install_github("vegarsti/fhtboost")|.
 
+The main goal of this thesis was to develop a gradient boosting algorithm to fit linear additive predictors for the Wiener process first hitting time model.
+
+We derived an algorithm called FHTBoost to fit FHT models.
+We used a GAMLSSBoost like framework.
+We used component-wise linear learners without intercepts.
+We developed two versions of FHTBoost, one with a fixed intercept, and one where the intercept is treated as a nuisance parameter, and is optimized in each iteration until the boosting is stopped.
+In a simulation study, we found that both versions manage to select informative variables and shrink parameter sizes.
+In an uncorrelated scenario, the fixed intercept version achieves markedly better deviance on a test set.
+However in a correlated and realistic scenario, the two versions achieve very similar performance.
+In all cases, the mean deviance is well below zero.
+To limit the scope of the analysis, we chose to use only the fixed intercept version in the next section.
+When used on a realistic data set, FHTBoost always estimates a model where covariates increase the log-likelihood of the model, on a test set, meaning the model fit is better than in the case of no covariates.
+The models estimated with FHTBoost have good predictive power, achieving a mean Brier score of 0.0737.
+We compare it to a boosted Cox regression model, which achieves 0.0692.
+In other words, the FHTBoost model is comparable to state of the art Cox models, but in this case, it did not outperform it.
+
 There are several interesting avenues for further work.
-One is to apply FHTBoost on other real-life high-dimensional survival data sets.
-This would allow for a broader view of its usefulness and predictive power on real-life problems.
+One is to apply \textit{FHTBoost} on other real-life high-dimensional survival data sets.
+This would allow for a broader assessment of its usefulness and predictive power on real-life problems.
+One of the strengths of gradient boosting is that it is easy to use different component-wise base learners.
+In this thesis, we have only concerned ourselves with linear least squares base learners.
+It would be interesting to include nonlinearity into these, which could be done by e.g. using regularized splines of one dimension as base learners.
 Another hopeful avenue of further work would be to incorporate the FHT model into the existing ecosystem of gradient boosting packages in R.
-This would mean including the parameterization which we use in this thesis into the package concerning censored GAMLSS models, \verb|gamboostLSS.cens| \citep{gamlsscens}.
+This ecosystem is based on the package \textit{mboost} \citep{mboost}.
+The framework used for FHT regression fits into the GAMLSS framework.
+It should therefore be possible to use the \textit{gamboostLSS} \citep{gamboostlss-paper, gamboostLSS-manual} package.
+There also exists an extension for fitting GAMLSS models to censored data, \textit{gamboostLSS.cens} \citep{gamlsscens}.
+It should be possible to include our parameterization of the inverse Gaussian here.
+By including our inverse Gaussian parameterization with its log-likelihood and derivatives, it should be possible to use the entire library of base learners in \textit{mboost}.

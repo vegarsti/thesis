@@ -1,13 +1,6 @@
 %\documentclass[a4paper]{memoir}
 \documentclass[a4paper, USenglish, dvipsnames, svgnames, cmyk]{memoir}
-\usepackage[SDATA, 60]{masterfrontpage}
-
-
-% Fix margins?
-\let\tmp\oddsidemargin
-\let\oddsidemargin\evensidemargin
-\let\evensidemargin\tmp
-\reversemarginpar
+\usepackage[SDATA, 60, LongTitle]{masterfrontpage}
 
 
 \usepackage{style}      % Custom style
@@ -60,6 +53,8 @@
     \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.
 
     \input{sections/appendix}
+
+    \input{sections/appendix2}
 
     \backmatter         % Folios in Arabic numerals, unnumbered chapters.
 

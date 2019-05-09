@@ -2,59 +2,48 @@
 \label{ch:FHTboost}
 In this chapter, we propose a component-wise boosting algorithm for fitting the inverse Gaussian first hitting time (FHT) model (section \ref{sec:FHT} and onward) to survival data.
 We work with survival data sets with $N$ observations,
-\begin{equation*}
+\begin{equation}\label{eq:data-fhtboost}
     D=(\x_i,\z_i,t_i,d_i)_{i=1}^N.
-\end{equation*}
+\end{equation}
 Here $t_i$ is a possibly right-censored event time, $d_i$ is an indicator variable which is 1 if $t_i$ is an actually observed event time, and 0 if it is right-censored.
-For simplicity, we denote the response data
+For simplicity, we sometimes denote the response data
 \begin{equation*}
     y_i=(t_i,d_i).
 \end{equation*}
-Further, we have covariate vectors $\x_i$ and $\z_i$, which will be related to the inverse Gaussian parameters $y_0$ and $\mu$, respectively.
+Further, we have $\x_i$ and $\z_i$, covariate vectors that will be related to the inverse Gaussian parameters $y_0$ and $\mu$, respectively.
 $\x_i$ is defined as
 \begin{equation}
-    \x_i=(x_{i,1},x_{i,2},\ldots,x_{i,p_1}).
+    \x_i=(x_{i,1},x_{i,2},\ldots,x_{i,p_1}),
 \end{equation}
-$\z_i$ is defined as
+with $p_1$ number of covariates, and $\z_i$ is defined as
 \begin{equation}
-    \z_i=(z_{i,1},z_{i,2},\ldots,z_{i,p_2}).
+    \z_i=(z_{i,1},z_{i,2},\ldots,z_{i,p_2}),
 \end{equation}
-Typically the number of dimensions $p_1$ of $\x_i$ is high (in particular, $p_1$ is much larger than $n$, $p_1 \gg n$), and the number of dimensions $p_2$ of $\z_i$ is relatively small, and in particular, $p_2 < N$.
-However, the dimensions $p_1$ and $p_2$ can be any size.
+with $p_2$ number of covariates.
+The dimensions of the matrices, $p_1$ and $p_2$, can be any size.
 There are theoretical arguments for this particular combination of the high and low-dimensional vectors and parameters, which we have discussed earlier in subsection \ref{subsec:FHT-combine}.
-
-The algorithm is designed to be fit for use with both clinical and genomic data.
-
-We now address the necessary parts to be used in the algorithm.
+Before describing the algorithm in detail, we explain the necessary parts and expressions that will be used in the algorithm.
 
 \section{Setting}
 \subsection{Additive predictors}
 The first-hitting-time model with Wiener processes, as shown, leads to inverse Gaussian lifetimes.
-The probability distribution function (pdf) for this distribution is given in \eqref{eq:ig-pdf}, and its cumulative distribution function is given in \eqref{eq:ig-cdf}.
-The log likelihood is given in \eqref{eq:loglik}.
-We repeat it here.
-It depends on $y_0$ and $\mu$, and $\sigma$ is in practice set to 1 to avoid overparameterization (see subsection \ref{subsec:overdetermined} for reasoning).
+The log likelihood is given in \eqref{eq:loglik}, but we repeat it here.
+It depends on $y_0$, $\mu$, and $\sigma$, but in practice $\sigma$ is set to 1 to avoid overparameterization (see subsection \ref{subsec:overdetermined} for reasoning).
+Given a data set $D$ \eqref{eq:data-fhtboost}, the log-likelihood of the parameters given $D$ is
 \begin{align*}
 \begin{split}
-    l(y_0,\mu|y_i)=\sum_{i=1}^n&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\ti}} \\
+    l(y_0,\mu|y_i)=\sum_{i=1}^N&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\ti}} \\
     &+
     (1-d_i)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\ti}}}-\exp\p*{-2y_0\mu}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\ti}}}}.
 \end{split}
 \end{align*}
 We denote the $K=2$ distribution parameters as
-\begin{equation}
-    \btheta=(\theta_1,\theta_2)^T=(y_0,\mu)^T.
-\end{equation}
-We wish to use a similar setup as the GAMLSS.
-We will therefore model the parameters through additive predictors $\boldeta$, consisting of components $\eta_1$ and $\eta_2$, which we relate by usual link functions, namely
-\begin{equation}
-    g_1(y_0)=\ln(y_0)
-\end{equation}
-and
-\begin{equation}
-    g_2(\mu)=\mu.
-\end{equation}
-We further relate the additive predictors to covariates.
+\begin{equation*}
+    \btheta=(\theta_1,\theta_2)^T=(y_0,\mu).
+\end{equation*}
+We wish to use a similar setup as the GAMLSS (see subsection \ref{subsec:GAMLSS}).
+We will therefore model the parameters through additive predictors $\eta_1$ and $\eta_2$.
+We relate the additive predictors to covariates, and further relate the additive predictors to the parameters by their usual link functions, i.e. the log link for $y_0$ (to ensure it is positive) and just the identity link for the drift $\mu$.
 In FHT regression, the additive predictors are typically \textit{linear} predictors.
 We also choose to use this.
 The additive predictors for an individual $i$ are defined as
@@ -187,7 +176,7 @@ Hence the intercepts are estimated to be
 \end{equation*}
 To do this in practice, we use the routine called \verb|nlm|, which belongs to the base package of \verb|R| \citep{Rlang}.
 
-%\begin{algorithm}
+\begin{algorithm}
 \section{The FHTBoost algorithm}
 \label{algo:fhtboost}
 \begin{enumerate}
@@ -280,7 +269,7 @@ To do this in practice, we use the routine called \verb|nlm|, which belongs to t
             \hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\bbeta_0+\sum_{m=1}^{[\mstop]}\boldeta^{[m]}(\cdot).
         \end{equation*}
 \end{enumerate}
-%\end{algorithm}
+\end{algorithm}
 
 \section{Small example}
 \label{subsec:algo-example}

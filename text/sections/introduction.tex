@@ -1,15 +1,21 @@
 \chapter{Introduction and outline of the thesis}
 \label{sec:intro}
-The analysis of survival data is an important part of biomedical statistics.
-\todo[inline]{more about survival analysis!!}
+Survival data is data that is concerned with the time to an event.
+We typically study a cohort of patients after a cancer surgery, and we record the time to a possible recurrence of the cancer, or we study the time it takes before a divorce happens.
+If the event happens, we record the observed time.
+Luckily, not all such events happen for the individuals under study, but there is typically a time that is recorded, e.g. at the latest check-up.
+These times are right-censored. 
+Survival analysis is the field of statistics that studies such data.
 
-Almost all practical modelling of survival data is done with the famous Cox regression model \citep{cox-model}.
+Almost all practical modeling of survival data is done with the famous Cox regression model \citep{cox-model}.
+In survival analysis, there is a concept called a hazard function.
+The hazard of an individual at a time $t$ is the a probability of an event happening to it, given that it has not happened yet, in the infinitesimal time interval at $t$.
 A key underlying assumption of the Cox model is that individuals have proportional hazards at all times, i.e. the ratio of their hazards does not change over time.
 This assumption is not always valid, especially in settings with variable selection.
 There is a need for models which are more flexible, and one such family of models is first hitting time models (FHT) \citep{leewhitmore2006}.
-Instead of modelling the hazard, the main idea of FHT models is to model the underlying (stochastic) process of an individual before an event occurs.
+Instead of modeling the hazard, the main idea of FHT models is to model the underlying (stochastic) process of an individual before an event occurs.
 To model its life, so to speak.
-The FHT model framework is a rich and flexible modelling framework, where we specify a stochastic process and an appropriate threshold, barrier, or boundary, depending on the association we wish to evoke.
+The FHT model framework is a rich and flexible modeling framework, where we specify a stochastic process and an appropriate threshold, barrier, or boundary, depending on the association we wish to evoke.
 There are many choices for this pair of properties.
 When the process hits the barrier, or crosses the boundary, the event is triggered.
 The time to event is therefore the time from the process started until it hit the barrier.
@@ -17,7 +23,7 @@ For certain choices of processes, there exist fully parameterized expressions wh
 This is the case for the Wiener process with initial level and drift, which leads to a bivariate, or twodimensional, probability distribution.
 In chapter 2, we discuss the survival analysis setting, Cox regression, and FHT models.
 These are first discussed in general, before addressing in detail the specific case where we use a Wiener process.
-This case leads to a lifetime which follows a version of the inverse Gaussian, which is a function of the initial level and the drift.
+This case leads to a lifetime that follows a parameterization of the inverse Gaussian distribution with the initial level and the drift as parameters.
 The typical regression setup is to use link functions to relate these to linear predictors which are functions of covariates.
 
 An important part of modern biomedical statistics is the ability to incorporate and use high-dimensional data, which is often genetic data.
@@ -30,8 +36,8 @@ Furthermore, many classical statistical models are simply unable to use so many 
 Specifically, a scenario where the number of covariates $p$, is much larger than the number of predictors, $n$, which is often referred to as the $p\gg n$ scenario.
 
 There are models which extend Cox regression to such settings, but it is not trivial how to extend these.
-There do not, however, exist such extensions for FHT models, and there has to our knowledge been no attempt at developing methods for first hitting time regression in a high-dimensional setting.
-Estimation methods which lead to regularized models are needed, and they especially need to have inherent variable selection.
+There does not, however, exist such extensions for FHT models, and there has to our knowledge been no attempt at developing methods for first hitting time regression in a high-dimensional setting.
+Regularized estimation methods are needed.
 One such method is the lasso \citep{lasso}, and another method is gradient boosting.
 Gradient boosting is an algorithmical framework that has been very successful in high-dimensional ($p\gg n$) scenarios.
 It is a method that originated at the end of the 20th century, in the field of machine learning.
@@ -41,7 +47,7 @@ Gradient boosting is still very much an active field of research, and various me
 Most traditional gradient boosting algorithms are concerned with modelling one parameter.
 The Wiener FHT model we use is a bivariate model, and we can therefore not use the lasso, nor can we use the standard gradient boosting methods.
 In more recent years, however, gradient boosting methods for regression of parameters beyond the mean have also been introduced.
-In chapter 3, we discuss gradient boosting, up to an including methods for estimating multidimensional models.
+In chapter 3, we discuss gradient boosting, including recent methods for estimating multidimensional models \citep{thomas2018}.
 
 This brings us to the main goal of this thesis.
 In chapter 4, we develop a multidimensional, component-wise gradient boosting algorithm to fit the bivariate FHT model with Wiener processes, which we call \textit{FHTBoost}.

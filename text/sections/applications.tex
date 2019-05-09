@@ -1,11 +1,11 @@
 \chapter{Application on real data}
 In the simulation study in the previous chapter, we contrasted the fixed intercept version and the updating intercept version of FHTBoost.
-In general, FHTBoost seems to provide a decent model for correlated, realistic survival data, with average difference of deviance much smaller than 0, meaning that including covariates increases model fit.
-We now evaluate its performance in a real data example.
-In particular, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
+In general, FHTBoost seems to provide a decent model for correlated, realistic survival data, with average difference of deviance much smaller than 0, meaning that including covariates in the model increases its fit to test data.
+We now evaluate the performance of FHTBoost on a real data example.
+Specifically, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
 The dataset includes a relatively small number of patients, with information on two clinical covariates and around 10 000 gene expressions.
-We use FHTBoost on this data to estimate an FHT model, and assess its performance.
-Finally, we compare the predictive power of FHTBoost to CoxBoost, which is a method to estimate a Cox regression model using a boosting framework (see, e.g., \citet{BinderSchumacher2008}).
+We use FHTBoost on this data to estimate an FHT model, and assess the model fit with deviance.
+Finally, we compare the predictive power of FHTBoost to CoxBoost via the Brier score (section \ref{sec:brier}), which is a method to estimate a Cox regression model using a boosting framework (see, e.g., \citet{BinderSchumacher2008}).
 
 \section{Neuroblastoma}
 We consider survival data from \citet{oberthuer-data}, consisting of patients diagnosed with neuroblastoma.
@@ -28,34 +28,33 @@ There are 9978 gene expressions measurements, comprised of those measurements th
 From each patient, we have information on their risk group according to the current German neuroblastoma trial, as well as the patient's age at diagnosis.
 In this data set, 89 out of the 362 observations have missing values.
 We remove all of these observations, and are left with a data set of 273 individuals with full observations.
-Finally, for each individual we have the possibly censored survival time.
-This survival time was defined as time from diagnosis to first recurrence, and was censored at 5 years.
-42 of the 273 children experienced a recurrence within the follow up, which is a proportion of 31.5\%.
+Finally, for each individual we have the possibly censored event time, which in the case of an event is the time to a fatality, in years from diagnosis.
+The median follup-up time without a fatal event was 4.14 years.
+42 of the 273 children experienced a fatal event within the follow up, which is a proportion of 31.5\%.
 Of these, 86 children were classified as having high-risk, while the remaining 187 were not.
 The risk indicator is coded as a binary variable, where low risk is coded as 0, and high risk as 1.
 
 Due to the lack of data, \citet{bovelstad2009} generated 50 random splits of training and test sets from the merged data set.
-We do the same, and generate 100 random splits times.
-First, however, we report the analyses of one single (the first) split of train and test data, to give an example of how to interpret the results.
+We do the same, only we generate 100 random splits.
+First, however, we report the analysis of one single (the first) split of train and test data, to show how to interpret the results.
 
-\section{Single split}
+\section{A single split of the data set}
 The data are split in a training set (2/3) and test set (1/3), stratified by the event status.
 The training set consists of 182 patients, where 28 are observed events.
 The test set consists of 91, where 14 are observed events.
-The data are standardized.
 
 \subsection{Cross-validation on training set}
 As has been shown previously, cross-validation should be repeated with different division of folds, as this reduces variance in the estimate of $\mstop$.
-We perform a (10 times) repeated 5-fold cross validation to find the optimal number of iterations.
-Note in Figure \ref{fig:neuroblastoma-cv} the impact of running the 5-fold cross-validation in a repeated fashion:
-We would not have selected the same $\mstop$ in all of the 10 single 5-fold cross-validations.
+We therefore perform a (10 times) repeated 5-fold cross validation to find the optimal number of iterations.
+Note in Figure \ref{fig:neuroblastoma-cv} the impact of running the cross-validation in a repeated fashion:
+We would not have selected the same $\mstop$ in all of these 10 single 5-fold cross-validations.
 %We first performed a 10-fold repeated cross-validation, but this parameter search did not converge, i.e., the log-likelihood kept increasing.
 %Upon further inspection, we found that one of the folds was the main cause of this, as the log-likelihood for that particular fold continued to increase, even after 400 iterations, while the other folds were in overfitting territory.
 %We concluded that splitting a training set of around 180 into 10 folds would eventually cause a problem in one of the folds, as there was too little information left.
-We find $\mstop=20$ to be optimal, i.e., the minimizing iteration number.
-It is down as the red vertical line in Figure \ref{fig:neuroblastoma-cv}.
-Each dotted gray line in the figure is the sum of the negative log-likelihood of a model trained on 4 folds and applied to the last fold, as a function of the iteration number $m$, while the solid black line is the mean of these 10 gray lines.
-As we can see, in this example the boosting algorithm, in contrast to the original AdaBoost, eventually overfits, so it is important to select the number of boosting stpes by cross-validation.
+We find $\mstop=20$ to be optimal, i.e., the minimizing iteration number, shown as the red vertical line in Figure \ref{fig:neuroblastoma-cv}.
+Each dotted gray line in the figure is the sum of the negative log-likelihood of a model trained on 4 folds and applied to the last fold, as a function of the iteration number $m$, i.e. the cross-validated test error.
+The solid black line is the mean of these 10 gray lines, and it is this line that we choose the minimizer of.
+As we can see, in this example the boosting algorithm, in contrast to the original AdaBoost, eventually overfits, so it is important to select the number of boosting steps by cross-validation.
 
 \begin{figure}
 \caption{
@@ -69,31 +68,41 @@ As we can see, in this example the boosting algorithm, in contrast to the origin
 \end{figure}
 
 \subsection{Results}
-We run the boosting algorithm with $\mstop$ iterations, to estimate the model parameters on the entire training set.
-We now discuss the results of the parameters obtained from FHTBoost.
+We run the FHTBoost algorithm with a fixed intercept for $\mstop$ iterations, resulting in an estimated model.
+We now discuss the results of this model.
 
 \begin{table}
-\caption{Estimated FHT null model on neuroblastoma \citep{oberthuer-data}}
+\caption{Estimated FHT null model on a single split of the neuroblastoma data set \citep{oberthuer-data}}
 \label{tab:neuroblastoma-intercepts}
 \centering
 \begin{tabular}{lr}
 \toprule
-  & Value\\
+Intercept  & Value\\
 \hline
-$\beta_0$ & 0.692 \\
-$\gamma_0$ & 0.077 \\
+$\hat{\beta}_0$ & 0.692 \\
+$\hat{\gamma}_0$ & 0.077 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsubsection{Null model interpretation}
+We recall the concept of a null model, which is a model without covariates.
+In an FHT context with a Wiener process, this means a model with initial level
+\begin{equation*}
+    \hat{y}_0^{[0]}=\exp\left(\hat{\beta}_0\right)
+\end{equation*}
+and drift
+\begin{equation*}
+    \hat{\mu}^{[0]}=\hat{\gamma}_0.
+\end{equation*}
 We first look at the intercepts, reported in Table \ref{tab:neuroblastoma-intercepts}, basically the parameters of the null model.
-The estimated intercept for the gene data, $\beta_0$, is 0.692.
-Remember that in the FHT model, the vector $\bbeta$ corresponds to the initial level $y_0$ of the health process, through the log link function.
+The estimated intercept for the gene data, $\hat{\beta}_0$, is 0.692.
+Remember that the vector $\bbeta$ corresponds to the initial level $y_0$ of the health process, through the log link function.
 The null model, without any covariate effects, therefore has a $y_0$ of $\exp(0.692)=1.998$.
 The intercept $\gamma_0$ corresponding to the clinical data is estimated to be 0.077.
+Since these are related by identity link, the drift $\mu$ is then also 0.077.
 This means that the health process with the FHT interpretation that arises from our estimation is a Wiener process with a relatively small initial level of 1.998, and with a \textit{positive} drift, albeit slightly, of 0.077.
-Recall from section \ref{subsec:wiener} that a Wiener process $W(t)$ has variance equal to its time $t$.
+We further recall from section \ref{subsec:wiener} that a Wiener process $W(t)$ has variance equal to its time $t$.
 %It is therefore quite probable that an FHT process with initial level $1.998$ and drift $0.077$ will cause an event.
 The large variability of the process relative to its starting point means there is still a significant chance of recurrence of neuroblastoma.
 The resulting health process is
@@ -106,42 +115,42 @@ i.e.,
     Y(t)\sim N(1.998+0.077t,\sqrt{t}).
 \end{equation*}
 To get a feeling of the variability of $Y(t)$, and potential trajectories of such a process, we plot 10 realizations of this process in Figure \ref{fig:neuroblastoma-wien}.
-Of these particular 10 processes, 8 processes at some point go below 0.
+Of these particular 10 processes, 4 processes at some point go below 0.
 These are given a red color in figure \ref{fig:neuroblastoma-wien}.
-In the FHT interpretation, then, these health processes would cause an event, or rather, a recurrence of the neuroblastoma cancer in the child.
+In the FHT interpretation, then, these health processes would cause a fatal event of the child.
 To get a better estimate of the proportion of health processes not hitting the death state, we need to sample more processes.
-We sampled 10000, and 6221 of these went below 0 within $t=40$, i.e., a proportion of 0.378 did not experience recurrence.
-\todo[inline]{Check time here ... and in paper}
-In section \ref{sec:FHT}, specifically in equation \eqref{eq:P-inf-FHT}, we stated the probability of an IG FHT lifetime not ending, i.e., the cure rate.
-We will have a non-zero cure rate if the drift is positive, like we have here in our null model.
-We calculate the cure rate for our estimated null model, obtaining
+We sampled 10000, and 4695 of these went below 0 within $t=12$, i.e., a proportion of 0.531 did not experience a fatal event.
+In section \ref{sec:FHT}, specifically in equation \eqref{eq:P-inf-FHT}, we gave the probability of an IG FHT lifetime not ending, i.e., the cure rate.
+We will have a non-zero cure rate if the drift is positive, like we have here in our estimated null model.
+We calculate its cure rate, obtaining
 \begin{align*}
     \Pr{(T=\infty)}=1-\Pr{(T<\infty)}&=1-\exp{(-2\cdot y_0^{[0]}\cdot\mu^{[0]})}\\
     &=1-\exp{(-2\cdot 1.998\cdot 0.077)}=0.265,
 \end{align*}
 meaning about three in four should have a recurrence during their lifetime.
-For this training set, 28 out of 182 are observed events, meaning only 0.154 have experienced a recurrence.
-Note that this is with a medium follow-up on patients of 4.5 years.
-It is still a bit off from the cure rate obtained from the estimated null model, but our model does predict a non-zero proportion of long-term survivors, which is good.
+For this training set, 28 out of 182 are observed events, meaning only 0.154 have experienced a fatal event.
+Note that this is with a medium follow-up on patients of 4.5 years, while we simulated the paths of all processes for 12 years.
+It is still a bit off from the cure rate obtained from the estimated null model, but our model does predict a non-zero cure rate.
 \begin{figure}
 \caption{Curves for 10 randomly generated Wiener processes with parameters $y_0=1.998$ and $\mu=0.077$, corresponding to the estimated null model from the neuroblastoma data set \citep{oberthuer-data}.}
 \label{fig:neuroblastoma-wien}
 \centering
-\includegraphics[scale=0.4]{example_wieners.pdf}
+\includegraphics[scale=0.4]{example_wieners6.pdf}
 \end{figure}
 
 Consider the fact that the initial level $y_0$ is quite low.
-Since we are looking at when, if ever, a neuroblastoma patient will have a recurrence after a surgery, this initial level of the Wiener process is the health level of a patient at surgery.
+Since we are looking at when, if ever, a neuroblastoma patient will have a fatal event after diagnosis, this initial level of the Wiener process is the health level of a patient \textit{at} its diagnosis.
 The health of such a child is presumably quite precarious, as neuroblastoma is a malignant cancer.
 Therefore it makes sense that the initial level $y_0$ of the child's health process is quite low.
 Furthermore, the fact that the drift $\mu$ is positive also makes sense.
-Since the individuals in the study are young children, and we are looking at a timeframe that does not comprise the length of a typical human life, the health level of most children should indeed increase after the surgery.
+Since the individuals in the study are young children, and we are looking at a timeframe that does not comprise the length of a typical human life, the health level of most children should indeed increase after diagnosis.
 However, as mentioned, and as clinicians experience, the survival probability of patients vary, even among those specified as high-risk.
-We therefore must look at estimated covariates to understand variability.
+We therefore must look at estimated covariates to see if we can understand this variability.
 
 \subsubsection{Estimated covariate effects}
 Let us further look at estimated covariate effects in Table \ref{tab:oberthuer-gamma} and Table \ref{tab:oberthuer-beta}.
-We first observe that the boosting algorithm has included both clinical covariates into the model, and it has included 8 genes.
+We first observe that the boosting algorithm has included both clinical covariates into the model, i.e. the age at diagnosis and the risk indicator.
+The model has also included 8 genes for this training data set.
 Remember that we centered each column of the covariate matrices, such that the mean across all individuals is (approximately) 0 for each covariate $j$.
 %\begin{equation}
 %    \overline{x}_j=\frac{1}{n}\sum_{i=1}^n x_{i,j}\approx 0,
@@ -163,8 +172,8 @@ Whereas for those designated as low and intermediate risk, it is
 \begin{equation*}
     \mu^{[0]}_{\text{low-risk}}=0.077-0.189\cdot-0.677=0.205.
 \end{equation*}
-So the drift for those with high risk is negative, while it is positive for low risk.
-Since age is standardized, these two drift covariates should be the mean drift parameters for each of the groups.
+In other words the drift for those with high risk is \textit{negative}, while it is \textit{positive} for low risk.
+Since age is standardized, these two drift covariates are the mean drift parameters for each of the groups.
 We can first check to see if this holds true for all individuals within the risk groups.
 The effect of age is negative, which means that there is some downward effect on the drift as the child's age increases.
 This negative effect could also potentially lead to low-risk individuals having an estimated negative drift, if the child is sufficiently old.
@@ -186,7 +195,7 @@ We calculate it using the formula seen previously, namely
     1-\exp{(-2\cdot y_{0}^{[0]}\cdot\mu_{\text{low-risk}}^{[0]})}=1-\exp{(-2\cdot 1.998\cdot 0.205)}=0.559.
 \end{equation*}
 We should therefore expect, based on the estimated model, that more than half of the low-risk patients should recover.
-We can also consider the gene covariates.
+We should also consider the gene covariates.
 
 \begin{table}
 \caption{Results of estimated clinical coefficients on neuroblastoma data \citep{oberthuer-data}.}
@@ -194,7 +203,7 @@ We can also consider the gene covariates.
 \centering
 \begin{tabular}{lrr}
 \toprule
-Clinical covariate & $\gamma_j$ (full) & $\gamma_j$ (clinical only)\\
+Clinical covariate & $\hat{\gamma}_j$ (full) & $\hat{\gamma}_j$ (clinical only)\\
 \hline
 Risk      &  -0.189  &  -0.268\\
 Age       &  -0.029  &       0 \\
@@ -202,12 +211,20 @@ Age       &  -0.029  &       0 \\
 \end{tabular}
 \end{table}
 
-We observe that 8 genes have been selected in 20 boosting iterations (see Table \ref{tab:oberthuer-beta}).
-Some effects are estimated to be positive, some to be negative.
+We observe that 8 genes have been selected in 20 boosting iterations (see the $\hat{\beta}_j$ column in Table \ref{tab:oberthuer-beta}).
+Some effects are estimated to be positive, some to be negative, but all are roughly the same size in absolute terms.
 Again, the gene expression measurements have been centered and scaled.
-However, a larger parameter does not necessarily mean that the effect of this gene is in general larger than others, as that still depends on the distribution of these.
-It is more difficult here to say how much the genomic data helps in explaining the variance.
-\todo[inline]{Why???}
+However, a larger parameter does not necessarily mean that the effect of this gene is in general larger than others, as it still depends somewhat on the distribution of these.
+We recall e.g. from the simulation chapter that the effect of a change in $\beta_j$ is multiplicative in $\exp(\beta_j)$, and not additive.
+We might for example look at gene 6701.
+The estimated effect of it is $\hat{\beta}_{6701}=0.015$.
+The maximum gene effect after standardization of this gene is 3.8.
+For a hypothetical observation which has mean values for all genes, and thus no effect of those, but with max effect of this gene, its $\hat{y}_{0}$ will be
+\begin{equation*}
+    \hat{y}_{0}=\hat{y}_0^{[0]}\cdot\exp(0.015\cdot3.8)=1.998\cdot1.09=2.115,
+\end{equation*}
+whereas the null model has an initial level of 1.998.
+\todo[inline]{Say more?}
 
 \begin{table}
 \caption{Results of estimated gene coefficients on neuroblastoma data \citep{oberthuer-data}.}
@@ -215,7 +232,7 @@ It is more difficult here to say how much the genomic data helps in explaining t
 \centering
 \begin{tabular}{lrr}
 \toprule
-Gene $j$      & $\beta_j$ (full) & $\beta_j$ (genomic only)\\
+Gene $j$      & $\hat{\beta}_j$ (full) & $\hat{\beta}_j$ (genomic only)\\
 \hline
 Gene 49   & -0.010  &      0  \\
 Gene 1447 & -0.069  & -0.047  \\
@@ -234,26 +251,19 @@ Gene 6901 &  0.011  &      0  \\
 \todo[inline]{Check Riccardo's comments on table here}
 
 \begin{table}
-\caption{Difference of deviance results.}
+\caption{Difference of deviance with FHTBoost with a fixed intercept, on a single split of the neuroblastoma data \citep{oberthuer-data}.}
 \label{tab:deviances}
 \centering
-\begin{tabular}{cc}
+\begin{tabular}{lr}
 \toprule
 Boosting type & Difference of deviance \\
 \hline
 Full & -95.2 \\
 Clinical ($y_0$) only  & -14.5 \\
-Genetic ($\mu$) only & -104.4 \\
+Genomic ($\mu$) only & -104.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Difference of deviance on the test set}
-The test set consists of 91 individuals, of which 14 have experienced recurrence.
-We calculate the difference in deviance for the estimated FHT model, as seen in Section \ref{sec:deviance}.
-Recall that the performance of a model is good when the difference in deviance is small (i.e. negative with a large absolute value).
-We obtain a difference of deviance on -95.2.
-It means that under the assumption that the FHT model is true, a lot of variation is explained by covariates.
 
 \section{Comparing a clinical-genetic model to clinical-only and genetic-only models}
 \citet{bovelstad2009} analysed the neuroblastoma data and compared different statistical methods to combine clinical and genomic data in Cox models.
@@ -269,9 +279,10 @@ In this way, we can compare the performance of our model across the genetic and 
 We do the estimation and the test set calculation, and we get the difference of deviance results shown in Table \ref{tab:deviances}.
 We see here, in fact, that in this specific case the full model is beaten by the genomic model, with difference of deviance of -95.2 and -104.4, respectively.
 
-Furthermore, we calculate the Brier scores (Section \ref{sec:brier}) of these models on the test set, see Figure \ref{fig:brier-FHT}.
-Interestingly, the full FHT model is quite consistently better than the genomic model, even though it achieves a worse difference of deviance.
-Furthermore, the Brier score of the full FHT model is mostly equal to the clinical one, except in the middle, where it is somewhat better.
+Furthermore, we calculate the Brier scores (Section \ref{sec:brier}) of these models on each observation in the test set, see Figure \ref{fig:brier-FHT}.
+Interestingly, the full FHT model is quite consistently better than the genomic model, i.e. it is better per observation in the Brier score, even though it achieves a worse difference of deviance.
+It is interesting to note that these two different models perform best on each their criterion.
+Furthermore, the Brier score of the full FHT model is equal to the clinical one in some parts, except in the middle, from 3 to 7 years, where it is somewhat better.
 It is perhaps easiest to compare the performance if we have a number, and we get that by calculating the integrated Brier score, explained in subsection \ref{subsec:integrated-brier}, and which is effectively the average Brier score over a given range of time, in this case the times from the entire test set.
 
 We find that the integrated Brier score for the full FHT model is 0.0679, while the estimated FHT null model achieves 0.1226, which is almost the double.
@@ -284,23 +295,76 @@ And the genomic model attains an integrated Brier score of 0.1015, while the cli
 \centering\includegraphics[scale=0.4]{brier_FHT.pdf}
 \end{figure}
 
-\section{Comparison with the Cox model}
-We compared our model with the Cox model (see subsection \ref{subsec:ph-reg}) as implemented in CoxBoost \citep{}, setting
-\begin{equation}\label{eq:lambda-nu}
-    \lambda=N\frac{1-\nu}{\nu},
-\end{equation}
-\todo[inline]{Add citation for CoxBoost!!!!!!!}
-as suggested in \citet{DeBin2016}, where $N$ is the number of individuals in the data set on which the estimator is applied, and $\nu$ is the step length mentioned in the various boosting algorithms in Chapter \ref{ch:boosting}, which we by convention always set to 0.1.
 
-We calculate the Brier score for these models (again, see Section \ref{sec:brier} for an explanation).
-Consider now a comparison of the Brier score for the full FHT model and the Cox model, which can be seen in Figure \ref{fig:brier-cox-both}.
-We can see that the Cox model performs better at the beginning, but at the end, the FHT model has better predictive performance.
+\subsection{Difference of deviance on the test set}
+The test set in this split consists of 91 individuals, of which 14 have experienced recurrence.
+We calculate the difference in deviance for the estimated FHT model, as explained in Section \ref{sec:deviance}, i.e. twice the difference of log-likelihood for an estimated model which includes covariates, versus one without.
+Recall that the performance of a model is good when the difference in deviance is small (i.e. negative with a large absolute value).
+We obtain a difference of deviance of -95.2.
+It means that under the assumption that the FHT model is true, a lot of variation is explained by covariates.
+
+\section{Comparing the predictive power of an FHT model with the Cox model}
+To properly assess the predictive power of our estimated FHT models, we need to compare it to state of the art methods.
+As we have discussed the Cox model earlier (see subsection \ref{subsec:ph-reg}), and we have implemented a boosted model, it is fitting to use \textit{CoxBoost} \citep{coxboost}.
+It is an R package for estimating boosted additive predictors for the Cox model.
+There exists a gradient boosted version in \textit{mboost}, but the cross-validation procedure was broken, and so we instead used \textit{CoxBoost}, which uses likelihood based boosting \citep{gamboost}.
+It is a similar method that arrives at similar estimates.
+In likelihood boosting, the tuning parameter is $\lambda$, and it is not directly comparable to the step length $\nu$ in gradient boosting algorithms, but we set
+\begin{equation}\label{eq:lambda-nu}
+    \lambda=\frac{N(1-\nu)}{\nu},
+\end{equation}
+as suggested in \citet{DeBin2016}.
+$N$ is the number of individuals in the data set on which the estimator is applied, and $\nu$ is the step length mentioned in the various boosting algorithms in Chapter \ref{ch:boosting}, which we by convention always set to 0.1.
+
+In the Cox model, we include all covariates when modeling the hazard function, i.e. for this neuroblastoma data set it estimates a model of the form
+\begin{equation*}
+    \hat{\boldeta}_{\text{CB}}=\underbrace{\hat{\beta}_{1,1}\x_1+\hat{\beta}_{1,2}\x_{2}}_{\text{clinical}}+\overbrace{\hat{\beta}_{2,1}\z_1+\ldots+\hat{\beta}_{2,9978}\z_{9978}}^{\text{genomic}},
+\end{equation*}
+since there are two clinical covariates and 9978 genomic ones.
+In the standard boosted Cox model, all parameters are estimated in a penalized manner.
+Thus there is a chance of the clinical data not being included in a final estimated model, like for FHTBoost.
+However here a gene covariate will not be treated any differently than a clinical covariate, but that is something we might want.
+There is also an option in \textit{CoxBoost} for specifying mandatory covariates.
+These covariates will not be penalized, and hence they will be included in the final model.
+We estimate both types of models on the data.
+
+\subsection{Estimating survival probabilities in a Cox model}
+To evaluate the Brier score of a survival model, we need the survival probability estimates of the model.
+In a Cox model, we do not estimate the baseline hazard (see subsection \ref{subsec:ph-reg}), but this is needed to get the actual survival probability estimates.
+In a Cox model which uses $\hat{\boldeta}_{\text{CB}}$, an estimate of the cumulative hazard $\hat{A}(t|\x_i,\z_i)$ is given by
+\begin{equation*}
+    \hat{A}(t|\x_i,\z_i)=\int_{0}^t \hz_0(s)\exp(\hat{\boldeta}_{\text{CB}})\d s=\exp(\hat{\boldeta}_{\text{CB}})\hat{A}_0(t).
+\end{equation*}
+To provide a survival prediction, we must therefore also estimate the baseline hazard.
+This is done by estimating the \textit{cumulative} baseline hazard.
+It can be done by the Breslow-Aalen estimator (see e.g. \citet{ABG}), given by
+\begin{equation}
+    \hat{A}_0(t)=\int_{0}^t\frac{\sum_{i=1}^N \d N_i(s)}{\sum_{i=1}^N Y_i(s)\exp \left(\hat{\boldeta}_{\text{CB}} \right)}.
+\end{equation}
+Here the notation $\d N_i(s)$ means the number of observed events in the infinitesimal interval $[s,s+\d s)$.
+It will be zero for most intervals, but 1 at an observed event.
+We do not have any tied event times in the dataset, i.e. events happening simultaneously.
+If we did, we would have to make some more considerations in the above, but it is not an issue.
+Further, here $Y_i(s)$ is an indicator function which is 1 if individual $i$ is at risk at time $s$, and 0 if not. 
+See \ref{code:cumulative-baseline-hazard} in Appendix \ref{appendix2} for the R code we wrote to estimate this.
+Given the relationship \eqref{eq:cumulative-hazard}, it follows that
+\begin{equation*}
+    S(t)=-\exp(A(t)),
+\end{equation*}
+and hence we get a \textit{CoxBoost} estimate of the survival function by
+\begin{equation*}
+    \hat{S}_{\text{CB}}(t)=-\exp(\hat{A}_{\text{CB}}(t))=-\exp\left(\hat{A}_0(t)\exp(\hat{\boldeta}_{\text{CB}})\right).
+\end{equation*}
+With all this, we can now calculate the Brier score for the Cox models as well.
+\todo[inline]{Move this section to chapter 2?}
+A comparison of the Brier score for the full FHT model and the Cox model can be seen in Figure \ref{fig:brier-cox-both}.
+We observe that the Cox model performs better at the beginning, but at the end, the FHT model has better predictive performance.
 We calculate the integrated Brier score (seen in subsection \ref{subsec:integrated-brier}).
 We find that the integrated Brier score for the full FHT model is 0.0679, while the estimated CoxBoost model attains 0.0673, i.e., almost entirely the same.
 For reference, the estimated FHT null model achieves 0.1226, which is almost the double.
 
 \begin{figure}
-\caption{Brier scores for Cox and both.}
+\caption{Brier scores on a single split of the test set of the neuroblastoma data, for an estimated CoxBoost survival model and a full estimated FHT model.}
 \label{fig:brier-cox-both}
 \centering\includegraphics[scale=0.4]{brier_cox_both.pdf}
 \end{figure}

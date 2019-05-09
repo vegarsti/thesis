@@ -29,9 +29,15 @@
 \RequirePackage{listings}          % Typesetting code
 \lstset
 {
-    basicstyle = \ttfamily\footnotesize,
+    basicstyle       = \ttfamily\footnotesize,
+    commentstyle     = \color{gray},
+    stringstyle      = \itshape,
     showstringspaces = false,
-    frame = tb
+    frame            = tb,
+    breaklines = true,
+    numbers=left,
+    numbersep=5pt,
+    language=R,
 }
 \RequirePackage[obeyspaces,
                 spaces,

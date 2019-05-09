@@ -42,7 +42,7 @@ Again, calculate a weight to give to this new classifier, and add it to the prev
 Continue iterating in this fashion until an iteration number $\mstop$.
 The resulting AdaBoost classifier $\hat{F}(\cdot)$ becomes
 \begin{equation*}
-    \hat{F}(\cdot)=F^{[\mstop]}(\cdot)=\sum_{m=1}^{\mstop}\hat{\alpha}^{[m]}\hat{h}^{[2]}(\cdot),
+    \hat{F}(\cdot)=F^{[\mstop]}(\cdot)=\sum_{m=1}^{\mstop}\hat{\alpha}^{[m]}\hat{h}^{[m]}(\cdot),
 \end{equation*}
 i.e. a linear combination of the weak classifiers, or in essence a weighted majority vote of weak learners given the observations.
 
@@ -69,7 +69,7 @@ We will then explain the gradient descent algorithm, which is what inspired the 
 The aim of statistical boosting algorithms is to estimate and select the effects in structured additive regression models.
 Consider a data set
 \begin{equation*}
-    D=\left(\x^{(i)},\y^{(i)}\right)_{i=1}^N
+    D=\left(\x_i,\y_i\right)_{i=1}^N
 \end{equation*}
 containing the values of an outcome variable $\y$ and predictor variables $\x_1, \x_2,\ldots,\x_p$, forming covariate matrix $\X=(\x_1, \x_2,\ldots,\x_p)$.
 We assume that the samples $i=1,\ldots,n$ are independently generated from an identical distribution over the joint space $\setX\times\setY$.
@@ -810,7 +810,7 @@ Hence a wide variety of functional predictors can be included in each predictor.
 Examples include non-parametric terms based on penalized splines, varying-coefficient terms and spatial and subject-specific terms for repeated measurements.
 The estimation of GAMLSS coefficients is usually based on penalized likelihood maximization; for details on fitting procedures, see \citet{gamlss}.
 
-\subsection{GAMLSS}
+\subsection{GAMLSS}\label{subsec:GAMLSS}
 The GAMLSS model class assumes observations $y_i$ for $i=1,2,\ldots,n$ that are conditonally independent given a set of covariates and after having accounted for spatiotemporal effects.
 The conditional density
 \begin{equation}\label{gamlss-density}
