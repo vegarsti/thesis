@@ -173,13 +173,15 @@ If we look closely at \eqref{eq:brier}, we see that the $BS^c(t^*)$ measure is a
 \subsection{Integrated Brier score}\label{subsec:integrated-brier}
 The Brier score $BS^c(\cdot)$ \eqref{eq:brier} only considers a given timepoint.
 We might also be interested in a time interval, say, from time $t_{\text{start}}$ to time $t_{\text{end}}$, 
-The integrated Brier score is simply the Brier score integrated over this time interval,
+The integrated Brier score is simply the Brier score integrated over this time interval, but divided by the length of the time interval,
 \begin{equation*}
     \text{IBS}(t_{\text{start}}, t_{\text{end}})=\frac{1}{t_{\text{end}}-t_{\text{start}}}\int_{t_{\text{start}}}^{t_{\text{end}}}BS^c(t)\d t.
 \end{equation*}
 This can be seen as the average Brier score over this interval.
 In practice, we can obtain $\text{IBS}(t_{\text{start}},t_{\text{end}})$ by computing the Brier score \ref{eq:brier} over a grid of time points $t\in[t_{\text{start}},t_{\text{start}}]$, and then numerically integrating these.
-If we have survival times $t_1,\ldots,t_N$, we can calculate an approximation of $\text{IBS}(t_1,t_N)$, by numerical integration per the rec
+If we have survival times $t_1,\ldots,t_N$, we can calculate the Brier score of each such time point $t_i$, $i=1,\ldots,N$, and thus calculate an approximation of $\text{IBS}(t_1,t_N)$, by numerical integration over these time points.
 \begin{equation*}
     \widehat{\text{IBS}}(t_1, t_N)\approx\frac{1}{t_N-t_1}\sum_{k=1}^{N-1} BS^c(t_k)\cdot(t_{k+1}-t_{k}).
 \end{equation*}
+This approximation is the same as summing up the area in figures of the same type as Figure \ref{fig:brier-FHT}.
+To get a better approximation of the integrated Brier score, we would need to assess the Brier score for more time points, but we did not do this.

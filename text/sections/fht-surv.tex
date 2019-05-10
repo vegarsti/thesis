@@ -285,6 +285,36 @@ Given that Cox sometimes leaves us wanting of a more flexible and more theoretic
 One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
 This is where first-hitting-time models come in.
 
+\subsection{Estimating survival probabilities in a Cox model}
+\label{subsec:cox-surv-prob}
+For some applications, such as to evaluate the predictive power of a Cox model, we need the survival probability estimates of the model.
+In a Cox model, we do not estimate the baseline hazard (see subsection \ref{subsec:ph-reg}), but this is needed to get the actual survival probability estimates.
+In a Cox model which has estimated an additive predictor $\hat{\boldeta}$, an estimate of the cumulative hazard $\hat{A}(t|\x_i)$ is given by
+\begin{equation*}
+    \hat{A}(t|\x_i)=\int_{0}^t \hz_0(s)\exp(\hat{\boldeta})\d s=\exp(\hat{\boldeta})\hat{A}_0(t).
+\end{equation*}
+To provide a survival prediction, we must therefore also estimate the baseline hazard.
+This is done by estimating the \textit{cumulative} baseline hazard.
+It can be done by the Breslow-Aalen estimator (see e.g. \citet{ABG}), given by
+\begin{equation}
+    \hat{A}_0(t)=\int_{0}^t\frac{\sum_{i=1}^N \d N_i(s)}{\sum_{i=1}^N Y_i(s)\exp \left(\hat{\boldeta} \right)}.
+\end{equation}
+Here the notation $\d N_i(s)$ means the number of observed events in the infinitesimal interval $[s,s+\d s)$.
+It will be zero for most intervals, but 1 at an observed event.
+We do not have any tied event times in the dataset, i.e. events happening simultaneously.
+If we did, we would have to make some more considerations in the above, but it is not an issue.
+Further, here $Y_i(s)$ is an indicator function which is 1 if individual $i$ is at risk at time $s$, and 0 if not. 
+See \ref{code:cumulative-baseline-hazard} in Appendix \ref{appendix2} for the R code we wrote to estimate this.
+Given the relationship \eqref{eq:cumulative-hazard}, it follows that
+\begin{equation*}
+    S(t)=-\exp(A(t)),
+\end{equation*}
+and hence we get an estimate of the survival function of the Cox estimates by
+\begin{equation*}
+    \hat{S}(t)=-\exp(\hat{A}(t))=-\exp\left(\hat{A}_0(t)\exp(\hat{\boldeta})\right).
+\end{equation*}
+
+
 \section{First hitting time models}\label{sec:FHT}
 So far we have done regression by modelling the log-likelihood $l(\cdot)$ and the hazard rate $\hz(\cdot)$.
 Therefore we have not thought much about how a time-to-event is \textit{generated}, other than the fact that it arises from a survival distribution $S(\cdot)$ with a corresponding hazard function $\hz(\cdot)$.

@@ -59,10 +59,10 @@ We are going to build up these additive predictors by means of gradient boosting
 Choosing a linear structure for the additive predictors means we need to choose base learners in the boosting algorithm which allows for this.
 
 \subsection{Base learners}
-We want to use a component-wise boosting approach, and we will use additive predictors.
-For this, we need base learners that add up to the additive structure of \eqref{eta1} and \eqref{eta2}.
+To use additive predictors we need base learners that add up to the additive structure of \eqref{eta1} and \eqref{eta2}.
 We therefore choose regular least squares functions of only one covariate.
 Each base learner is a function of an observation $i$, but only uses one covariate in each.
+This is common in gradient boosting algorithms \citep{gamboost}.
 This means that the base learners corresponding to $\eta_1$, $\{h_{1,j}\}_{j=1}^{p_1}$ as a function of $\x_i$ is
 \begin{equation*}
     \{h_{1,j}(\x_i)\}_{j=1}^{p_1}=\{h_{1,j}(x_{i,j})\}_{j=1}^{p_1}=\{\beta_jx_{i,j}\}_{j=1}^{p_1}.
@@ -157,9 +157,9 @@ and
 \begin{equation}
     -\frac{\partial}{\partial\eta_2}\rho(y_i,\hat{\btheta}_i)=\frac{\partial}{\partial\eta_2}l(\exp(\hat{\eta}_{1,i}), \hat{\eta}_{2,i})=f_1
 \end{equation}
-See Appendix for the derivation of this.
-With
 We can now apply the component-wise multidimensional boosting algorithm shown in the previous chapter.
+
+\subsection{Choice of noncyclical vs cyclical}
 We choose to use the noncyclical variant as this leads to equally good results and is less computationally intensive to tune, due to a one-dimensinal stopping parameter search, as stated in \citet{schmid}.
 
 \section{Initialization via maximum likelihood estimate}
@@ -175,9 +175,10 @@ Hence the intercepts are estimated to be
     \hat{\boldeta}_0=\argmin_{\boldeta}\err\left(\boldeta\right).
 \end{equation*}
 To do this in practice, we use the routine called \verb|nlm|, which belongs to the base package of \verb|R| \citep{Rlang}.
+As our base learners are only functions with parametric effects and no intercept, these intercepts are fixed throughout.
 
 \begin{algorithm}
-\section{The FHTBoost algorithm}
+\section{The FHTBoost algorithm with fixed intercepts}
 \label{algo:fhtboost}
 \begin{enumerate}
     \item
@@ -213,8 +214,9 @@ To do this in practice, we use the routine called \verb|nlm|, which belongs to t
     \item
         Fit the negative gradient vector to each of the $p_1$ components of $\X$ (i.e. to each base learner) separately, using the base learners specified in step \ref{algostep:FHT-base-learner}, so i.e., fitting
         \begin{equation*}
-            \hat{\beta}_j=\left(\x_j^T\x_j\right)^{-1}\x_j^T \u^{[m-1]}_1=\frac{\sum_{k=1}^N u^{[m-1]}_{1,k}x_{k,j}}{\sum_{k=1}^N x_{k,j}^2}.
+            \hat{\beta}_j^{[m]}=\left(\x_j^T\x_j\right)^{-1}\x_j^T \u^{[m-1]}_1=\frac{\sum_{k=1}^N u^{[m-1]}_{1,k}x_{k,j}}{\sum_{k=1}^N x_{k,j}^2},
         \end{equation*}
+        and letting $\hat{h}_{1,j}^{[m]}(\x)=\hat{\beta}_j^{[m]}x_j$.
     \item
         Select the best fitting base learner, $\hat{h}_{1,\,j_1^{[m]}}$, by the inner loss,
         i.e., the RSS of the base-learner fit w.r.t the negative gradient vector
@@ -266,14 +268,14 @@ To do this in practice, we use the routine called \verb|nlm|, which belongs to t
         If $m<m_{\text{stop}}$, go to step \ref{algostep:FHT-init}.
         If not, return
         \begin{equation*}
-            \hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\bbeta_0+\sum_{m=1}^{[\mstop]}\boldeta^{[m]}(\cdot).
+            \hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\hat{\boldeta}_0+\sum_{m=1}^{[\mstop]}\boldeta^{[m]}(\cdot).
         \end{equation*}
 \end{enumerate}
 \end{algorithm}
 
 \section{Small example}
 \label{subsec:algo-example}
-Let us now consider a small example where we draw survival times from an inverse Gaussian FHT distribution, and confirm that FHTBoost recovers the maximum likelihood parameters.
+Let us now consider a small example where we draw survival times from an inverse Gaussian FHT distribution \eqref{eq:ig-pdf}, and confirm that FHTBoost recovers the maximum likelihood parameters.
 Let parameter vectors be
 \begin{equation*}
     \bbeta=(2,0.1,0.2)
@@ -284,7 +286,7 @@ and
 \end{equation*}
 We let the covariate matrices be $\X=(\x_1,\x_2)$ and $\Z=(\z_1,\z_2)$, where all elements in the covariate vectors $\x_1,\x_2,\z_1,\z_2$ are independently drawn from $N(0,1)$.
 We simulate data using Algorithm \ref{algo:FHT-sim} in section \ref{sec:simulate-IG-data}, with censoring times $w_i$ being drawn from a distribution $\exp(0.1)$.
-We thus end up with a survival data set
+We thus end up with a survival data set of the by now usual form
 \begin{equation*}
     D=(\x_i,\z_i,t_i,d_i)_{i=1}^N.
 \end{equation*}
@@ -303,31 +305,22 @@ We estimate $\hat{\bbeta}$ and $\hat{\bgamma}$ using FHTBoost.
 Figure \ref{fig:boosting-ML} shows a plot of the negative log likelihood of the data (training error) as a function of the iteration number $m$.
 The solid black line shows negative log-likelihood for FHTBoost with a fixed intercept.
 This is the algorithm in the previous subsection.
-With a fixed intercept, we only estimate the intercepts $\hat{\boldeta}_0=\left(\hat{\beta}_{0},\,\hat{\gamma}_{0}\right)$ before we begin iterating, and so these intercepts are not changed in any of the boosting iterations.
+In this version with fixed intercept, we only estimate the intercepts $\hat{\boldeta}_0=\left(\hat{\beta}_{0},\,\hat{\gamma}_{0}\right)$ before we begin iterating, and so these intercepts are not changed in any of the boosting iterations.
 The horizontal solid red line shows the negative of the maximum likelihood, obtained through numerical maximization of the joint maximum likelihood.
 It is clear that FHTBoost with a fixed intercept does not reach the maximum likelihood value.
 The maximum likelihood estimated intercepts are $\hat{\beta}^{\text{ML}}_{1,0}=1.98$ and $\hat{\beta}^{\text{ML}}_{2,0}=-1.02$.
 FHTBoost with a fixed intercept produces estimates of the intercepts as $\hat{\beta}_{0}=1.68$ and $\hat{\gamma}^{[\mstop]}_{0}=-0.71$.
-These estimated intercepts are quite off from the maximum likelihood estimates.
+These estimated intercepts are quite off from the maximum likelihood estimates (see also Table \ref{table:ML}).
 
-We therefore see that to achieve the maximum likelihood, we have to modify the algorithm to incorporate updates in the intercepts while boosting.
-Some existing boosting algorithms modify the intercept, but it is unclear in the literature how these perform it.
-In mboost, they seem to change the offset while boosting.
-This must surely be a problem others have encountered while deriving boosting algorithms.
-To change the intercept in each boosting iteration, by performing a new numerical maximization after updating the additive predictor.
-This means to perform the same kind of numerical maximization as is done initially, at the beginning of each iteration, using the estimated additive predictors as offsets.
+To achieve the maximum likelihood, we have to modify the algorithm to incorporate updates in the intercepts while boosting.
+Some existing boosting algorithms modify the intercept, but it is not clear in the literature how these perform it.
+mboost uses linear least squares base learners with an intercept.
+To change the intercept in each boosting iteration, we can perform numerical maximization after updating the additive predictor, i.e. as is done initially, using the estimated additive predictors as offsets.
+We are in essence treating the intercepts as nuisance parameters.
 Since we will change intercepts in each iteration, we now denote intercepts with their iteration number as well.
 We write $\hat{\beta}_{0}^{[m]}$ and $\hat{\gamma}_{0}^{[m]}$.
 The initial intercepts are then $\hat{\beta}_{0}^{[0]}$ and $\hat{\beta}_{0}^{[0]}$.
-We write
-\begin{equation}
-    \hat{\beta}_{0}=\hat{\beta}_{0}^{[0]}+\sum_{m=1}^{\mstop}\hat{\beta}_{0}^{[m]},
-\end{equation}
-and
-\begin{equation}
-    \hat{\gamma}_{0}=\hat{\gamma}_{0}^{[0]}+\sum_{m=1}^{\mstop}\hat{\gamma}_{0}^{[m]}.
-\end{equation}
-Here each $\hat{\beta}_{0}^{[m]}$ and $\hat{\gamma}_{0}^{[m]}$ are calculated in the intercept estimated in step $m$ of the boosting algorithm.
+We replace these in each iteration, with $\hat{\beta}_{0}^{[m]}$ and $\hat{\beta}_{0}^{[m]}$, which are calculated in the intercept estimated in step $m$ of the boosting algorithm.
 By incorporating \textit{changing} intercepts, the algorithm was successful in recovering the maximum likelihood value and parameters.
 See table \ref{table:ML} for the estimated parameter values, and graphically, in figure \ref{fig:boosting-ML}, where the convergence is plotted as a function of the number of boosting iterations.
 \begin{table}\caption{Parameter values of a model which reaches ML}\label{table:ML}
@@ -342,7 +335,7 @@ FHTBoost with changing intercept              &    1.97 &    0.10 &    0.18 &   
 \bottomrule
 \end{tabular}
 \end{table}
-In step $m$, after updating the additive predictor $\hat{\eta}^{[m]}_{k^{[m]}}$ by
+In step $m$, we update the additive predictor $\hat{\eta}^{[m]}_{k^{[m]}}$ by
 \begin{equation*}
     \hat{\eta}^{[m]}_{k^{[m]}}\gets\hat{\eta}^{[m-1]}+\nu\cdot\hat{h}_{k^{[m]},j^{[m]}}^{[m]},
 \end{equation*}
@@ -352,7 +345,7 @@ we update the intercept in the additive predictors by
 \end{equation*}
 The fact that we update the intercept in each iteration has the benefit that the resulting intercepts are the maximum likelihood intercepts \textit{with} the covariate effects estimated while boosting.
 Meanwhile, for the fixed intercept, the estimated intercepts there are the maximum likelihood intercepts \textit{without} the estimated covariate effects.
-
+\todo[inline]{This needs to be fixed}
 
 \section{FHTBoost algorithm with changing intercept}\label{subsec:FHT-intercept}
 %\begin{algorithm}
@@ -384,6 +377,20 @@ We replace step \ref{algostep:FHT-end} in the fixed intercept algorithm in Secti
         \end{equation}
 \end{enumerate}
 %\end{algorithm}
+\todo[inline]{The above needs work!}
 
 \section{Existing work}
 gamlss.cens \citep{gamlsscens}
+
+
+In the next chapter, we perform a simulation study to verify that FHTBoost works to estimate FHT models.
+Since we have two versions, we also compare their performance.
+
+\section{Boosting only one parameter}
+As mentioned in subsection \ref{subsec:FHT-combine}, the FHT model lends itself easily to combining genomic and clinical data, and this holds for FHTBoost as well.
+There is also a straightforward way to only use one kind of covariates, i.e., only clinical covariates or only genetic covariates.
+To do this, we can use the cyclical version of the algorithm, where we boost both parameters in each step, but each has its own tuning parameter.
+This lets us fix the number of boosting steps of the parameter not to be boosted to 0.
+In other words, we make a genomic version of FHTBoost, or $y_0$-only version of FHTBoost, by only boosting the initial level $y_0$.
+This version of FHTBoost has $m_{\text{stop},1}$, corresponding to $\mu$, fixed at 0, while we perform cross-validation in the usual way to find the optimal $m_{\text{stop},2}$, corresponding to $y_0$.
+Similarly, the clinical version fixes $m_{\text{stop},2}$ at 0, and tunes the other, $m_{\text{stop},1}$, corresponding to $\mu$.
