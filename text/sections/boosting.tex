@@ -30,12 +30,12 @@ We now give an explanation of the algorithm.
 AdaBoost is an iterative algorithm.
 In a given step $m$, we use a weak learner $h(\cdot)$ to estimate a classifier $\hat{h}^{[m]}(\cdot)$, that minimizes the weighted sum of misclassified points.
 Based on the misclassification rate a weight $\alpha^{[m]}$ is assigned to the classifier $\hat{h}^{[m]}(\cdot)$.
-After a first iteration, the classifier is $F_1(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)$.
+After a first iteration, the classifier is $F^{[1]}(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)$.
 Using this initial classifier, some points will be correctly classified, and some will be misclassified.
 We increase the weights of the misclassified ones, and normalize the weights afterwards, to ensure that the sum of the weights is always the same.
 This results in the correctly classified observations having a reduced weight, and with misclassified observations having an increased weight.
 In the following iteration, we apply again a weak learner which minimizes the weighted sum of the observations, and we reweight the observations accordingly, in the same manner as before.
-Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F_2(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)+\alpha^{[2]}h^{[2]}(\cdot)$.
+Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F^{[2]}(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)+\alpha^{[2]}h^{[2]}(\cdot)$.
 Continue iterating in this fashion until an iteration number $\mstop$ is reached.
 The resulting AdaBoost classifier $\hat{F}(\cdot)$ becomes
 \begin{equation*}
@@ -542,6 +542,7 @@ One such technique, which can cope with the $p\gg N$ situation, is a version of 
 %Note that regularization is not only useful in the high-dimensional data setting, but also tends to improve prediction accuracy in low-dimensional settings where $p\leq N$.
 
 \subsection{The component-wise boosting approach}
+\label{subsec:comp-wise approach}
 The key idea of the component-wise approach to gradient boosting is to add the effect of only one variable at a time, instead of adding a small effect from all variables, as is the case in the generic FGD algorithm (Algorithm \ref{algo:fgd}).
 Component-wise gradient boosting is an algorithm which works very well in these settings.
 In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches \citep{buhlmann2006}.

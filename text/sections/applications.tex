@@ -39,6 +39,13 @@ We will now briefly discuss the models we intend to estimate on this data set, a
 \section{Methods}
 \subsection{Comparing the full FHT model to clinical-only and genetic-only FHT models}
 \citet{bovelstad2009} analysed the neuroblastoma data and compared different statistical methods to combine clinical and genomic data in Cox models.
+As mentioned in subsection \ref{subsec:FHT-combine}, the FHT model lends itself easily to combining genomic and clinical data, and this holds for FHTBoost as well.
+There is also a straightforward way to only use one kind of covariates, i.e., only clinical covariates or only genetic covariates.
+To do this, we can use the cyclical version of the algorithm, where we boost both parameters in each step, but each has its own tuning parameter.
+This lets us fix the number of boosting steps of the parameter not to be boosted to 0.
+In other words, we make a genomic version of FHTBoost, or $y_0$-only version of FHTBoost, by only boosting the initial level $y_0$.
+This version of FHTBoost has $m_{\text{stop},1}$, corresponding to $\mu$, fixed at 0, while we perform cross-validation in the usual way to find the optimal $m_{\text{stop},2}$, corresponding to $y_0$.
+Similarly, the clinical version fixes $m_{\text{stop},2}$ at 0, and tunes the other, $m_{\text{stop},1}$, corresponding to $\mu$.
 In this way, we can compare the performance of our model across the genetic and clinical data, in a similar way as in \citet{bovelstad2009}.
 
 \subsection{Comparing the predictive power of an FHT model with the Cox model}
@@ -368,9 +375,13 @@ Finally, we use the estimated model on the test set and calculate the evaluation
 
 \subsection{Difference of deviance in FHT models}
 Figure \ref{fig:neuroblastoma-deviances} shows a boxplot of the difference of deviance across all 100 splits of training and test sets.
-The main measure of interest is the mean for each, and it is -47.2 for the full model, -19.9 for the clinical model, and -35.5 for the genomic model.
-\todo[inline]{replace these values!!!!}
-The full FHT model has the best average value here, which should be expected, as it can include both clinical and genomic covariates.
+The main measure of interest is the mean for each, and it is -51.0 for the full model, -23.4 for the clinical model, and -40.3 for the genomic model.
+The full FHT model has the best mean value here, which should be expected, as it can include both clinical and genomic covariates.
+
+Median
+       both    clinical     genetic 
+-28.0985864 -23.7328969  -0.1257181 
+All of these also on 
 
 \begin{figure}
 \caption{Boxplot for difference in deviance for different variants of the FHT model.}

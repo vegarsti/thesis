@@ -57,7 +57,6 @@ More formally, the hazard function is defined as
     \hz(t)=\lim_{\epsilon\to0}\frac{\Pr(T<t+\epsilon|T>t)}{\epsilon}.
 \end{equation*}
 Estimating the hazard function is hard, and we do not achieve the usual $\sqrt{n}$ convergence.
-\todo[inline]{Find and add citation.}
 It is, however, typically the function we are most interested in, as we will see later, in subsection \ref{subsec:ph-reg}.
 Note that by observing
 \begin{equation*}
@@ -250,6 +249,40 @@ Cox regression is used very much in applied research.
 %\subsection{Cox regression example}
 %Lorem ipsum.
 
+\subsection{Estimating survival probabilities in a Cox model}
+\label{subsec:cox-surv-prob}
+For some applications, such as to evaluate the predictive power of a Cox model, we need the survival probability estimates of the model.
+In a Cox model, we do not estimate the baseline hazard (see subsection \ref{subsec:ph-reg}), but this is needed to get the actual survival probability estimates.
+In a Cox model which has estimated an additive predictor
+\begin{equation}
+    \hat{\boldeta}=\x\hat{\bbeta},
+\end{equation}
+an estimate of the cumulative hazard $\hat{A}(t|\x_i)$ is given by
+\begin{equation*}
+    \hat{A}(t|\x_i)=\int_{0}^t \hz_0(s)\exp(\hat{\boldeta})\d s=\exp(\hat{\boldeta})\hat{A}_0(t).
+\end{equation*}
+To provide a survival prediction, we must therefore also estimate the baseline hazard.
+This is done by estimating the \textit{cumulative} baseline hazard.
+It can be done by the Breslow-Aalen estimator (see e.g. \citet{ABG}), given by
+\begin{equation}
+    \hat{A}_0(t)=\int_{0}^t\frac{\sum_{i=1}^N \d N_i(s)}{\sum_{i=1}^N Y_i(s)\exp \left(\hat{\boldeta} \right)}.
+\end{equation}
+Here the notation $\d N_i(s)$ means the number of observed events in the infinitesimal interval $[s,s+\d s)$.
+It will be zero for most intervals, but 1 at an observed event.
+We do not have any tied event times in the dataset, i.e. events happening simultaneously.
+If we did, we would have to make some more considerations in the above, but it is not an issue.
+Further, here $Y_i(s)$ is an indicator function which is 1 if individual $i$ is at risk at time $s$, and 0 if not. 
+See \ref{code:cumulative-baseline-hazard} in Appendix \ref{appendix2} for the R code we wrote to estimate this.
+Given the relationship \eqref{eq:cumulative-hazard}, it follows that
+\begin{equation*}
+    S(t)=-\exp(A(t)),
+\end{equation*}
+and hence we get an estimate of the survival function of the Cox estimates by
+\begin{equation*}
+    \hat{S}(t)=-\exp(\hat{A}(t))=-\exp\left(\hat{A}_0(t)\exp(\hat{\boldeta})\right).
+\end{equation*}
+
+
 \subsection{Issues with the proportional hazards assumption}
 When assuming \eqref{eq:PH}, i.e. $\hz(t|\x)=\hz_0(t)r(x|\bbeta)$, we are making a relatively strong assumption.
 Namely, we assume that the ratio between the hazard function of two individuals is the same \textit{at all times}, because the part of $\hz(t|\x)$ cancels out when we do regression, and because we assume that the covariate effects are constant in time, as $r(x|\bbeta)$ is not a function of time.
@@ -284,36 +317,6 @@ However, in practice, Cox regression is robust and tends to work well.
 Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models.
 One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
 This is where first-hitting-time models come in.
-
-\subsection{Estimating survival probabilities in a Cox model}
-\label{subsec:cox-surv-prob}
-For some applications, such as to evaluate the predictive power of a Cox model, we need the survival probability estimates of the model.
-In a Cox model, we do not estimate the baseline hazard (see subsection \ref{subsec:ph-reg}), but this is needed to get the actual survival probability estimates.
-In a Cox model which has estimated an additive predictor $\hat{\boldeta}$, an estimate of the cumulative hazard $\hat{A}(t|\x_i)$ is given by
-\begin{equation*}
-    \hat{A}(t|\x_i)=\int_{0}^t \hz_0(s)\exp(\hat{\boldeta})\d s=\exp(\hat{\boldeta})\hat{A}_0(t).
-\end{equation*}
-To provide a survival prediction, we must therefore also estimate the baseline hazard.
-This is done by estimating the \textit{cumulative} baseline hazard.
-It can be done by the Breslow-Aalen estimator (see e.g. \citet{ABG}), given by
-\begin{equation}
-    \hat{A}_0(t)=\int_{0}^t\frac{\sum_{i=1}^N \d N_i(s)}{\sum_{i=1}^N Y_i(s)\exp \left(\hat{\boldeta} \right)}.
-\end{equation}
-Here the notation $\d N_i(s)$ means the number of observed events in the infinitesimal interval $[s,s+\d s)$.
-It will be zero for most intervals, but 1 at an observed event.
-We do not have any tied event times in the dataset, i.e. events happening simultaneously.
-If we did, we would have to make some more considerations in the above, but it is not an issue.
-Further, here $Y_i(s)$ is an indicator function which is 1 if individual $i$ is at risk at time $s$, and 0 if not. 
-See \ref{code:cumulative-baseline-hazard} in Appendix \ref{appendix2} for the R code we wrote to estimate this.
-Given the relationship \eqref{eq:cumulative-hazard}, it follows that
-\begin{equation*}
-    S(t)=-\exp(A(t)),
-\end{equation*}
-and hence we get an estimate of the survival function of the Cox estimates by
-\begin{equation*}
-    \hat{S}(t)=-\exp(\hat{A}(t))=-\exp\left(\hat{A}_0(t)\exp(\hat{\boldeta})\right).
-\end{equation*}
-
 
 \section{First hitting time models}\label{sec:FHT}
 So far we have done regression by modelling the log-likelihood $l(\cdot)$ and the hazard rate $\hz(\cdot)$.
@@ -524,7 +527,7 @@ If $\sigma^2$ is relatively large compared to the drift, however, the diffusion 
 
 \begin{figure}
 \label{plot:wiener}
-\caption{Example of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=-1$.}
+\caption{Example of 5 Wiener process paths with initial value $y_0=10$ and drift $\mu=-1$. The dashed horizontal line is at 0, at which point the process would cause an event in an FHT model.}
 \centering
 \includegraphics[scale=0.4]{figures/wiener_processes.pdf}
 \end{figure}
@@ -561,42 +564,49 @@ Consider the shape of the hazard rate in three different cases for the initial l
     \item
         If $y_0$ is somewhat inbetween, we get a hazard rate which first increases and then decreases \citep{ABG}.
 \end{enumerate}
-These three examples are clearly observed in Figure ..., where we have plotted the hazard function arising from three FHT models.
-All three have drift as $\mu=X$.
-The first has $y_0=X$, the second has $y_0=Y$, and the third has $y_0=Z$.
-\todo[inline]{add figure!}
-In all three of these cases, the hazard function has a pronounced peak, which is dependent on both the initial level and the drift, of course. 
-It is not as simple as the peak being at the mean lifetime, i.e., $y_0/\mu$.
-Although the height of the peak will change both by changing both parameters, to simplify it a lot, $y_0$ mostly impacts at what time the
-peak is, whereas $\mu$ mostly affects the height of the peak.
-Regardless of the initial value, the hazard rate converges to the same limiting hazard, which is
-\begin{equation*}
-    \lim_{t\to\infty}\hz(t)=\frac{1}{2}\left(\frac{\mu}{\sigma}\right)^2=0.5\mu^2,
-\end{equation*}
-as seen in \citet{ABG}. To get an intuitive feel for this, I have made an interactive website at \verb|vegarsti.shinyapps.io/FHT_Hazard|
-\todo[inline]{Add plots and more explanation here.}
-%\todo[inline]{Add plots of hazard rates here. see page 401 in ABG}
+These three examples are clearly observed in Figure \ref{plot:hazards1}, where we have plotted the hazard function arising from three FHT models.
+All three have drift $\mu=-1$, but they have different initial levels $y_0$.
+The upper curve has $y_0=0.1$, and it is essentially decreasing, so it corresponds to the first point in the list above.
+The bottom curve has $y_0=3$, and it is essentially increasing, i.e. it corresponds to the second point in the list.
+The middle curve has $y_0=1$, and it first increases to a pronounced peak, before it decreases.
+Hence it corresponds to the last point in the list above.
 
-\subsection{Comparison of hazard rates}
-It might be of particular interest to look at the ratio between two hazard rates. We might for example look at it when the drift $\mu$ is the same, but the initial level $y_0$ is different. Then the hazard ratio is strongly decreasing. This feature is the same phenomenon as that observed in frailty models, where the relative hazards often decline \citep{ABG}.
-\todo[inline]{Add plot and explain better.}
-It is also of interest to do the converse, that is, look at the hazard ratio when the initial level is the same, but the drift is different. The result here is quite different.
-The ratio of the hazards has a ``bathtub'' shape, which levels off at a later time \citep{ABG}.
-Keep in mind here that levelling off means getting to proportional hazards.
+\begin{figure}
+\label{plot:hazards1}
+\caption{Examples of hazard functions arising from FHT models with Wiener processes. These processes have the same drift $\mu$, but different initial levels $y_0$.}
+\centering
+\includegraphics[scale=0.4]{example_hazards.pdf}
+\end{figure}
+
+\begin{figure}
+\label{plot:hazards2}
+\caption{Examples of hazard functions arising from FHT models with Wiener processes. These processes have different drift parameters $\mu$, but the same initial level $y_0$.}
+\centering
+\includegraphics[scale=0.4]{example_hazards_2.pdf}
+\end{figure}
+
+Figure \ref{plot:hazards2} shows an additional three hazard curves.
+These are attained by changing their drifts $\mu$, but they have the same initial levels $y_0$, namely $y_0=1$.
+The upper curve has a larger drift, $\mu=-1$, while the middle has a drift of $-0.5$, and the lower curve has a drift of -0.25.
+We observe that as we increase the drift in absolute terms, i.e. letting the process move quicker towards 0, the hazard is increased.
+These curves have the same shape, with a peak, but this peak is more pronounced the larger the drift.
+We conclude from these two example plots that $y_0$ has an impact on the shape, whereas $\mu$ mostly affects the height of the peak, i.e. the intensity of the hazard.
+
+We note from this investigation that we do not have proportional hazards, as we would have been limited to in the case of a Cox model.
+However, the hazards do converge towards a value, in which case the hazard curves will be proportional.
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
-\todo[inline]{Add plot here as well; also here see ABG page 402}
 
 \section{Regression with first-hitting-time models}\label{subsec:IG-reg}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$.
-A simple and much used model \citep{leewhitmore2006, caroni2017} is to simply use the identity link function for the drift $\mu$,
+A simple and much used setup \citep{leewhitmore2006, caroni2017} is to use the identity link function for the drift $\mu$,
 \begin{equation}\label{eq:y0}
-    \mu(\bbeta)=\bbeta^\T\x=\sum_{j=1}^p \beta_jx_j,
+    \mu(\bbeta)=\bbeta^\T\x=\sum_{j=1}^{p_1} \beta_jx_j,
 \end{equation}
-and to use the logarithm link function for the initial level $y_0$, since $y_0$ must be positive in our framework,
+and the logarithm link function for the initial level $y_0$, since $y_0$ must be positive in our framework,
 \begin{equation}\label{eq:mu}
-    y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\sum_{j=1}^d \gamma_jz_j.
+    y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\sum_{j=1}^{p_2} \gamma_jz_j.
 \end{equation}
-Here $\bbeta\in\R^p$ and $\bgamma\in\R^d$ are vectors of regression coefficients.
+Here $\bbeta\in\R^{p_1}$ and $\bgamma\in\R^{p_2}$ are vectors of regression coefficients.
 Note that we use separate names for the vectors $\x$ and $\z$ corresponding to $\mu$ and $y_0$, respectively.
 We may let these share none, some, or all elements.
 
@@ -642,12 +652,12 @@ In recent years, much effort has been put into being able to use genetic informa
 Rather than only using genetic data in models, it would be best to be able to combine such data with clinical data and other types of data, which might typically be shown to be predictive.
 There exist various schemes for making such models in Cox regression settings, see e.g. \citet{bovelstad2007}.
 It is, however, not straightforward to perform such a combination.
-If, for example, we simply merge the clinical data and genetic data into one group, and subsequently standardize the data, as we often need to do for proper model performance, then we might very well miss important effects of the genomic data.
-Some approaches used require tuning and weighting of parameters.
-\todo[inline]{Ask Riccardo about this; he wrote something about this}
+A naive way to combine these is to simply merge the clinical data and genetic data into one group.
+We subsequently standardize the data, as we often need to do for proper model performance, but then we might very well miss important effects of the genomic data.
+Some more sophisticated approaches used require tuning and weighting of parameters \citep{sauerbrei}.
 
 The FHT model, however, lends itself nicely to combining clinical and genetic data.
-Especially if, as \citet{aalengjessing2001} suggest, we make a priori splitting of covariates into two groups.
+\citet{aalengjessing2001} suggest to make an a priori splitting of the covariates into two groups.
 One group is related to ``fixed'' covariates, e.g. genes, and the other group of covariates is related to ``lifestyle,'' e.g., indicators about smoking, or measurements, such as weight.
 If we incorporate this split of covariates in FHT models, it seems reasonable to let the initial level $y_0$ of the health process be a function of the ``fixed'' covariates, while letting the drift $\mu$ be a function of the ``lifestyle'' covariates.
 With the fact that the two groups relate to two separate parameters, they can be standardized separately, and thus we might more easily be able to extract explanatory power from both the genetic data and the clinical data.
