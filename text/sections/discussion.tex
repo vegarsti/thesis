@@ -1,43 +1,41 @@
 \chapter{Discussion and future work}
 \label{sec:discussion}
 In this thesis, we have looked at problems in survival data, and specifically first hitting time models.
-While Cox regression is by far the most popular method used to estimate survival data models, there are shortcomings with the Cox model.
-First hitting time models are flexible models which.
-However there were no existing methods for estimating FHT models with high-dimensional data.
+While Cox regression is by far the most popular method used to estimate survival data models, it has shortcomings that we have discussed.
+One of them is the fact that it relies on a proportional hazards assumption, which does not hold in a variable selection setting, which is almost always the case when we perform regression with high-dimensional data.
+The Cox model does still, however, work well in practice, and has good predictive power.
+First hitting time (FHT) models are flexible alternatives that do not rely on the proportional hazards assumption.
+As of the time of writing for this thesis, no methods for FHT models exist to estimate parameters in a high-dimensional setting.
 We have therefore discussed ways of estimating models that work well in such a setting.
 In particular, we have discussed gradient boosting \citep{friedman2001}, both methods for estimating one parameter, and extensions to several parameters.
 
 Our goal with the thesis work was therefore to combine FHT models and gradient boosting.
-We have therefore developed an algorithm for fitting an FHT model with linear additive predictors.
+To this goal, we have developed an algorithm for fitting an FHT model with linear additive predictors.
 The estimation algorithm works as follows.
 It starts by initializing the additive predictors to intercepts, specifically the intercepts that maximize the log-likelihood of the training set.
 We then perform iterations where we in each step include a regularized linear least squares function in \textit{one} of the covariates and \textit{one} of the parameters, namely the combination of covariate and parameter which leads to the largest increase in the log-likelihood function.
 The algorithm was implemented from scratch as a package which we called \textit{FHTBoost}, and it is freely available for download at \verb|https://github.com/vegarsti/fhtboost|.
 It can be installed directly in R by using a command in the DevTools R package \citep{devtools} called \verb|install_github|, namely \verb|install_github("vegarsti/fhtboost")|.
 
-The main goal of this thesis was to develop a gradient boosting algorithm to fit linear additive predictors for the Wiener process first hitting time model.
-
-We derived an algorithm called FHTBoost to fit FHT models.
-We used a GAMLSSBoost like framework.
-We used component-wise linear learners without intercepts.
+In the boosting algorithm, we used component-wise linear learners without intercepts.
 We developed two versions of FHTBoost, one with a fixed intercept, and one where the intercept is treated as a nuisance parameter, and is optimized in each iteration until the boosting is stopped.
-In a simulation study, we found that both versions manage to select informative variables and shrink parameter sizes.
+In a simulation study, we found that both versions manage to select informative variables and shrink parameter sizes, and, importantly, increase model fit while doing so.
 In an uncorrelated scenario, the fixed intercept version achieves markedly better deviance on a test set.
 However in a correlated and realistic scenario, the two versions achieve very similar performance.
 In all cases, the mean deviance is well below zero.
-To limit the scope of the analysis, we chose to use only the fixed intercept version in the next section.
-When used on a realistic data set, FHTBoost always estimates a model where covariates increase the log-likelihood of the model, on a test set, meaning the model fit is better than in the case of no covariates.
-The models estimated with FHTBoost have good predictive power, achieving a mean Brier score of 0.0737.
-We compare it to a boosted Cox regression model, which achieves 0.0692.
-In other words, the FHTBoost model is comparable to state of the art Cox models, but in this case, it did not outperform it.
+To limit the scope of the analysis, we chose to use only the fixed intercept version in the next section, which looked at a neuroblastoma data set \citep{oberthuer-data}, which is a realistic data set consisting of measurements of 9978 genes and two clinical covariates.
+When used on this data set, FHTBoost always estimates a model where covariates increase the log-likelihood of the model, on a test set, meaning the model fit is better than in the case of no covariates.
+The models estimated with FHTBoost have good predictive power, achieving a mean Brier score of 0.074.
+The mean for the regular Cox model is 0.064, while for a mandatory version of Cox, which did not penalize the clinical covariates, the mean was 0.069.
+In other words, the FHTBoost model achieves comparable predictive power as state of the art Cox models, but init did not outperform it.
 
-There are several interesting avenues for further work.
+There are several interesting directions for further work.
 One is to apply \textit{FHTBoost} on other real-life high-dimensional survival data sets.
 This would allow for a broader assessment of its usefulness and predictive power on real-life problems.
-One of the strengths of gradient boosting is that it is easy to use different component-wise base learners.
-In this thesis, we have only concerned ourselves with linear least squares base learners.
+One of the strengths of gradient boosting is that it is easy to use in combination with different component-wise base learners.
+In this thesis, we have only considered linear base learners.
 It would be interesting to include nonlinearity into these, which could be done by e.g. using regularized splines of one dimension as base learners.
-Another hopeful avenue of further work would be to incorporate the FHT model into the existing ecosystem of gradient boosting packages in R.
+Another interesting direction of further work would be to incorporate the FHT model into the existing ecosystem of gradient boosting packages in R.
 This ecosystem is based on the package \textit{mboost} \citep{mboost}.
 The framework used for FHT regression fits into the GAMLSS framework.
 It should therefore be possible to use the \textit{gamboostLSS} \citep{gamboostlss-paper, gamboostLSS-manual} package.

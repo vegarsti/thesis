@@ -243,7 +243,6 @@ Furthermore, if the two covariate vectors differ in more elements, say, that, ea
     \frac{\exp(\x_2^T\bbeta)}{\exp(\x_1^T\bbeta)}=\exp((\x_2-\x_1)^T\bbeta)=\exp(\beta_1+\beta_2+\ldots+\beta_p)=\exp(\beta_1)\exp(\beta_2)\cdots\exp(\beta_p).
 \end{equation*}
 In other words, each unit increase in a covariate is a multiplicative factor in the hazard.
-Cox regression is used very much in applied research.
 %We will here give a simple example to illustrate its use.
 
 %\subsection{Cox regression example}
@@ -261,8 +260,7 @@ an estimate of the cumulative hazard $\hat{A}(t|\x_i)$ is given by
 \begin{equation*}
     \hat{A}(t|\x_i)=\int_{0}^t \hz_0(s)\exp(\hat{\boldeta})\d s=\exp(\hat{\boldeta})\hat{A}_0(t).
 \end{equation*}
-To provide a survival prediction, we must therefore also estimate the baseline hazard.
-This is done by estimating the \textit{cumulative} baseline hazard.
+To provide a survival prediction, we must therefore also estimate the cumulative baseline hazard.
 It can be done by the Breslow-Aalen estimator (see e.g. \citet{ABG}), given by
 \begin{equation}
     \hat{A}_0(t)=\int_{0}^t\frac{\sum_{i=1}^N \d N_i(s)}{\sum_{i=1}^N Y_i(s)\exp \left(\hat{\boldeta} \right)}.
@@ -312,7 +310,6 @@ If we only observe $x_{i,1}$, and calculate the hazard $\alpha(t|x_{i,1})$, then
 In addition, if there is perfect Cox structure given $x_1$ alone, and perfect Cox structure given $x_2$ alone, one almost never has a Cox model in the joint space $(x_1,\,x_2)$.
 That is, one almost never has the proportional hazards assumption actually satisfied.
 However, in practice, Cox regression is robust and tends to work well.
-\todo[inline]{Find citation for this paragraph!}
 
 Given that Cox sometimes leaves us wanting of a more flexible and more theoretically plausible model, there is room for other models.
 One may attempt to start the model building task at a deeper level, taking biologically plausible assumptions about the background processes associated with life lengths.
@@ -360,7 +357,9 @@ Taking the initial value $Y(0)=y_0$ of the process to lie outside the boundary s
 \begin{equation}\label{eq:fht-t}
     T=\inf_t\left(t\colon Y(t)\in\setB\right).
 \end{equation}
-Thus, the first hitting time is the time when the stochastic process first encounters the boundary set $\setB$. The boundary set defines a stopping condition for the process. Note that when the parent process is latent, there is no direct way of observing the FHT even in the state space of the process.
+Thus, the first hitting time is the time when the stochastic process first encounters the boundary set $\setB$.
+The boundary set defines a stopping condition for the process.
+Note that when the parent process is latent, there is no direct way of observing the FHT even in the state space of the process.
 
 In some versions of the FHT model, there is no guarantee that the process $\{Y(t)\}$ will reach the boundary set $\setB$, so $P(T<\infty)<1$. We will let $T=\infty$ denote the absence of a finite hitting time with
 \begin{equation}\label{eq:T-is-infinity}
@@ -458,8 +457,10 @@ To increase the flexibility of the Wiener process, we can introduce a new proces
 which is called a Wiener process with initial value $y_0$, drift coefficient $\mu$, and diffusion coefficient $\sigma$.
 A good introduction to Wiener processes can be found in \citet{cox1965}.
 
+\section{The first hitting time model with the Wiener process as health process}
 \subsection{Wiener process as health process causes an inverse Gaussian first hitting time}
-If we choose the stochastic process to be a Wiener process with intercept and drift \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$, then \eqref{eq:fht-t} becomes
+We choose the stochastic process to be a Wiener process with intercept and drift \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$.
+Then \eqref{eq:fht-t} becomes
 \begin{equation*}
     T=\min_t\left(t\colon Y(t)<0\right),
 \end{equation*}
@@ -532,15 +533,7 @@ If $\sigma^2$ is relatively large compared to the drift, however, the diffusion 
 \includegraphics[scale=0.4]{figures/wiener_processes.pdf}
 \end{figure}
 
-\section{Properties of the inverse Gaussian}
-
-\subsection{Inverse Gaussian distribution and different parameterizations}
-The typical inverse Gaussian parameterization is.
-\todo[inline]{Add this parameterization!}
-We will use ...
-This parameterization is not in the exponential family, and hence it is not a generalized linear model.
-
-\subsection{The inverse gaussian is overdetermined if the health process is latent}
+\subsection{The inverse Gaussian parameterization with $y_0$, $\mu$ and $\sigma$ is overdetermined}
 \label{subsec:overdetermined}
 There are three parameters in the inverse Gaussian distribution, namely $y_0, \mu$ and $\sigma$.
 We observe, however, that both the pdf $f(t|y_0,\mu,\sigma^2)$ in \eqref{eq:ig-pdf} and the survival function $S(t|\mu,\sigma^2,y_0)$ in \eqref{eq:ig-surv} only depend on these parameters through the ratios $\mu/\sigma$ and $y_0/\sigma$.
@@ -596,21 +589,24 @@ We note from this investigation that we do not have proportional hazards, as we 
 However, the hazards do converge towards a value, in which case the hazard curves will be proportional.
 We see that the FHT framework with a Wiener process is a highly flexible parametric model for survival analysis. Indeed, much more flexible than Cox regression, since the hazard ratios in Cox are all confined to be constant over time.
 
-\section{Regression with first-hitting-time models}\label{subsec:IG-reg}
+\section{Regression with Wiener first-hitting-time models}
+\subsection{Structure of the additive predictors}
+\label{subsec:IG-reg}
 We may introduce effects from covariates by allowing $\mu$ and $y_0$ to depend on covariates $\x$ and $\z$.
 A simple and much used setup \citep{leewhitmore2006, caroni2017} is to use the identity link function for the drift $\mu$,
 \begin{equation}\label{eq:y0}
-    \mu(\bbeta)=\bbeta^\T\x=\sum_{j=1}^{p_1} \beta_jx_j,
+    \mu(\bbeta)=\bbeta^\T\x=\beta_0+\sum_{j=1}^{p_1} \beta_jx_j,
 \end{equation}
 and the logarithm link function for the initial level $y_0$, since $y_0$ must be positive in our framework,
 \begin{equation}\label{eq:mu}
-    y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\sum_{j=1}^{p_2} \gamma_jz_j.
+    y_0(\bgamma)=\exp(\bgamma^\T\z)\Rightarrow\ln y_0(\bgamma)=\bgamma^\T\z=\gamma_0+\sum_{j=1}^{p_2} \gamma_jz_j.
 \end{equation}
-Here $\bbeta\in\R^{p_1}$ and $\bgamma\in\R^{p_2}$ are vectors of regression coefficients.
+Here $\bbeta\in\R^{p_1+1}$ and $\bgamma\in\R^{p_2+1}$ are vectors of regression coefficients.
 Note that we use separate names for the vectors $\x$ and $\z$ corresponding to $\mu$ and $y_0$, respectively.
 We may let these share none, some, or all elements.
+For the applications discussed later in this thesis, we let these covariate vectors be entirely separate.
 
-Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse gaussian FHT model, is
+Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse Gaussian FHT model, is
 \begin{align}\label{eq:loglik}
 \begin{split}
     l(y_0,\mu,\sigma)=\sum_{i=1}^n&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\sigma^2\ti}} \\
@@ -619,18 +615,18 @@ Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-sur
 \end{split}
 \end{align}
 
-\subsection{Fitting an IG FHT model}
-At the moment, the standard for fitting an inverse gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}.
+\subsection{State of the art}
+At the moment, the standard for fitting an inverse Gaussian FHT model to survival data is to use numerical likelihood maximization \citep{caroni2017}.
 A few software packages for performing this maximization exist.
-For \verb|R| \citep{Rlang}, the \verb|threg| package \citep{threg}.
+For \verb|R| \citep{Rlang}, the \verb|threg| package exist \citep{threg}.
 However, the software ``only'' performs unpenalized maximization likelihood estimation.
 In modern data sets, it is necessary to perform some sort of penalized or regularized estimation.
-It is also necessary to be able to perform variable selection, as in the case of using data sets containing genetic information, the number of covariates $p$ will typically be far larger than the number of individual observations $N$.
+It is also necessary to be able to perform variable selection, as in the case of using data sets containing genetic information, the number of covariates will typically be far larger than the number of individual observations.
 To the best of our knowledge, there does not exist any such method for FHT models.
 
 \subsection{Constructing survival probabilities based on estimates}
-Consider a case where we have performed estimation of an FHT model, such that we have estimated parameters $\hat{y}_0$ and $\hat{\mu}$, which can be obtained by using the inverse link functions.
-Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct parametric estimates of the survival probability at time $t$, by plugging in these estimates.
+Consider a case where we have performed estimation of an FHT model, such that we have estimated parameters $\hat{y}_0$ and $\hat{\mu}$.
+Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct estimates of the survival probability at time $t$, by plugging in these estimates.
 Recall that $\sigma^2$ is 1, so it is removed from the expression.
 We denote the estimated probability for $\hat{S}(t)$,
 \begin{equation*}

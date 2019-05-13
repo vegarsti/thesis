@@ -2,7 +2,19 @@
 \abstractnum   % Format abstract like a chapter
                % Remove if abstract should not be on its own page
 
-
 \begin{abstract}
-    Empty.
+In this thesis, we consider models for survival data with high-dimensional explanatory covariates.
+Specifically, we consider a typical setting in which both genomic data and clinical data are used to model the survival.
+In a high-dimensional setting, models which can perform variable selection and shrinkage are needed.
+Often, the Cox regression model is used.
+It requires that hazard rates of individuals are proportional.
+This is hard to verify in high dimensions, and it is hard to justify when doing variable selection.
+Furthermore, when using both clinical and genomic data it is difficult to combine the data in a sensible way.
+We therefore discuss first hitting time models, specifically with a Wiener health process.
+Such models model the health process of each individual, based on an individual initial health level and an individual drift.
+Within such a model, it is sensible to assign genomic data to the initial level, and the clinical data to the drift of the health process.
+To estimate parameters in a first hitting time model with a Wiener health process, we implement a gradient boosting algorithm which we call \textit{FHTBoost}.
+Boosting multivariate distributions is complex, and may be computationally intensive, but based on recent advances, we are able to make do with one tuning parameter.
+We perform a simulation study where the implemented algorithm manages to achieve good variable selection and model fit.
+Finally, FHTBoost is applied to a data set of neuroblastoma, where it achieves a predictive power, measured by Brier score, that is comparable to a Cox model.
 \end{abstract}

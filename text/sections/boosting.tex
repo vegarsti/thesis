@@ -124,7 +124,7 @@ In these cases, the loss function, which works on one set of observations $(\x_i
     \rho(\y_i,\theta(\x_i))=-\log{\psi(\y_i|\theta(\x_i))},
 \end{equation*}
 since the likelihood of one observation is simply the distribution given the observed data.
-Note that there is a theoretical result stating that maximizing the log-likelihood is equivalent to minimizing the Kullback-Leibler Divergence, which is a measure of the difference between the distribution of the data itself and the assumed distribution $\psi$.
+Note that there is a theoretical result stating that maximizing the log-likelihood is equivalent to minimizing the Kullback-Leibler Divergence, which is a measure of the difference between the distribution of the data itself and the assumed distribution $\psi$ \citep{Akaike1998}.
 This shows that, having assumed a distribution $\psi$ for the responses, it is a good choice of loss function to use the log-likelihood of $\psi$.
 
 \subsection{Example of a model and corresponding loss function}\label{subsec:model-example}
