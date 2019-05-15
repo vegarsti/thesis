@@ -1,5 +1,5 @@
 \chapter{First-hitting-time models}
-
+\label{chap:fht-surv}
 \section{Survival data}
 Time to event data are seen in many different contexts, including medicine, engineering, biology, and sociology.
 One considers a set of individuals $i$, $i=1,2,\ldots,N$, for which an event can happen.
@@ -458,7 +458,6 @@ which is called a Wiener process with initial value $y_0$, drift coefficient $\m
 A good introduction to Wiener processes can be found in \citet{cox1965}.
 
 \section{The first hitting time model with the Wiener process as health process}
-\subsection{Wiener process as health process causes an inverse Gaussian first hitting time}
 We choose the stochastic process to be a Wiener process with intercept and drift \eqref{wiener}, and we let the boundary be the non-positive numbers, $\setB=(-\infty,0]$.
 Then \eqref{eq:fht-t} becomes
 \begin{equation*}
@@ -466,6 +465,8 @@ Then \eqref{eq:fht-t} becomes
 \end{equation*}
 i.e. the first hitting time is the time it takes for the process to first reach a non-positive value.
 (Note that since the Wiener process is continuous, there is no difference between $\leq$ and $<$. We therefore use $<$ for convenience.)
+
+\subsection{Wiener process as health process causes an inverse Gaussian first hitting time}
 It can be shown that the first hitting time of such a Wiener process follows an inverse Gaussian distribution \citep{chhikara1988}, with probability distribution function (pdf)
 \begin{equation}
 \label{eq:ig-pdf}
@@ -609,7 +610,7 @@ For the applications discussed later in this thesis, we let these covariate vect
 Plugging in the pdf \eqref{eq:ig-pdf} and the survival function \eqref{eq:ig-surv} into the log-likelihood \eqref{eq:surv-lik}, we get that the log-likelihood of a survival data set with the inverse Gaussian FHT model, is
 \begin{align}\label{eq:loglik}
 \begin{split}
-    l(y_0,\mu,\sigma)=\sum_{i=1}^n&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\sigma^2\ti}} \\
+    l(y_0,\mu,\sigma)=\sum_{i=1}^N&d_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{\mu\ti+y_0}^2}{2\sigma^2\ti}} \\
     &+
     (1-d_i)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}.
 \end{split}
@@ -626,8 +627,7 @@ To the best of our knowledge, there does not exist any such method for FHT model
 
 \subsection{Constructing survival probabilities based on estimates}
 Consider a case where we have performed estimation of an FHT model, such that we have estimated parameters $\hat{y}_0$ and $\hat{\mu}$.
-Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct estimates of the survival probability at time $t$, by plugging in these estimates.
-Recall that $\sigma^2$ is 1, so it is removed from the expression.
+Since we have a parametric expression for the survival function $S(t)$ \eqref{eq:ig-surv}, we can construct estimates of the survival probability at time $t$, by plugging in these estimates, and setting $\sigma$ to 1.
 We denote the estimated probability for $\hat{S}(t)$,
 \begin{equation*}
     \hat{S}(t|\hat{\mu},\hat{y}_0)=\Phi\sqb*{\hat{\mu} t+\hat{y}_0}-\exp\p*{-2\cdot\hat{y}_0\cdot\hat{\mu}}\Phi\sqb*{\hat{\mu} t-\hat{y}_0}.
@@ -657,3 +657,4 @@ The FHT model, however, lends itself nicely to combining clinical and genetic da
 One group is related to ``fixed'' covariates, e.g. genes, and the other group of covariates is related to ``lifestyle,'' e.g., indicators about smoking, or measurements, such as weight.
 If we incorporate this split of covariates in FHT models, it seems reasonable to let the initial level $y_0$ of the health process be a function of the ``fixed'' covariates, while letting the drift $\mu$ be a function of the ``lifestyle'' covariates.
 With the fact that the two groups relate to two separate parameters, they can be standardized separately, and thus we might more easily be able to extract explanatory power from both the genetic data and the clinical data.
+In the next chapter, we will discuss boosting, a framework well suited for high-dimensional data.

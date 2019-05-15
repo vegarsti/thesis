@@ -1,12 +1,16 @@
 \chapter{Appendix 1: Differentiating the IG FHT}\label{appendix}
-First we have the likelihood,
+The likelihood of an inverse Gaussian distribution, given a data set
+\begin{equation}
+    D=\left(t_i,d_i\right)_{i=1}^N,
+\end{equation}
+is a function of parameters $y_0$ and $\mu$,
 \begin{align}\label{eq:fht-lik}
 \begin{split}
-L(y_0, \mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
-&\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di},
+L(y_0, \mu)&=\prod_{i=1}^N\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{d_i}\\
+&\times\sqb*{1-\Phi\p*{-\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-d_i},
 \end{split}
 \end{align}
-with respect to parameters $\mu$, and $y_0$. First, note that for any cumulative distribution function $F$ that is symmetric around 0, and for $x\in\R$,
+Note that for any cumulative distribution function $F$ that is symmetric around 0, and for $x\in\R$,
 \begin{equation}
     F(x)=1-(1-F(x))=1-F(-x),
 \end{equation}
@@ -17,16 +21,16 @@ and so in particular,
 and thus we can rewrite \eqref{eq:fht-lik} as
 \begin{align}\label{eq:fht-lik-proper}
 \begin{split}
-L(y_0, \mu)&=\prod_{i=1}^n\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{\di}\\
-&\times\sqb*{\Phi\p*{\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-\di}.
+L(y_0, \mu)&=\prod_{i=1}^N\p*{\frac{y_0}{\sqrt{2\pi\sigma^2\ti^3}}\exp\left[-\frac{(y_0+\mu \ti)^2}{2\sigma^2\ti}\right]}^{d_i}\\
+&\times\sqb*{\Phi\p*{\frac{y_0+\mu \ti}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu \ti-y_0}{\sqrt{\sigma^2\ti}}}}^{1-d_i}.
 \end{split}
 \end{align}
 It is easier to work with the log likelihood, so we take the log of \eqref{eq:fht-lik-proper} and get
 \begin{align}\label{eq:fht-loglik}
 \begin{split}
-    l(y_0, \mu)&=\sum_{i=1}^n\di\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
+    l(y_0, \mu)&=\sum_{i=1}^Nd_i\p*{\ln y_0-\frac{1}{2}\ln\p*{2\pi\sigma^2\ti^3}-\frac{\p*{y_0+\mu\ti}^2}{2\sigma^2\ti}} \\
     &+
-    (1-\di)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}
+    (1-d_i)\ln\p*{\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}}
 \end{split}
 \end{align}
 To make things easier, let us introduce some intermediate functions here. Let
@@ -39,15 +43,15 @@ S_i(y_0, \mu)=\Phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}-\exp\p*{-\frac{2y_0
 \end{equation}
 So we get
 \begin{align}
-    l(y_0, \mu)&=\sum_{i=1}^n\di \ln{f_i}(y_0, \mu)+(1-\di)\ln{S_i(y_0, \mu)}
+    l(y_0, \mu)&=\sum_{i=1}^Nd_i \ln{f_i}(y_0, \mu)+(1-d_i)\ln{S_i(y_0, \mu)}
 \end{align}
 Thus we see that the partial derivatives are
 \begin{equation}
-    \frac{\partial}{\partial y_0}l(y_0, \mu)=\sum_{i=1}^n\di \frac{\partial}{\partial y_0}\ln{f_i}(y_0, \mu)+(1-\di)\frac{\frac{\partial}{\partial y_0}S_i(y_0, \mu)}{S_i(\theta)}
+    \frac{\partial}{\partial y_0}l(y_0, \mu)=\sum_{i=1}^Nd_i \frac{\partial}{\partial y_0}\ln{f_i}(y_0, \mu)+(1-d_i)\frac{\frac{\partial}{\partial y_0}S_i(y_0, \mu)}{S_i(\theta)}
 \end{equation}
 and
 \begin{equation}
-    \frac{\partial}{\partial \mu}l(y_0, \mu)=\sum_{i=1}^n\di \frac{\partial}{\partial \mu}\ln{f_i}(y_0, \mu)+(1-\di)\frac{\frac{\partial}{\partial \mu}S_i(y_0, \mu)}{S_i(\theta)}
+    \frac{\partial}{\partial \mu}l(y_0, \mu)=\sum_{i=1}^Nd_i \frac{\partial}{\partial \mu}\ln{f_i}(y_0, \mu)+(1-d_i)\frac{\frac{\partial}{\partial \mu}S_i(y_0, \mu)}{S_i(\theta)}
 \end{equation}
 We take these one by one
 \begin{equation}
@@ -75,9 +79,9 @@ Hence
 \begin{split}
 \frac{\partial}{\partial y_0}
 l&(y_0, \mu) \\
-&=\sum_{i=1}^n\left(
-\di\p*{\frac{1}{y_0}-\frac{y_0+\mu\ti}{\sigma^2\ti}}
-+(1-\di)\right.\left[
+&=\sum_{i=1}^N\left(
+d_i\p*{\frac{1}{y_0}-\frac{y_0+\mu\ti}{\sigma^2\ti}}
++(1-d_i)\right.\left[
     \frac{1}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2\mu}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}\right.\\
     &\left.+\left.
     \frac{1}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
@@ -89,9 +93,9 @@ and
 \begin{split}
 \frac{\partial}{\partial \mu}
 l&(y_0, \mu) \\
-&=\sum_{i=1}^n\left(
-\di\p*{-\frac{y_0+\mu\ti}{\sigma^2}}
-+(1-\di)\right.\left[
+&=\sum_{i=1}^N\left(
+d_i\p*{-\frac{y_0+\mu\ti}{\sigma^2}}
++(1-d_i)\right.\left[
 \frac{\ti}{\sqrt{\sigma^2\ti}}\phi\p*{\frac{\mu\ti+y_0}{\sqrt{\sigma^2\ti}}}+\frac{2y_0}{\sigma^2}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\Phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}} \right.\\
 &\left.\left.-\frac{\ti}{\sqrt{\sigma^2\ti}}\exp\p*{-\frac{2y_0\mu}{\sigma^2}}\phi\p*{\frac{\mu\ti-y_0}{\sqrt{\sigma^2\ti}}}
 \right]\left[ \Phi\left(\frac{\mu t_i + y_0}{\sqrt{\sigma^2 t_i}}\right)-\exp(-\frac{2y_0\mu}{\sigma^2}\Phi\left(\frac{\mu t_i - y_0}{\sqrt{\sigma^2 t_i}}\right)\right]^{-1}\right)

@@ -40,11 +40,11 @@ These are found by numerically maximizing the likelihood of the training set.
 This is the model we would get if we performed FHTBoost with 0 iterations.
 The covariate vectors of the null model, i.e., the covariate vectors before starting boosting, are thus vectors containing only the intercepts, and all other elements being 0:
 \begin{equation*}
-    \hat{\bbeta}^{[0]}_{\text{train}}=(\overbrace{\hat{\beta}_0^{[0]},0,0,\ldots,0}^{\text{length }p_1})
+    \hat{\bbeta}^{[0]}_{\text{train}}=(\overbrace{\hat{\beta}_0^{[0]},0,0,\ldots,0}^{\text{length }p_1+1})
 \end{equation*}
 and
 \begin{equation*}
-    \hat{\bgamma}^{[0]}_{\text{train}}=(\overbrace{\hat{\gamma}_0^{[0]},0,0,\ldots,0}^{\text{length }p_2}).
+    \hat{\bgamma}^{[0]}_{\text{train}}=(\overbrace{\hat{\gamma}_0^{[0]},0,0,\ldots,0}^{\text{length }p_2+1}).
 \end{equation*}
 For simplicity of notation, we again denote the concatenated vector of these as
 \begin{equation*}
@@ -72,7 +72,7 @@ Hence the difference in deviance between a fitted model and the null model conta
     d=2\left(l^{\text{test}}\left(\hat{\btheta}^{[0]}_{\text{train}}\right)-l^{\text{test}}\left(\hat{\btheta}^{[\mstop]}_{\text{train}}\right)\right).
 \end{equation*}
 The performance of the estimated model $\hat{\btheta}^{[\mstop]}_{\text{train}}$ is good when $d$ is small, meaning ``very negative.''
-We may still end up with a \textit{positive} difference of deviance.
+We may still end up with a positive difference of deviance.
 This means that the null model achieved a higher log-likelihood value than the fully estimated model, which is opposite of what we would expect.
 This is the typical effect of overfitting, where the model ``follows'' too much random variability in the training set, and hence performs badly on the test set.
 
@@ -111,7 +111,7 @@ The ideal specificity is 1, and the worst is 0.
 \textbf{False discovery rate} measures the proportion of selected variables which are in truth not informative.
 The ideal false discovery rate is 0, and the worst is 1.
 Furthermore, we might note that if the rate is above 0.5, then there are more false positives than true positives in the variable selection.
-\begin{equation}\label{eq:accuracy}
+\begin{equation}\label{eq:fdr}
     \text{FDR}=\frac{FP}{FP+TP}
 \end{equation}
 

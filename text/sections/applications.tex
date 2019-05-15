@@ -5,7 +5,7 @@ We now evaluate the performance of FHTBoost on a real data example.
 Specifically, we consider data from \citet{oberthuer-data}, consisting of data from patients diagnosed with neuroblastoma.
 The dataset includes a relatively small number of patients, with information on two clinical covariates and around 10 000 gene expressions.
 We use FHTBoost on this data to estimate an FHT model, and assess the model fit with deviance.
-Finally, we compare the predictive power of FHTBoost to CoxBoost via the Brier score (section \ref{sec:brier}), which is a method to estimate a Cox regression model using a boosting framework (see, e.g., \citet{BinderSchumacher2008}).
+Finally, we compare the predictive power of FHTBoost to Cox models estimated with CoxBoost, via the Brier score (section \ref{sec:brier}), CoxBoost is a method to estimate a Cox regression model using a boosting framework (see, e.g., \citet{BinderSchumacher2008}).
 We first give a description of the data set.
 
 \section{Description of the neuroblastoma data set}
@@ -36,19 +36,16 @@ Of these, 86 children were classified as having high-risk, while the remaining 1
 The risk indicator is coded as a binary variable, where low risk is coded as 0, and high risk as 1.
 We will now briefly discuss the models we intend to estimate on this data set, and how we will evaluate their performance.
 
-\section{Methods}
-\subsection{Comparing the full FHT model to clinical-only and genetic-only FHT models}
+\section{New models}
+\subsection{Clinical-only and genetic-only FHT models}
 \citet{bovelstad2009} analysed the neuroblastoma data and compared different statistical methods to combine clinical and genomic data in Cox models.
 As mentioned in subsection \ref{subsec:FHT-combine}, the FHT model lends itself easily to combining genomic and clinical data, and this holds for FHTBoost as well.
 There is also a straightforward way to only use one kind of covariates, i.e., only clinical covariates or only genetic covariates.
-To do this, we can use the cyclical version of the algorithm, where we boost both parameters in each step, but each has its own tuning parameter.
-This lets us fix the number of boosting steps of the parameter not to be boosted to 0.
 In other words, we make a genomic version of FHTBoost, or $y_0$-only version of FHTBoost, by only boosting the initial level $y_0$.
-This version of FHTBoost has $m_{\text{stop},1}$, corresponding to $\mu$, fixed at 0, while we perform cross-validation in the usual way to find the optimal $m_{\text{stop},2}$, corresponding to $y_0$.
-Similarly, the clinical version fixes $m_{\text{stop},2}$ at 0, and tunes the other, $m_{\text{stop},1}$, corresponding to $\mu$.
+Similarly, we make a clinical version by not letting $y_0$ depend on covariates, i.e., let $\X$ be empty.
 In this way, we can compare the performance of our model across the genetic and clinical data, in a similar way as in \citet{bovelstad2009}.
 
-\subsection{Comparing the predictive power of an FHT model with the Cox model}
+\subsection{Boosted Cox model}
 To properly assess the predictive power of our estimated FHT models, we need to compare it to state of the art methods.
 As we have discussed the Cox model earlier (see subsection \ref{subsec:ph-reg}), and we have implemented a boosting algorithm for the FHT model, we find it appropriate to use \textit{CoxBoost} \citep{coxboost}.
 It is an R package for estimating boosted additive predictors for the Cox model.
@@ -378,11 +375,6 @@ Figure \ref{fig:neuroblastoma-deviances} shows a boxplot of the difference of de
 The main measure of interest is the mean for each, and it is -51.0 for the full model, -23.4 for the clinical model, and -40.3 for the genomic model.
 The full FHT model has the best mean value here, which should be expected, as it can include both clinical and genomic covariates.
 
-Median
-       both    clinical     genetic 
--28.0985864 -23.7328969  -0.1257181 
-All of these also on 
-
 \begin{figure}
 \caption{Boxplot for difference in deviance for different variants of the FHT model.}
 \label{fig:neuroblastoma-deviances}
@@ -411,19 +403,29 @@ All of these also on
 
 \subsection{Integrated Brier scores}
 We now calculate the integrated Brier scores for all 100 splits, for all of the mentioned methods.
-A boxplot can be seen in Figure \ref{fig:neuroblastoma-integrated-brier}.
+A boxplot can be seen in Figure \ref{fig:neuroblastoma-integrated-brier}, and Table \ref{tab:mean-brier} reports the mean of these.
 \begin{figure}
 \caption{Boxplot of integrated Brier scores.}
 \label{fig:neuroblastoma-integrated-brier}
 \centering
 \includegraphics[scale=0.4]{integrated_brier_boxplot.pdf}
 \end{figure}
+\begin{table}
+\caption{Mean integrated Brier score on all splits of the neuroblastoma data \citep{oberthuer-data}.}
+\label{tab:mean-brier}
+\centering
+\begin{tabular}{lr}
+\toprule
+Model                      & Mean integrated Brier score \\
+\hline
+FHT Full                   & 0.074 \\
+FHT Clinical ($y_0$) only  & 0.083 \\
+FHT Genomic ($\mu$) only   & 0.084 \\
+Cox regular                & 0.064 \\
+Cox mandatory              & 0.069 \\
+\bottomrule
+\end{tabular}
+\end{table}
 The full FHT model performs best of the FHT models, which again should be the case, as it can use all covariates.
-We also observe that the FHT null model is on average a lot worse than all other models at predicting survival.
 It is, however, beaten by both Cox models, but only slightly.
 This is encouraging, as these results show that regression with FHT models can compete with Cox regression, also on realistic and high-dimensional data.
-Mean for full FHT model is 0.074.
-Mean for Cox model is 0.064, Cox mandatory 0.069.
-Clinical FHT model is 0.083.
-Genetic 0.084.
-Null model FHT is 0.128

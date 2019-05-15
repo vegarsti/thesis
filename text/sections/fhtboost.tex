@@ -26,7 +26,7 @@ Before describing the algorithm in detail, we explain the necessary parts and ex
 
 \section{Structure of the additive predictors}
 The first-hitting-time model with Wiener processes, as shown, leads to lifetimes that follow a parameterization of the inverse Gaussian.
-Hence its log likelihood depends on $y_0$, $\mu$, with $\sigma$ set to 1 to avoid overparameterization (see subsection \ref{subsec:overdetermined} for reasoning).
+Hence its log likelihood depends on $y_0$ and $\mu$, with $\sigma$ set to 1 to avoid overparameterization (see subsection \ref{subsec:overdetermined} for reasoning).
 Given a data set $D$ \eqref{eq:data-fhtboost}, the log-likelihood of the parameters is
 \begin{align*}
 \begin{split}
@@ -42,7 +42,7 @@ We denote the $K=2$ distribution parameters as
 We wish to use a similar setup as the GAMLSS (see subsection \ref{subsec:GAMLSS}) to model these parameters.
 We will therefore model the parameters in $y_0$ and $\mu$ through additive predictors $\eta_1$ and $\eta_2$, respectively.
 We relate the additive predictors to covariates, and further relate the additive predictors to the parameters by their usual link functions, i.e. the log link for $y_0$ (to ensure it is positive) and the identity link for the drift $\mu$.
-In FHT regression, the additive predictors are typically \textit{linear} predictors \citep{leewhitmore2006}, and we also use this structure.
+In FHT regression, the additive predictors are typically \textit{linear} predictors \citep{leewhitmore2006}, and we also use this structure, as we did in Section \ref{subsec:IG-reg}.
 We let the additive predictors for an individual $i$ be defined as
 \begin{equation}\label{eq:eta1}
     \eta_{1,i}\coloneqq \ln(y_{0,i})=\bbeta^T \x_i=\beta_{0}+\sum_{j=1}^{p_1}x_{i,j}\beta_j
@@ -153,14 +153,14 @@ d_i\p*{-\hat{y}_{0,i}+\hat{\mu}\ti}+(1-d_i)\cdot \\
 The training error, which we calculate while boosting, as a function of an estimated additive predictor $\hat{\boldeta}$, is the sum of the loss function for each individual sample, using the estimated parameters,
 \begin{equation}
 \label{eq:training-error-fht}
-\err\left(\boldeta\right)=-\sum_{i=1}^N l(\hat{y}_{0,i},\mu_i).
+\err\left(\boldeta\right)=-\sum_{i=1}^N l(\hat{y}_{0,i},\mu_i|D).
 \end{equation}
 
 \section{Base learners}
 We wish to achieve the additive structure of \eqref{eq:eta1} and \eqref{eq:eta2}.
 We are also in a high-dimensional setting, and we therefore use the component-wise approach (see subsection \ref{subsec:comp-wise approach}).
 We therefore choose regular least squares functions of only one covariate, without intercepts.
-Each base learner is a function of an observation $i$, but only uses one covariate in each.
+Each base learner is a function of an observation $i$, but only uses one covariate.
 This is common in gradient boosting algorithms \citep[see]{mayr14a}.
 This means that the base learners corresponding to $\eta_1$, $\mathcal{H}_1=\{h_{1,j}\}_{j=1}^{p_1}$ as a function of $\x_i$ is
 \begin{equation*}
@@ -187,13 +187,12 @@ As a function of one observation $\z_i$, it is given by
     \{h_{2,j}(\z_i)\}_{j=1}^{p_2}=\{\gamma_jz_{i,j}\}_{j=1}^{p_2}.
 \end{equation*}
 To estimate $\hat{\gamma}^{[m]}$, the same method is used as for $\hat{\beta}^{[m]}$, namely to calculate the ordinary least squares parameter to a vector of generalized residuals.
-Now, these are $\u_2^{[m]}$, the negative derivatives for parameter $\mu$.
+Now, these are $\u_2^{[m-1]}$, the negative derivatives for parameter $\mu$.
 An estimated base learner $\hat{h}_{2,j}^{[m]}$ is a function which takes an observation $\z_i$, and is
 \begin{equation*}
     \hat{h}_{2,j}^{[m]}(\z_i)=\hat{\gamma}^{[m]}_jz_{i,j}=\frac{\sum_{k=1}^N u_{2,k}^{[m-1]}z_{k,j}}{\sum_{k=1}^N z_{k,j}^2}z_{i,j}.
 \end{equation*}
 In each boosting iteration, all base learners $\hat{h}_{1,j}^{[m]}$ for each covariate $j=1,\ldots,p_1$ as well as all base learners $\hat{h}_{2,j}^{[m]}$ for each covariate $j=1,\ldots,p_2$ are estimated.
-The best fitting base learner for each $k=1,2$ is calculated, and then the one of these two that leads to best decrease in the training error, is added to the boosted model, with a step length $\nu$, which we set to 0.1, as per convention.
 
 \section{Initialization via maximum likelihood estimate}
 To ensure proper estimation of $\eta_1$ and $\eta_2$, we need to compute the intercepts $\beta_{0}$ and $\gamma_{0}$, which capture the general, average effect of the covariates.
@@ -209,18 +208,19 @@ Hence the intercepts are estimated to be
 \end{equation*}
 where the training error $\err(\cdot)$ is given in \ref{eq:training-error-fht}.
 We use the routine called \verb|nlm|, which belongs to the base package of \verb|R| \citep{Rlang}, to do the numerical maximization.
-As our base learners are only functions with parametric effects and no intercept, these intercepts remain fixed
+As our base learners are only functions with parametric effects and no intercept, these intercepts remain fixed throughout.
 
 \section{The FHTBoost algorithm with fixed intercepts}
-In the previous chapter, we discussed two versions, namely the noncyclical and the cyclical.
-The noncyclical is reported to achieve the same results as the cyclical, while being slightly less stable \citep{thomas2018}.
-This is made up for by the fact that it is much easier to use due to its single tuning parameter, instead of one for each parameter dimension.
+The best fitting base learner for each $k=1,2$ is calculated, and then the one of these two that leads to best decrease in the training error, is added to the boosted model, with a step length $\nu$, which we set to 0.1, as per convention.
+
+As we showed in the previous chapter, the noncyclical algorithm has a major advantage, namely the fact that the optimal number of boosting steps, $m_{\text{stop}}$, is always a scalar value.
+We therefore choose to use the noncyclical version, although it is slightly less stable \citep{thomas2018}.
 While both versions could have been tried, we choose to only use the noncyclical to limit the scope of the investigation in the coming chapters.
-A schematic overview of the algorithm is given in Algorithm \ref{algo:fhtboost}.
-Two helper algorithms are given in Algorithm \ref{algo:fhtboost-minor1} and Algorithm \ref{algo:fhtboost-minor2}.
+Furthermore, since \citet{thomas2018} found that the inner and outer loss yield the same estimates, we simply choose not to examine this further, and we use the inner loss in our algorithm.
+A schematic overview of the \textit{FHTBoost} algorithm is given in Algorithm \ref{algo:fhtboost}, and two helper algorithms are given in Algorithm \ref{algo:fhtboost-minor1} and Algorithm \ref{algo:fhtboost-minor2}.
 
 \begin{algorithm}
-\caption{FHTBoost with fixed intercept}
+\caption{FHTBoost with fixed intercepts}
 \label{algo:fhtboost}
 \begin{enumerate}
     \item
@@ -263,7 +263,7 @@ Two helper algorithms are given in Algorithm \ref{algo:fhtboost-minor1} and Algo
         \end{equation*}
         Include this component in the final model, by updating its additive predictor,
         \begin{equation*}
-            \hat{\eta}^{[m]}_{k^{[m]}}\gets\hat{\eta}^{[m-1]}_{k^{[m]}}+\nu\cdot\hat{h}^{[m]}_{k^{[m]},\,j^{[m]}}(x),
+            \hat{\eta}^{[m]}_{k^{[m]}}\gets\hat{\eta}^{[m-1]}_{k^{[m]}}+\nu\cdot\hat{h}^{[m]}_{k^{[m]},\,j^{[m]}}(\cdot),
         \end{equation*}
         while for the other component $k\neq k^{[m]}$, set the additive predictor for this iteration to be the same as previous iteration
         \begin{equation*}
@@ -273,7 +273,7 @@ Two helper algorithms are given in Algorithm \ref{algo:fhtboost-minor1} and Algo
         If $m<m_{\text{stop}}$, go to step \ref{algostep:FHT-init}.
         If not, return
         \begin{equation*}
-            \hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\hat{\boldeta}_0+\sum_{m=1}^{[\mstop]}\boldeta^{[m]}(\cdot).
+            \hat{\boldeta}(\cdot)=\hat{\boldeta}^{[\mstop]}(\cdot)=\hat{\boldeta}_0+\sum_{m=1}^{\mstop}\boldeta^{[m]}(\cdot).
         \end{equation*}
 \end{enumerate}
 \end{algorithm}
@@ -362,12 +362,12 @@ Since each estimated base learner for each parameter $j$ is just a linear effect
 In each iteration, we only add the estimated parameter for covariate $j$ if it is the best covariate, i.e. $j_k^{[m]}$ is this $j$, and we add it with shrinkage $\nu$.
 Therefore the final parameter $\hat{\beta}_j$
 \begin{equation*}
-    \hat{\beta}_j=\sum_{m=1}^{[\mstop]}\nu\cdot\indicator\left(j_1^{[m]}=j\right)\hat{\beta}_j^{[m]},
+    \hat{\beta}_j=\sum_{m=1}^{\mstop}\nu\cdot\indicator\left(j_1^{[m]}=j\right)\hat{\beta}_j^{[m]},
 \end{equation*}
 for $j=1,\ldots,p_1$, and
 and the final parameter $\hat{\gamma}_j$ is
 \begin{equation*}
-    \hat{\gamma}_j=\sum_{m=1}^{[\mstop]}\nu\cdot\indicator\left(j_2^{[m]}=j\right)\hat{\gamma}_j^{[m]},
+    \hat{\gamma}_j=\sum_{m=1}^{\mstop}\nu\cdot\indicator\left(j_2^{[m]}=j\right)\hat{\gamma}_j^{[m]},
 \end{equation*}
 for $j=1,\ldots,p_2$.
 
@@ -480,7 +480,7 @@ In the next chapter, we will introduce and explain evaluation measures which we 
                     \right)
                 \right)
         \end{equation*}
-        Here each $\beta_j^{[m]}$ is the sum of the shrunk estimated parameters so far, i.e.,
+        Here each $\beta_j^{[m]}$ is the sum of the shrunken estimated parameters so far, i.e.,
         \begin{equation*}
             \hat{\beta}_j^{[m]}=\sum_{a=1}^{m}\nu\cdot\indicator\left(j_1^{[a]}=j\right)\hat{\beta}_j^{[a]},
         \end{equation*}

@@ -1,6 +1,6 @@
 \chapter{Simulation study}
 We wish to verify that FHTBoost (see chapter \ref{ch:FHTboost}) works in a realistic setting, i.e. that it is able to have predictive power and select correct variables.
-Not only that, but we wish to see which of the two versions of the algorithm works best, namely the fixed intercept version and the version with an iteratively changing intercept.
+Not only that, but we wish to see which of the two versions of the algorithm works best, namely the fixed intercept version and the version with iteratively changing intercepts.
 A common way to verify that a statistical estimation method works, is to test it on simulated data.
 Simulation studies are used for many different purposes, but a particularly common purpose is to simulate survival data from the ``true model.''
 In this case the true model is a first-hitting-time model with a Wiener health process which is dependent on $y_0$ and $\mu$, where we know the true values of the parameters.
@@ -9,7 +9,7 @@ The estimated model should fit be able to the simulated data well, because the d
 We now describe the simulation design.
 
 \section{Simulation design}
-In this section we describe the two scenarios we will examine a highly correlated scenario and an uncorrelated scenario.
+In this section we describe the two scenarios we will examine, a highly correlated scenario and an uncorrelated scenario.
 The motivating setting for both scenarios is a survival analysis setting where we have a high-dimensional covariate matrix $\X$, which typically consists of gene expression data, and we have a low-dimensional covariate matrix $\Z$, consisting of clinical measurements.
 The motivation for this dichotomy is discussed in subsection \ref{subsec:FHT-combine}.
 $\X$ is a matrix of covariate vectors
@@ -20,7 +20,7 @@ and similarly, $\Z$ is a matrix of covariate vectors
 \begin{equation*}
     \z_1,\z_2,\ldots,\z_{p_2}.
 \end{equation*}
-We let each matrices correspond to a parameter vector, $\X$ to $\bbeta$, and $\Z$ to $\bgamma$.
+We let each matrix correspond to a parameter vector, $\X$ to $\bbeta$, and $\Z$ to $\bgamma$.
 We link these to the parameters $y_0$ and $\mu$, respectively, with the log link function and the identity link function, as usual.
 In each parameter vector, we only set a small number of parameters to a non-zero value, and we set all the rest to zero.
 Thus only a very small number of covariates will have an effect.
@@ -51,7 +51,7 @@ As shown in subsection \ref{subsec:iterations}, repeating the cross-validation r
 Then we estimate the model on the whole of this training set, using $\mstop$ iterations.
 It is important to evaluate an estimated model's performance on a separate and unseen test set.
 We set $N_{\text{test}}=1000$ observations.
-The data in the teset here are drawn in the exact same manner as the training data, again with a specific seed for reproducibility.
+The data in the test set here are drawn in the exact same manner as the training data, again with a specific seed for reproducibility.
 To assess the model fit on we calculate the difference of deviance on a test set, as explained in \ref{sec:deviance}.
 To assess variable selection, we calculate the metrics explained in \ref{sec:variable-selection}.
 We first discuss the algorithms we use to generate FHT survival data.
@@ -105,23 +105,23 @@ Algorithm \ref{algo:FHT-sim} gives a schematic overview of this procedure.
 \section{Generating correlated clinical and gene expression data}
 \label{sec:generating-correlated-data}
 In a realistic survival analysis data set, there is a lot of correlation.
-There may correlation between different genes, between different clinical measurements, and also between genes and clinical measurements.
+There may be correlation between different genes, between different clinical measurements, and also between genes and clinical measurements.
 To mimic this, we can set up a correlation structure that lets us generate matrices $\X$ and $\Z$ which have this structure.
 One way to do this is to imagine that we have blocks of covariates, where inside one block, the covariates are highly correlated, whereas covariates in one block are not correlated to other genes.
 We set up such a block structure where we have a certain number of blocks, say, $B$.
 Each block contains a gene block and a clinical block, and elements in a block are correlated.
-In each block $p=1,\ldots,B$, there are a number of genes, $G_p$, and a number of clinical measurements, $C_p$.
-In the gene part of the block, the genes are correlated by $\rho_{g,p}$.
-In the clinical part of the block, the genes are correlated by $\rho_{c,p}$.
-There is also a correlation between the gene part of the block and the clinical part of the block, $\rho_{b,p}$.
+In each block $v=1,\ldots,B$, there are a number of genes, $G_v$, and a number of clinical measurements, $C_v$.
+In the gene part of the block, the genes are correlated by $\rho_{g,v}$.
+In the clinical part of the block, the genes are correlated by $\rho_{c,v}$.
+There is also a correlation between the gene part of the block and the clinical part of the block, $\rho_{b,v}$.
 Given all blocks and their correlations, we are able to construct a covariance matrix, such that we can draw normally distributed data which follows the given correlation structure.
 For the genes and clinical measurements not belong to any block, their correlation is 0.
 Hence if no blocks are specified, the data will simply be uncorrelated.
 
-We were so kind as to receive code used previously by Riccardo de Bin, which generates matrices $\X$ and $\Z$ with the structure explained above.
+We were so fortunate as to receive an implementation of this algorithm from our supervisor Riccardo de Bin, which generates matrices $\X$ and $\Z$ with the structure explained above.
 The code for this is given in the Appendix, in \ref{code:generate-correlated-data}.
 Briefly, the code works such that it sets up the covariance matrix, and then draws the matrices from a normal distribution.
-Afterwards, noise is added to all elements in $\X$, both multiplicative noise and additive noise.
+Afterwards, noise is added to all elements in the genetic matrix $\X$, both multiplicative noise and additive noise.
 Algorithm \ref{algo:clinical-sim} contains a schematic overview of this.
 
 \begin{algorithm}
@@ -129,9 +129,9 @@ Algorithm \ref{algo:clinical-sim} contains a schematic overview of this.
 \label{algo:clinical-sim}
 \begin{enumerate}
     \item
-        Given number of blocks, $B$, and corresponding sizes, i.e. for each block $p=1,\ldots,B$, given a number of genes in the block, $G_p$, and a number of clinical measurements in the block, $C_p$.
-        Further, given correlations between genes in block $p$, $\rho_{g,p}$, and clinical measurements in block, $\rho_{c,p}$.
-        Finally, also given the correlation between the gene part of the block and the clinical part of the block, $\rho_{b,p}$.
+        Given number of blocks, $B$, and corresponding sizes, i.e. for each block $v=1,\ldots,B$, given a number of genes in the block, $G_v$, and a number of clinical measurements in the block, $C_v$.
+        Further, given correlations between genes in block $v$, $\rho_{g,v}$, and clinical measurements in block, $\rho_{c,v}$.
+        Finally, also given the correlation between the gene part of the block and the clinical part of the block, $\rho_{b,v}$.
     \item
         Set up a covariance matrix corresponding to above.
     \item
@@ -168,8 +168,7 @@ Hence, the true parameter vectors are
     \bbeta&=\left(2.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 35}}, \overbrace{0, 0, \ldots, 0}^{\text{length 9965}}\right)\text{ and}\\
     \bgamma&=\left(-1.0, \underbrace{0.1, 0.1, \ldots, 0.1}_{\text{length 5}}, \overbrace{0, 0, \ldots, 0}^{\text{length 10}}\right).
 \end{align*}
-We generate $X$ and $Z$ from Algorithm \ref{algo:clinical-sim} for drawing clinical and gene data, with $B=0$ blocks.
-We specify that all correlations are 0, i.e.
+We generate $X$ and $Z$ from Algorithm \ref{algo:clinical-sim} for drawing clinical and gene data that may be correlated, but we set the number of blocks $B$ to 0, and all correlations to 0, i.e.
 \begin{equation*}
     \rho_{g,p}=\rho_{c,p}=\rho_{b,p}=0,
 \end{equation*}
@@ -182,7 +181,7 @@ Similar to in the uncorrelated scenario, we will still assume that we have a lar
 We now generate $364$ data sets of size $N=500$, where the ``gene'' matrix $\X$ has $p_1=10000$ covariates, i.e. the same as in scenario 1, and the dimensionality of the ``clinical'' data is $p_2=25$, i.e. a bit more than in scenario 1.
 We again use the method described in Section \ref{sec:generating-correlated-data} to generate the matrices.
 We specify $B=10$ blocks.
-In each block $p=1,\ldots,B$, the correlation between genes is set to $\rho_{g,p}=0.7$, the correlation between clinical measurements is set to $\rho_{c,p}=0.7$, and the correlation between the genes and the clinical measurements is also set to $\rho_{b,p}=0.7$.
+In each block $v=1,\ldots,B$, the correlation between genes is set to $\rho_{g,v}=0.7$, the correlation between clinical measurements is set to $\rho_{c,v}=0.7$, and the correlation between the genes and the clinical measurements is also set to $\rho_{b,v}=0.7$.
 Of the gene data, 100 genes are part of a block, while the other 9900 genes are not part of any block.
 These 9900 genes are not informative, in the sense that the corresponding $\beta$ coefficient is set to 0.
 Of these 100 genes, only 35 are informative, but the 65 others are part of the correlation structure.
@@ -195,11 +194,9 @@ The first five of the clinical blocks consist of an informative parameter and on
 For the gene blocks, we alternate between blocks with three informative genes, and four informative genes.
 Table \ref{table:block-setup} shows this setup visually.
 Each row in the table corresponds to a block, and each column to one covariate.
-
 For the sizes of the intercepts, we also chose similar sizes as in the uncorrelated scenario.
 The intercept for $y_0$ is $\beta_0=2$, i.e. an individual with all mean gene values will have an initial value $y_0=\exp(2)=7.389$.
 The intercept for $\mu$ is -0.5.
-
 \begin{table}
 \caption{Block setup for the correlated scenario}
 \label{table:block-setup}
@@ -212,7 +209,7 @@ Block 1 &  0.1 & 0.1 & 0.1 & 0   & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 &   \\
 Block 2 &  0.1 & 0.1 & 0.1 & 0.1 & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 &   \\
 Block 3 &  0.1 & 0.1 & 0.1 & 0   & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 &   \\
 Block 4 &  0.1 & 0.1 & 0.1 & 0.1 & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 &   \\
-Block 5 &  0.1 & 0.1 & 0.1 & 0   & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 & 0 \\
+Block 5 &  0.1 & 0.1 & 0.1 & 0   & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 &   \\
 Block 6 &  0.1 & 0.1 & 0.1 & 0.1 & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 & 0 \\
 Block 7 &  0.1 & 0.1 & 0.1 & 0   & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 & 0 \\
 Block 8 &  0.1 & 0.1 & 0.1 & 0.1 & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 & 0 \\
@@ -221,28 +218,36 @@ Block 10&  0.1 & 0.1 & 0.1 & 0.1 & 0 & 0 & 0 & 0 & 0 & 0 & -0.1 & 0 & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+Hence, the true $\bbeta$ parameter vector is
+\begin{equation*}
+    \bbeta=\left(2.0, \overbrace{0.1, \ldots, 0}^{\text{block 1}}, \ldots, \underbrace{0.1, \ldots, 0}_{\text{block 10}}, \overbrace{0, 0, \ldots, 0}^{\text{length 9900}}\right)
+\end{equation*}
+and the $\bgamma$ vector is
+\begin{align*}
+    \bgamma=\left(-0.5, \overbrace{-0.1, 0}^{\text{block 1}}, \underbrace{-0.1, 0, 0}_{\text{block 2}}, \ldots, \overbrace{-0.1, 0, 0}^{\text{block 10}}\right).
+\end{align*}
 
 
 \section{Results}
 In each scenario, there are many training sets.
-After having estimated an FHT model each training set, we assess the performance of the model trained on this training set, on the test set.
+After having estimated an FHT model based on each training set, we assess the performance of that model, on the corresponding test set.
 We calculate the difference of deviance.
 To assess the variable selection of the model, we calculate metrics for the variables selected based on the training set.
 We count $TP$, the number of informative covariates which were selected in the estimated boosting model, and $TN$, the number of non-informative covariates which were selected in the model.
-Based on these numbers, we calculate the metrics discussed in Section \ref{sec:variable-selection}, namely Sensitivity, Specificity and False Discovery Rate.
+Based on these numbers, we calculate the metrics discussed in Section \ref{sec:variable-selection}, namely Sensitivity \eqref{eq:sensitivity}, Specificity \eqref{eq:specificity} and False Discovery Rate \eqref{eq:fdr}.
 Let us now consider the results of each scenario.
 
 \subsection{Scenario 1: Uncorrelated case}
 \subsubsection{Model fit on the test set}
-The most evident result is that, in contrast to our expectation, the fixed intercept version of FHTBoost seems to perform on average better than that with updating intercept (see Table \ref{table:uncorrelated-deviance}).
-The mean difference of deviance on the updating intercept version is -92.0, while it is -130.1 on the fixed intercept version.
-Despite the large variability (see min, max and standard deviation in Table \ref{table:uncorrelated-deviance}) in the distributions of the difference of deviance results, the difference between the fixed intercept and the changing intercept are noticeable.
+The most evident result is that, in contrast to our expectation, the fixed intercept version of FHTBoost seems to perform on average better than that with updating intercepts (see Table \ref{table:uncorrelated-deviance}).
+The mean difference of deviance on the updating intercept version is -92.0, while it is -130.1 on the fixed version.
+Despite the large variability (see min, max and standard deviation in Table \ref{table:uncorrelated-deviance}) in the distributions of the difference of deviance results, the difference between the two versions are noticeable.
 This is perhaps most apparent in Figure \ref{fig:simulation-uncorrelated-deviances-boxplot}.
-In addition, the fixed intercept version always performs better than the null model, while there are a few cases in which the updating intercept version does not (Table \ref{table:uncorrelated-deviance}, row "min", and Figure \ref{fig:simulation-uncorrelated-deviances-boxplot}).
-In Figure \ref{fig:simulation-uncorrelated-deviances-boxplot}, we observe that for the fixed intercept, all points are to the left of the dashed vertical line, indicating a deviance of 0).
-In other words, all models estimated using the fixed intercept version performed better than their null models, whereas this is not the case for the version with a changing intercept.
+In addition, the fixed intercept version always performs better than the null model, while there are a few cases in which the changing intercepts version does not (Table \ref{table:uncorrelated-deviance}, row "min", and Figure \ref{fig:simulation-uncorrelated-deviances-boxplot}).
+In Figure \ref{fig:simulation-uncorrelated-deviances-boxplot}, we observe that for the fixed intercept, all points are to the left of the dashed vertical line, indicating a deviance of 0.
+In other words, all models estimated using the fixed intercept version performed better than their null models, whereas this is not the case for the version with changing intercepts.
 This can be a consequence of overfitting.
-Moving the intercept allows the model to fit the training data too well.
+Moving the intercepts allows the model to fit the training data too well.
 We will now consider the variable selection metrics.
 
 \begin{table}
@@ -275,7 +280,7 @@ This scenario has 35 informative gene covariates and 5 informative clinical cova
 We are considering the sensitivity and specificity on both covariate vectors at the same time.
 Since we are only selecting a covariate for either $\bbeta$ or $\bgamma$ in each iteration of the boosting algorithm, these scores will depend on each other.
 Furthermore, since the changing intercept version has a rather low number of iterations, with a mean of 15.8, it is usually impossible to get anywhere near perfect on these metrics, as at most one new parameter is selected in each iteration, and we have 40 informative covariates in total from the two vectors.
-Since the covariate vector is estimated on the training data, a likely explanation is that the changing intercept captures more of the variation in the training data.
+Since the covariate vector is estimated on the training data, a likely explanation is that the version with changing intercept captures more of the variation in the training data.
 In doing so, there is less variation to be explained by the covariates, and hence the boosting algorithm will start to overfit more quickly.
 
 \begin{table}
@@ -325,7 +330,7 @@ Maximum            &    39  &   160  \\
 \bottomrule
 \end{tabular}
 \end{table}
-Consider first the result of the version in which the intercept is changed in each step.
+Consider first the result of the version where we change the intercepts in each step.
 A very high specificity is achieved for both covariate vectors.
 The specificity measures the amount of true negatives which are correctly classified as negatives, i.e., not selected.
 The changing intercept version achieves a mean specificity of 1.00, and a mean false discovery rate of 0.316.

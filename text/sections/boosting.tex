@@ -13,7 +13,7 @@ We will first give a summary of the history of boosting, starting with AdaBoost 
 For a complete overview of the history of boosting, see \citet{mayr14a, mayr14b, mayr17}.
 
 \section{AdaBoost: From machine learning to statistical boosting}
-The original AdaBoost, also called Discrete AdaBoost \citep{adaboost} is an iterative algorithm for constructing a binary classifier $F(\cdot)$.
+The original AdaBoost, also called Discrete AdaBoost \citep{adaboost} is an iterative algorithm for constructing a binary classifier $\hat{F}(\cdot)$.
 It was the first \textit{adaptive} boosting algorithm, as it automatically adjusted its parameters to the data based on its perfomance.
 In the binary classification problem, we are given a set of observations
 \begin{equation*}
@@ -32,7 +32,7 @@ In a given step $m$, we use a weak learner $h(\cdot)$ to estimate a classifier $
 Based on the misclassification rate a weight $\alpha^{[m]}$ is assigned to the classifier $\hat{h}^{[m]}(\cdot)$.
 After a first iteration, the classifier is $F^{[1]}(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)$.
 Using this initial classifier, some points will be correctly classified, and some will be misclassified.
-We increase the weights of the misclassified ones, and normalize the weights afterwards, to ensure that the sum of the weights is always the same.
+We calculate the errors and change the weights of the misclassified ones, and normalize the weights afterwards, to ensure that the sum of the weights is always the same.
 This results in the correctly classified observations having a reduced weight, and with misclassified observations having an increased weight.
 In the following iteration, we apply again a weak learner which minimizes the weighted sum of the observations, and we reweight the observations accordingly, in the same manner as before.
 Again, calculate a weight to give to this new classifier, and add it to the previous classifier, such that $F^{[2]}(\cdot)=\hat{\alpha}^{[1]}\hat{h}^{[1]}(\cdot)+\alpha^{[2]}h^{[2]}(\cdot)$.
@@ -53,7 +53,7 @@ Because of its plug-and-play nature and the fact that it never seemed to overfit
 %Overfitting occurs when the out-of-sample error starts to increase. At this point, the model is starting to be too sensitive to the structure of the specific data set it is estimated on. One way of thinking about it is that it is starting to fit to the error terms. Since what we actually care about is the performance on a test set, we want to stop just before the model starts overfitting.
 While originally developed for binary classification, boosting is now used to estimate the unknown quantities in more general statistical models and settings.
 In the following we present boosting in a more general statistical regression scheme.
-Moreover, In its original formulation the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
+Moreover, in its original formulation the AdaBoost classifier does not have interpretable coefficients, and as such it is a so-called black-box algorithm.
 This means that we are unable to infer anything about the effect of different covariates.
 In statistics, however, we are interested in models which are interpretable.
 In the rest of this chapter, we will discuss gradient boosting algorithms.
@@ -65,15 +65,15 @@ We will then explain the gradient descent algorithm, and, more precisely, gradie
 \section{General model structure, setting, and chosen notation} %Statistical model fitting and setting
 The aim of statistical boosting algorithms is to estimate and select the effects in structured additive regression models.
 Consider a data set
-\begin{equation*}
+\begin{equation}\label{eq:data-setting}
     D=\left(\x_i,\y_i\right)_{i=1}^N
-\end{equation*}
-containing the values of an outcome variable $\y$ and predictor variables $\x_1, \x_2,\ldots,\x_p$, forming covariate matrix $\X=(\x_1, \x_2,\ldots,\x_p)$.
+\end{equation}
+containing the values of an outcome variable $\y$ and predictor variables $\x_1,\ldots,\x_p$, forming covariate matrix $\X=(\x_1, \x_2,\ldots,\x_p)$.
 We assume that the samples $i=1,\ldots,N$ are independently generated from an identical distribution over the joint space $\setX\times\setY$.
 The input space of $\x$ is a possibly high-dimensional $\setX\in\R^p$ and the output space is a low-dimensional space $\setY$.
 For the majority of applications, the output space $\setY$ is one-dimensional, but we will explicitly allow for multidimensional outcome variables.
 Our objective is to model the relationship between $\y$ and $\x$ and to obtain an ``optimal'' prediction of $\y$ given $\x$.
-To model the relationship, we will use an approach which very similar to the generalized additive model (GAM) approach \citep{gam-book}.
+To model the relationship, we will use an approach that is very similar to the generalized additive model (GAM) approach \citep{gam-book}.
 We will assume that the conditional outcome $\y|\x$ follows some probability distribution function (pdf)
 \begin{equation}\label{eq:psi}
     \psi(\y|\theta(\x)),
@@ -97,41 +97,23 @@ For example, if we choose the logarithm as the link function, the inverse link f
 \end{align}
 which will constrain the expectation to be a positive number.
 
-The predictor $f(\cdot)$ can be modeled in many ways.
-A common model is to let it be an \textit{additive} predictor, consisting of additive effects of single predictors.
-This is called a generalized additive model (GAM), and it is specified by
-\begin{equation}\label{eq:gam}
-    f(\x)=\beta_0+f_1(x_1)+\ldots+f_p(x_p),
-\end{equation}
-where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are single predictors, which are partial effects of the variables $x_j$.
-The generic notation
-\begin{equation*}
-    f_j(x_j)
-\end{equation*}
-may represent different types of predictor effects, such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on. 
-%\todo[inline]{add citations on base learners here?}
-The component-wise effects will typically be built up by additive estimation of base-learners, and statistical boosting is one way to perform this additive estimation.
-Statistical boosting algorithms are one way to estimate such models.
-These algorithms typically estimate $f(\x)$ by estimating component-wise effects for each component $j$, and these are in turn build up by estimation of base-learners $h_1(\cdot),\ldots,h_p(\cdot)$.
-We will discuss this more in Section \ref{sec:component}, which introduces component-wise boosting.
-\todo[inline]{See comments from Riccardo: Explain this better!}
-We evaluate the fit of a model $\phi$ and its additive predictor $f(\cdot)$ by using a loss function $\rho(y,f(\cdot))$.
-The loss function is a measure of the discrepancy between the observed outcome $\y$ and the additive predictor $f(\cdot)$.
+We evaluate the fit of an estimated predictor $\hat{f}$ by using a loss function $\rho$
+The loss function is a measure of the discrepancy between the observed outcome $\y$ and the predicotr $\hat{f}(\x)$, where $\x$ is the covariates corresponding to $\y$.
 In machine learning and optimization, one usually talks of loss functions, and as the name suggests, we wish to minimize the loss.
 We will use the negative log-likelihood of the distribution of the response as a loss function because it is common in statistics \citep{mayr14a}.
-In these cases, the loss function, which works on one set of observations $(\x_i,\y_i)$, is
+Such a the loss function, which works on one set of observations $(\x_i,\y_i)$, is
 \begin{equation*}
     \rho(\y_i,\theta(\x_i))=-\log{\psi(\y_i|\theta(\x_i))},
 \end{equation*}
 since the likelihood of one observation is simply the distribution given the observed data.
 Note that there is a theoretical result stating that maximizing the log-likelihood is equivalent to minimizing the Kullback-Leibler Divergence, which is a measure of the difference between the distribution of the data itself and the assumed distribution $\psi$ \citep{Akaike1998}.
-This shows that, having assumed a distribution $\psi$ for the responses, it is a good choice of loss function to use the log-likelihood of $\psi$.
+This means that, having assumed a distribution $\psi$ for the responses, using the negative log-likelihood of $\psi$ as a loss function is a good idea.
 
 \subsection{Example of a model and corresponding loss function}\label{subsec:model-example}
-Let us consider at a specific example of a distribution and a loss function.
+Let us consider a specific example of a distribution and a loss function.
 We have a dataset $D=(\x_i,y_i)_{i=1}^N$ where the responses $y_i$ are continuous and univariate.
 We further assume that the responses follow a normal distribution, conditioned on the data.
-Thus we wish to model the conditional mean $\mu(\x)$, and so we use $\mu$ instead of $\theta$.
+Thus we wish to model the conditional mean $\mu(\x)$, and so we change the notation to say $\mu$ instead of $\theta$.
 Since the responses are continuous and normal, we do not need any transformation of the additive predictor, which means that the link function is the identity function,
 \begin{equation*}
     g(\x)=\x.
@@ -150,40 +132,36 @@ and we derive the loss function $\rho$ accordingly, yielding
     &=\log{(\sqrt{2\pi\sigma^2})}+\frac{(y-\mu(\x))^2}{2\sigma^2} \\
     &\propto(y-\mu(\x))^2,
 \end{align*}
-which is the familiar $L_2$ loss function. Note that since we will only model $\mu(\cdot)$, the loss function need not depend on $\sigma^2$.
+which is the familiar $L_2$ loss function. Note that since we will only model $\mu(\cdot)$, the loss function does depend on $\sigma^2$.
 Similarly we have disregarded all proportionality constants.
-With all those parts in place, we can model the additive predictor $f(\cdot)$.
-One way to do this is by gradient boosting, which we will discuss soon.
+One way to estimate is by gradient boosting, which we will discuss in section \ref{sec:grad-boost}.
 
 \subsection{Model selection and model assessment}
-Having chosen a distribution $\psi$ and a loss function $\rho$, we wish to find the parameter $\theta$ which minimizes the loss function of all unseen data
-\begin{equation*}
-    \left(\X,Y\right).
-\end{equation*}
+Having chosen a distribution $\psi$ and a loss function $\rho$, we wish to find the parameter $\hat{\theta}$ that minimizes the loss function of all unseen data $\left(\X,Y\right)$.
 This means that we wish to minimize
 \begin{equation}\label{eq:unseen-error}
-    \Err(\theta)=\mathbb{E}_{Y,X}\left[\rho(Y,\theta(\X))\right].
+    \Err(\theta)=\mathbb{E}_{X,Y}\left[\rho(Y,\theta(\X))\right].
 \end{equation}
 However, we are unable to estimate this quantity, as we do not have access to all such unseen data.
-We therefore need a so-called \textit{test set}
+We therefore need a \textit{test set}
 \begin{equation*}
     D_{\text{test}}=\left(\x_i,\y_i\right)_{i=1}^{N_{\text{test}}}.
 \end{equation*}
-We can then calculate a test error $\Err$ of a specific $\theta$, which is the mean of the loss using $\theta$, over all observations in the test set $D_{\text{test}}$,
+To accurately calculate an unbiased estimate of the test error, we do not use the test set to estimate $\hat{\theta}$.
+We can then calculate a test error $\Err$ of a specific $\hat{\theta}$, which is the mean of the loss using $\hat{\theta}$, over all observations in the test set $D_{\text{test}}$,
 \begin{equation}\label{eq:test-error}
-    \Err_{D_{\text{test}}}(\theta)=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}} \rho(\y_i,\theta(\x_i)).
+    \Err_{D_{\text{test}}}(\hat{\theta})=\frac{1}{N_{\text{test}}}\sum_{i=1}^{N_{\text{test}}} \rho(\y_i,\hat{\theta}(\x_i)).
 \end{equation}
-$\Err_{D_{\text{test}}}$ is an estimate of $\Err$, since $D_{\text{test}}$ is a realization of unseen data.
+$\Err_{D_{\text{test}}}$ is thus an estimator of $\Err$, since $D_{\text{test}}$ is a realization of unseen data.
 To ensure that $\Err_{D_{\text{test}}}$ is an unbiased estimate, we will not use any data from the test set to estimate $\theta$.
-To estimate $\theta$, we will therefore use a so-called \textit{training set}, which we will denote
+To estimate $\theta$, we therefore use a training set D \ref{eq:data-setting}.
+We can calculate the training error $\err(\theta)$, also called the in-sample error and the empirical risk, which similarly is the sum of the loss function over all observations in the training set,
 \begin{equation*}
-    D_{\text{train}}=\left(\x_i,\y_i\right)_{i=1}^{N_{\text{train}}}.
+    \err\left(\hat{\theta}\right)=\frac{1}{N}\sum_{i=1}^{N} \rho(\y_i,\hat{\theta}(\x_i)).
 \end{equation*}
-We can calculate the training error $\err(\theta)$, also called the \textit{in-sample error}, or the \textit{empirical risk}, which similarly is the sum of the loss function over all observations in the training set,
-\begin{equation*}
-    \err(\theta)=\frac{1}{N}\sum_{i=1}^{N} \rho(\y_i,\theta(\x_i)).
-\end{equation*}
-Our goal will be to use gradient boosting to minimize \ref{eq:test-error}.
+Many estimation algorithms directly minimize $\err(\hat{\theta})$, which is also the case for boosting, and thus information from the training set $D$ is used in the parameter estimation.
+Therefore this error measure is not a representative error for unseen data, as it will be biased, and thus lower than it should.
+We will use gradient boosting to iteratively minimize \ref{eq:test-error}, but a crucial part of boosting is to find the number of iterations that minimize the test error.
 To understand gradient boosting, we first need to understand the gradient descent algorithm.
 
 \section{Gradient descent}
@@ -201,12 +179,12 @@ The motivation behind the gradient descent algorithm is that in a small interval
 Therefore, if we take a small step slightly in the direction of the negative gradient at $\x^{[0]}$, which we denote $\g^{[0]}$, from $\x^{[0]}$ to a new value $\x^{[1]}$, we end up with a slightly lower function value:
 The new function value $G(\x^{[1]})$ will be smaller than $G(\x^{[0]})$.
 The algorithm is greedy because it always goes in a direction which is immediately better.
-The length $a^{[1]}$ of this small step is found by a line search, i.e., by finding the step length which gives the best $G(\x^{[1]})$, where then the new point is
+The length $a^{[1]}$ of this small step is found by a line search, i.e., by finding the step length which gives the best $G(\x^{[1]})$, such that the new point is
 \begin{equation*}
     \x^{[1]}=\x^{[0]}+a^{[1]}\cdot\boldsymbol{g}^{[0]}.
 \end{equation*}
 By repeating this procedure $\mstop$ number of times, the point $\x^{[\mstop]}$ will yield a minimum value of $G(\cdot)$.
-The number of iterations $\mstop$ is decided by stopping when the decrease in function value is smaller than some pre-specified threshold $\epsilon>0$,
+The number of iterations $\mstop$ can e.g. be decided by stopping when the decrease in function value is smaller than some pre-specified threshold $\epsilon>0$,
 \begin{equation*}
     \mstop=\min_m G(\x^{[m-1]})-G(\x^{[m]})<\epsilon.
 \end{equation*}
@@ -257,7 +235,7 @@ We wish to minimize $G(\x)$, i.e. solve $\min_{\x}G(\x)$, where $G$ is a multiva
 
 The gradient descent algorithm is surprisingly robust.
 Even though it may converge to a local minimum, it seems to often find good solutions globally.
-This is likely related to research which has found that in high-dimensional spaces, most minima are not minima, but in fact, saddlepoints masquerading as local minima \citep{saddlepoints}.
+Research has found that in high-dimensional spaces, most minima are not minima, but in fact, saddlepoints masquerading as local minima \citep{saddlepoints}.
 This means that the size of the improvements in the function value $G(\cdot)$ will decrease since the gradient will be small at this saddlepoint.
 When using a gradient descent method one typically sets a threshold $\epsilon$ at which the algorithm terminates when the gradient becomes smaller than the threshold, as we did.
 However if the algorithm continues for a long enough time, then the multivariate gradient descent search should be able to continue to decrease the function value after it ``escapes'' the saddle point.
@@ -265,22 +243,23 @@ However if the algorithm continues for a long enough time, then the multivariate
 
 
 \section{The gradient boosting approach}
-\subsection{Direct gradient descent on the loss function}
+\label{sec:grad-boost}
 In a seminal paper, \citet{friedman2001} developed an iterative algorithm for fitting a predictor $f(\x)$, and he called the algorithm gradient boosting.
-He showed that AdaBoost performs this algorithm for a particular loss function, namely the exponential loss function.
-See \citet{ESL} for a good demonstration of Friedman's argument.
+He showed that AdaBoost in fact performs gradient boosting with a particular loss function, namely the exponential loss function.
+See \citet{ESL} for a good demonstration of this argument.
 With his work, Friedman provided a way of viewing boosting through a statistical lens, and connected the successful machine learning approach to the world of statistical modelling.
+In this section, we explain the algorithm he devised.
+The key idea of gradient boosting is to iteratively fit the different predictors with simple functions (base-learners) and add the estimates together into a predictor.
+These base-learners are in particular fitted to the negative gradient of the loss function, which is why it is related to gradient descent.
 
-The key idea of gradient boosting is to iteratively fit the different predictors with simple functions (base-learners) and combine the estimates into a predictor.
-The base-learners are in particular fitted to the negative gradient of the loss function.
-
+\subsection{Direct gradient descent on the loss function}
 Consider data as in the example in subsection \ref{subsec:model-example}.
 We have covariate vectors $\x_i$ and continuous responses $y_i$, where $i=1,2,\ldots,N$.
 We assume that the conditional response $y_i$, given $\x_i$, follows a distribution $\psi(\theta)$ with a parameter $\theta$, which we will let depend on $\x_i$, i.e., $\theta(\x_i)$.
 Based on the distribution $\psi$, we derive a loss function $\rho$, as seen in Subsection \ref{subsec:model-example}.
-We wish to estimate the $\hat{\theta}(\cdot)$ that minimizes the training error, the empirical risk over the observed training data set
+We wish to estimate the $\hat{\theta}(\cdot)$ that minimizes the training error, i.e. the sum of the loss over the observed training data set, i.e.
 \begin{equation*}
-    \argmin_{\hat{\theta}}\err(\theta)=\argmin_{\hat{\theta}}\frac{1}{N}\sum_{i=1}^{N} \rho(\y_i,\theta(\x_i)).
+    \hat{\theta}=\argmin_{\hat{\theta}}\err(\theta)=\argmin_{\hat{\theta}}\frac{1}{N}\sum_{i=1}^{N} \rho(\y_i,\theta(\x_i)).
 \end{equation*}
 We can think of the empirical risk $\err(\theta)$ as a multivariate function $\err(\btheta)$, where the variables of the function are the parameter values of $\theta$ at each point $\x_i$,
 \begin{equation*}
@@ -292,25 +271,25 @@ These are plugged into the loss function for their corresponding observations, i
 \end{equation*}
 In this view, $\err$ is a multivariate function $\err\colon\R^N\to\R$.
 We can therefore use gradient descent (see the previous section) directly on this function.
-To do so, we consider $\hat{\theta}(\x_i)$ as a sum
+To do so, we consider each $\hat{\theta}(\x_i)$ as a sum
 \begin{equation*}
-    \hat{\theta}(\x_i)=\beta_0+\sum_{m=1}^{m_{\text{stop}}}f^{[m]}(\x_i),
+    \hat{\theta}(\x_i)=\beta_0+\sum_{m=1}^{m_{\text{stop}}}\hat{f}^{[m]}(\x_i),
 \end{equation*}
 where the first term, $\beta_0$, is an initial guess which is common for all $\x_i$, and the remaining $\{\hat{f}^{[m]}(\x_i)\}_{m=1}^M$ function values are increments -- steps, or boosts.
 %Note that this structure is the same as the decomposition of the solution to the gradient descent algorithm.
-The initial guess $\beta_0$ should be the constant which minimizes the loss function $\rho$, e.g. the maxmimum likelihood constant in cases where the loss function is a negative log-likelihood.
-
+The initial guess $\beta_0$ may for example be the constant which minimizes the loss function $\rho$, e.g. the maximum likelihood constant in cases where the loss function is a negative log-likelihood.
 To perform gradient descent on the $\err(\x_1,\,\x_2,\,\ldots,\,\x_N)$, we need to calculate its negative gradient.
-The negative partial derivative for each observation is
+The negative gradient is by definition a vector of the partial derivatives, and since $\err$ is the sum of the loss from each observation, the partial derivative corresponding to an observation $i$ will be
 \begin{equation*}
-    -\frac{\partial}{\partial\theta(\x_i)} \rho(y_i,\theta(\x_i)).
+    -\frac{1}{N}\frac{\partial}{\partial\hat{\theta}(\x_i)} \rho(y_i,\hat{\theta}(\x_i)).
 \end{equation*}
+We drop the $1/N$ fraction, since it is the same for all derivatives.
 Thus the gradient $\nabla \err(\btheta)$, which we will denote $\u$, and call generalized residuals, becomes
 \begin{equation*}
-    \u=\left(u_i\right)_{i=1}^N=\left(-\frac{\partial}{\partial \theta(\x_i)}\rho(y_i, \hat{\theta}(\x_i))\right)_{i=1}^N.
+    \u=\left(u_i\right)_{i=1}^N=\left(-\frac{\partial}{\partial \hat{\theta}(\x_i)}\rho(y_i, \hat{\theta}(\x_i))\right)_{i=1}^N.
 \end{equation*}
-Since we now know how to calculate the gradient of a vector of estimated function values, we can constuct an algorithm for performing gradient descent on the loss function.
-We initialize $\hat{\theta}^{[0]}(\x_i)$ to $\beta_0$ for all $\x_i$, where $\beta_0$ is found by
+Since we can calculate the gradient of a vector of estimated function values $\hat{\btheta}$, we can use gradient descent on the loss function.
+We first, as mentioned, initialize $\hat{\theta}^{[0]}(\x_i)$ to the same $\beta_0$ for all $\x_i$, where $\beta_0$ is found by
 \begin{equation*}
     \beta_0=\argmin_{c}\err(c).
 \end{equation*}
@@ -324,7 +303,7 @@ The gradient descent step is
 for each observation $\x_i$.
 Thus in vector form, the step is
 \begin{equation*}
-    \hat{\btheta}^{[m]}(\x)=\hat{\btheta}^{[m-1]}(\x)+a^{[m]}\cdot \u^{[m-1]},
+    \hat{\btheta}^{[m]}(\X)=\hat{\btheta}^{[m-1]}(\X)+a^{[m]}\cdot \u^{[m-1]},
 \end{equation*}
 where the step length $a^{[m]}$ is found by a line search, as before.
 After $\mstop$ number of steps, we will have converged to a solution $\hat{\btheta}^{[\mstop]}$,
@@ -333,9 +312,8 @@ After $\mstop$ number of steps, we will have converged to a solution $\hat{\bthe
 \end{equation*}
 which is a minimizer for the loss function $\err$.
 This nonparametric approach would reduce the error of each data point.
-However, it will not generalize to a similar data set where one observes different data points, since we only considers the points $\x_i$ in the training set.
-We therefore need to do something else, and this is the functional gradient descent algorithm.
-
+However, it will not generalize to a similar data set where one observes different data points, since we only consider the points $\x_i$ in the training set D \ref{eq:data-setting}.
+We therefore need to do something which will generalize.
 
 \subsection{Functional Gradient Boosting}\label{sec:FGD}
 In the nonparametric approach from the previous subsection, we are only looking at the observed data points, and not at neighboring points in $\setX$ space.
@@ -350,51 +328,47 @@ We can do this by choosing steps of (parameterized) \textit{functions} instead o
 Therefore, since the solutions are parameterized functions, and we are performing gradient descent, the approach by \citet{friedman2001} develops a \textit{functional} gradient descent (FGD) algorithm, a gradient descent search in parameter space.
 %In functional gradient descent, we still start with an initial value for $\hat{\theta}^{[0]}$, a constant $\beta_0$.
 We now consider the estimate $\hat{\theta}$ to be a function which takes values in $\setX$,
-\begin{equation*}
+\begin{equation}\label{eq:fgd-theta}
     \hat{\theta}(\x)=\beta_0+\sum_{m=1}^{\mstop}f^{[m]}(\x),
-\end{equation*}
+\end{equation}
 and it is composed of sums of an initial value $\beta_0$, and steps $\left\{f^{[m]}\right\}_{m=1}^{\mstop}$.
 What is new is that now each $f^{[m]}(\x)$ is a parameterized function which we will estimate.
-Since $f$ is now a parameterized function, we do not consider the training error $\err(\theta)$ to be a function of $N$ individual function parameter values $\theta(\x_i)$, $i=1,\ldots,N$, but rather just a function of $\theta$.
-Hence, to derive the negative gradient of an estimate $\hat{\theta}$, i.e., we must differentiate the loss function $\rho$ with respect to $\theta$ instead of $\theta(x_i)$.
+Since $f$ is a parameterized function and not simply a value for each $\x_i$, we do not consider the training error $\err(\theta)$ to be a function of $N$ individual function parameter values $\theta(\x_i)$, $i=1,\ldots,N$, but rather just a function of $\theta$.
+Hence, to derive the negative gradient of an estimate $\hat{\theta}$, we differentiate the loss function $\rho$ with respect to $\theta$ instead of $\theta(x_i)$.
 The generalized residuals, or the negative gradient, then become
 \begin{equation*}
     \u=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \hat{\theta}(x_i))\right)_{i=1}^N.
 \end{equation*}
-Then we iterate, let us say, at each step $m>0$ first calculating the generalized residuals of the previous iteration,
+Then we iterate, at each step $m>0$ first calculating the generalized residuals of the previous iteration, i.e. the negative derivative of the training error for $\hat{\theta}^{[m-1]}$,
 \begin{equation*}
     \u^{[m-1]}=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \hat{\theta}^{[m-1]}(x_i))\right)_{i=1}^N,
 \end{equation*}
 like we have seen before.
 Here we insert the model from the previous step, $\hat{\theta}^{[m-1]}$.
 We now perform a gradient descent step.
-However, we now constrain ourselves to steps which are functions of a base learner
-\begin{equation*}
-    \mathcal{H}(\cdot),
-\end{equation*}
-to ensure smoothness and generalizability, as discussed above.
-
-A base learner is a class of functions $\mathcal{H}$ which is regularized, and often a simple effect of a parameter $\beta$.
+However, we constrain the possible steps to steps which are really functions in a base learner class $\mathcal{H}(\cdot)$, to ensure smoothness and generalizability, as discussed above.
+A base learner is a class of ``simple'' functions $\mathcal{H}$, and it is often an effect of a single parameter $\beta$.
 Typical examples are linear least squares, stumps \citep[trees with one split, see][]{buhlmann2007,ESL}, and splines with a few degrees of freedom.
 There are several reasons to use simple base learners in each step.
 One is that there often exists fast methods for estimating a single base learner.
 Therefore there will be little computational cost in each step. 
 Secondly, there is more to gain by combining simple learners, rather than combining complex learners.
-If we want to use complex learners, it is better to use another algorithm.
+If we want to use complex learners, it is better to use a different algorithm.
 
-To take the steepest gradient in a functional sense, we must choose the realization of the base learner class $\mathcal{H}$ that produces the function $\hat{h}^{[m]}$ that is \textit{most parallel} to $\u^{[m-1]}$.
-Another way of looking at it is that the best update is the member of the base learner function class $h$ that is most correlated with $\u^{[m-1]}$ over the data distribution.
-This it means that $\hat{h}^{[m]}$ is the best approximation of the generalized residuals $\u^{[m-1]}$ by using $h(\cdot)$ to approximate with.
-Equivalently, $\hat{h}^{[m]}$ is the projection of the generalized residuals onto the space spanned by the base learner function class.
-We obtain $\hat{h}_m$ by fitting the base learner $\mathcal{H}$ to the generalized residuals.
-The specific method of fitting will depend on the base learner.
+There are several slightly different ways of looking at the steepest gradient in a functional sense.
+One is that it is the realization of the base learner class $\mathcal{H}$ that produces the function $\hat{h}^{[m]}$ that is \textit{most parallel} to the vector $\u^{[m-1]}$ of generalized residuals.
+Another way of looking at it is that it is the member of the base learner function class $\mathcal{H}$ that is most correlated with $\u^{[m-1]}$ over the data distribution.
+Yet another is that it means that $\hat{h}^{[m]}$ is the best approximation of the generalized residuals $\u^{[m-1]}$.
+A final equivalent view is that $\hat{h}^{[m]}$ is the projection of the generalized residuals onto the space spanned by the base learner function class \citep{friedman2001}.
+In any case, we obtain $\hat{h}_m$ by fitting the base learner $\mathcal{H}$ to the generalized residuals, and
+the specific method used to fit the base learner will depend on the base learner.
 If, for example, the base learner is a linear regressor, then the base learner will be
 \begin{equation*}
-    \hat{h}^{[m]}=\left(\hat{\bbeta}^{[m]}\right)^T\u^{[m-1]},
+    \hat{h}^{[m]}=\left(\hat{\bbeta}^{[m]}\right)^T\u^{[m-1]}=\sum_{j=1}^p \hat{\beta}^{[m]}_j u_j^{[m-1]},
 \end{equation*}
 where the parameter is found by
 \begin{equation*}
-    \hat{\bbeta}^{[m]}=\left(\x ^T \x \right)^{-1}\x ^T \u^{[m-1]}
+    \hat{\bbeta}^{[m]}=\left(\X ^T \X \right)^{-1}\X ^T \u^{[m-1]}
 \end{equation*}
 Having estimated the base learner, we do a line search to find the appropriate step length to use in order to minimize the loss function the most,
 \begin{equation*}
@@ -411,27 +385,23 @@ The resulting model
 \begin{equation*}
     \hat{\theta}_{\text{FGD}}(\cdot)=\hat{\theta}^{[\mstop]}(\cdot)
 \end{equation*}
-has the additive structure that we discussed earlier, namely
-\begin{equation*}
-    \hat{\theta}(\x)=\beta_0+\sum_{m=1}^{\mstop}f^{[m]}(\x),
-\end{equation*}
-where each
+has the additive structure in \ref{eq:fgd-theta}, where each
 \begin{equation*}
     f^{[m]}(\cdot)=a^{[m]}\cdot \hat{h}^{[m]}(\cdot).
 \end{equation*}
 This structure is a direct effect of the gradient descent algorithm, as the aggregation of base learners is strictly additive:
 In every iteration, small increments are added to the additive predictor.
-For a schematic overview of this algorithm, see Algorithm \ref{algo:fgd}.
 
-The algorithm just described calculates error terms in each iteration, and performs functional gradient descent on them.
-It is a very general framework, and it only requires a data set, a differentiable loss function, and a base learner.
+The functional gradient descent algorithm calculates error terms in each iteration, and performs functional gradient descent on them.
+It is a very general framework, and we can swap the loss function, or the base learner class, and it will yield different estimates.
 It is therefore quite straightforward to derive specific algorithms to use for specific models:
 It is just a matter of plugging in a chosen loss function and deriving its negative gradient.
 This gives great flexibility.
-We will now discuss the tuning parameters of the algorithm, which are very important to achieve good performance.
+For a schematic overview of this algorithm, see Algorithm \ref{algo:fgd}.
+In the next section, we will discuss the tuning parameters of the algorithm, which are very important to achieve good performance.
 
 \begin{algorithm}
-\caption{Gradient boosting, or, generic Functional Gradient Descent (FGD)}
+\caption{Generic Functional Gradient Descent (FGD)}
 \label{algo:fgd}
 \begin{enumerate}
     \item
@@ -468,7 +438,7 @@ We will now discuss the tuning parameters of the algorithm, which are very impor
         \end{equation*}
     \item
         \label{algo-fgd-step-last-loop}
-        Update the current estimated $\theta$,
+        Update the current estimated model $\hat{\theta}$,
         \begin{equation*}
             \hat{\theta}^{[m]}(\cdot)\gets \hat{\theta}^{[m-1]}(\cdot)+a^{[m]}\cdot \hat{h}^{[m]}(\cdot).
         \end{equation*}
@@ -482,8 +452,8 @@ We will now discuss the tuning parameters of the algorithm, which are very impor
 \end{enumerate}
 \end{algorithm}
 
-\subsection{Tuning parameters}
-\subsubsection{Step length}
+\section{Tuning parameters in gradient boosting}
+\subsection{Step length}
 In the original generic functional gradient boosting algorithm, Algorithm \ref{algo:fgd}, the step length $a_m$ for each iteration is found through a line search, as in gradient descent.
 \citet{friedman2001} says that fitting the data too closely may be counterproductive, and result in overfitting.
 This has indeed proven to be true.
@@ -492,33 +462,120 @@ This constraint is called regularization.
 Friedman therefore proposes to regularize each step in the algorithm by a common learning rate, $\nu\in(0,1]$.
 %It has often been found that regularization through shrinkage provides superior results \citep{copas1983}.
 As we will see, most modern boosting algorithms omit the step of the line search entirely, i.e. step \ref{algo-fgd-step-line} in Algorithm \ref{algo:fgd}.
-Instead, they fix a learning rate, or more commonly, step length $\nu$.
-The choice of this step length is not of critical importance as long as it is sufficiently small \citep{schmid-hothorn}, i.e., it produces sufficient shrinkage, but the convention is to use $\nu=0.1$ \citep{mayr14a}.
+Instead, they fix a learning rate, or more commonly also referred to as step length $\nu$.
+From here in the thesis, step length refers to this $\nu$.
+The choice of $\nu$ is not of critical importance as long as it is sufficiently small \citep{schmid-hothorn}, i.e., it produces sufficient shrinkage, but the convention is to use $\nu=0.1$ \citep{mayr14a}.
 This reduces the complexity of the algorithm, and it reduces the number of tuning parameters to the number of iterations $\mstop$ only.
 There is a tradeoff between the number of iterations $\mstop$ and the size of the step length $\nu$.
 If the step length is smaller, then a larger number of iterations is needed, and conversely, if the step length is large, a smaller number of iterations is needed.
 We will now discuss the number of iterations.
 
-\subsubsection{Number of iterations}\label{subsec:iterations}
+\subsection{Number of iterations $\mstop$}
+\label{sec:stop}
 With a fixed step length (learning rate), the main tuning parameter for gradient boosting is the number of iterations $\mstop$, i.e. the number of steps performed before the algorithm is stopped.
 Its value is critical:
 If $\mstop$ is too small, the model will underfit and it cannot fully incorporate the influence of the effects on the response and will consequently have poor performance.
 On the other hand, too many iterations will result in overfitting, leading to poor generalization.
-We know that we have either overfitting or underfitting if the estimated model $\hat{\theta}$ causes a high value of the test error $\Err(\hat{\theta})$.
-It is easiest to notice overfitting if we calculate the test error as a function of the model complexity in.
+In other words, both overfitting and underfitting cause high test errors.
+It is easiest to notice overfitting if we calculate the test error as a function of the model complexity in boosting.
 In boosting, the model complexity increases with the number of steps.
 The normal behaviour is that the test error will first decrease for a number of iterations, but then it will start to increase again.
-The training error $\err$, on the other hand, will continue to decrease, so it is important to monitor by calculating test error.
-The number of iterations is a very important tuning parameter.
-We will discuss it more in-depth in Section \ref{sec:stop}.
+The training error $\err$, on the other hand, will continue to decrease.
+The optimal number of steps is therefore the number of steps which minimizes the test error.
+The number of iterations is a very important tuning parameter, as stopping a boosting procedure early enough will lead to variable selection and shrinks the parameter estimates toward zero.
+In the case of $p<N$, with $m\to\infty$, the parameters in boosting will converge towards the maximum likelihood estimates \citep{DeBin2016}, i.e., minimizing the training error.
+We are, on the other hand, interested in minimizing the test error $\Err(\theta)$ with respect to $\theta$, but the boosting itself minimizes the training error.
+We can view the test error of an estimated boosting model $\hat{\theta}^{[m]}$ as a function of the number of iterations used to produce it, i.e.,
+\begin{equation}\label{test-error-m}
+    \Err(m)=\Err\left(\hat{\theta}^{[m]}\right).
+\end{equation}
+There exists an $m$ which minimizes $\Err(m)$.
+What we want is therefore a good method for approximating $\Err(m)$, which can be done in a number of ways.
+Common model selection criteria such as the Akaike Information Criteria (AIC) may be used, however the AIC is dependent on estimates of the model's degrees of freedom. 
+Initial versions of boosting used this, but practice showed that AIC-based stopping rules lead to overfitting \citep{mayr-hofner}.
+For $\text{L}_2\text{Boost}$, \citet{buhlmann2007} suggest that $\df(m)=\trace(B_m)$ is a good approximation.
+Here $B_m$ is the hat matrix resulting from the boosting algorithm.
+This was, however, shown by \citet{hastie2007} to always underestimate the actual degrees of freedom.
+\citet{mayr-hofner} propose a sequential stopping rule using subsampling.
+However this is computationally very expensive and not really used in practice.
+None of these rules, in other words, are optimal to use.
+Instead, cross-validation, a general and very common method for selection of tuning parameters in statistics, is what is used in almost all cases \citep{mayr14a,mayr14b,mayr17}.
+Cross-validation is flexible and easy to implement.
+It is somewhat computationally demanding, because it requires several full runs of the boosting algorithm, but it is otherwise quite simple.
+We now give an explanation of this procedure.
 
-%\subsection{Practical considerations}
-%When boosting, one must (or should) center and scale the matrix $X$.
+%\subsection{Other selection methods}
+%The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer. AIC, etc.
 
-%\section{likelihood-based boosting}
-%Lorem ipsum. \citep{DeBin2016} \citep{gamboost}.
+\subsection{K-fold cross-validation}\label{subsec:K-fold}
+K-fold cross-validation \citep{lachenbruch}, or simply cross-validation, is a general method for estimating the test error and therefore commonly used for selection of penalty or tuning parameters.
+In cross-validation, the data are randomly split into K rougly equally sized folds.
+For a given fold $k$, all folds except $k$ act as the training data and used to estimate the model.
+The resulting model is then evaluated on the unseen data, namely the observations belonging to fold $k$.
+This procedure is repeated for all $k=1,\ldots,K$.
+An estimate of the test error is obtained by averaging over the test errors evaluated in each left-out fold.
+Let $\kappa(k)$ be the set of indices for fold $k$.
+The cross-validated estimate for a given $m$ then becomes
+\begin{equation*}
+    \CV(m)=\frac{1}{K}\sum_{k=1}^K\sum_{i\in\kappa(k)}\rho\left(y_i,\hat{\theta}{[m]}_{-\kappa(k)}\left(\x_i\right)\right),
+\end{equation*}
+where $\hat{\theta}{[m]}_{-\kappa(k)}$ is the estimated model trained on the data except the data with indices $\kappa(k)$.
+$\CV(m)$ is an estimate of the test error of gradient boosting as a function of the iteration number $m$ \eqref{test-error-m}.
+For each iteration $m$, we calculate the estimate of the cross-validated prediction error $\CV(m)$.
+We choose $\mstop$ to be the minimizer of this error,
+\begin{equation*}
+    \mstop=\argmin_{m}\CV(m).
+\end{equation*}
+Typical values for $K$ are 5 or 10, but in theory one can choose any number. The extreme case is $K=N$, called leave-one-out cross-validation, where all but one observation is used for training and the model is evaluated on the observation that was left out. In this case, the outcome is deterministic, since there is no randomness when dividing into folds.
+
+\subsection{Stratified cross-validation}
+When dividing an already small number of survival data observations into $K$ folds, we risk getting folds without any observed deaths, or in any case, very few. In stratified cross validation, we do not divide the folds entirely at random, but rather, try to divide the data such that there is an equal amount of uncensored data in each fold.
+As before, let $\kappa(k)$ be the set of indices for fold $k$.
+Divide the observed data into $K$ folds, as with usual cross validation, to get an index set $\kappa_{\delta=1}(k)$ for a given $k$. 
+Similarly, divide the censored data into $K$ folds, obtaining $\kappa_{\delta=0}(k)$.
+Finally, $\kappa(k)$ is the union of these sets: $\kappa(k)=\kappa_{\delta=1}(k)\cup\kappa_{\delta=0}(k)$.
+For a detailed description of 10-fold cross-validation issues in the presence of censored data, see \citet{kohavi}.
+
+\subsection{Repeated cross-validation}\label{subsec:repeated-cv}
+The randomness inherent in the cross-validation splits has an effect on the resulting $\mstop$.
+This is true in general, but it is especially true for real-life survival data, because such data sets typically have small effective sample sizes, i.e. number of observed events.
+We can easily imagine that we can end up with quite different values for $\mstop$ for two different splits of the data, depending on which folds the events end up in.
+It has been very effectively demonstrated that the split of the folds has a large impact on the choice of $\mstop$ \citep{seibold}.
+To reduce the impact of this issue, \citet{seibold} suggest to repeat the cross-validation scheme a few times and average the results.
+They show that repeating the cross-validation procedure even 5 times effectively averages out the randomness.
+In other words, in repeated cross-validation we divide the data into $K$ folds, and repeat this $J$ times.
+Now let $\kappa(j, k)$ be the $k$-th fold in the $j$-th split.
+We end up with a new estimate for the prediction error,
+\begin{equation*}
+    \RCV(m)=\frac{1}{J}\sum_{j=1}^J\frac{1}{K}\sum_{k=1}^K\sum_{i\in\kappa(j,k)}\left(y_i,\hat{\theta}{[m]}_{-\kappa(j,k)}\left(\x_i\right)\right),
+\end{equation*}
+where $\hat{\theta}{[m]}_{-\kappa(j, k)}$ is the estimated model trained on all data except data with indices $\kappa(j, k)$, i.e., the $k$-th fold in the $j$-th repetition.
+Again, $\RCV(m)$ is also an estimator of \eqref{test-error-m}, but with less variance due to averaging several results.
+As before, we choose $\mstop$ to be the minimizer of this error,
+\begin{equation*}
+    \mstop=\argmin_{m}\RCV(m).
+\end{equation*}
+To carry out this in practice when using a boosting algorithm, we let the boosting algorithm run for $m=1$ to $m=M$, where $M$ is a large number that we are sure will result in a overfitted model.
+Thus we ensure that we find the minimizing $m$, and not a local minimum.
 
 \section{High dimensions and component-wise gradient boosting}\label{sec:component}
+The predictor $f(\cdot)$ can be modeled in many ways.
+A common choice is to model it as an \textit{additive} predictor, consisting of additive effects of single predictors.
+This is called a generalized additive model (GAM), and it is specified by
+\begin{equation}\label{eq:gam}
+    f(\x)=\beta_0+f_1(x_1)+\ldots+f_p(x_p),
+\end{equation}
+where $\beta_0$ is a common intercept and the functions $f_j(x_j),j=1,\ldots,p$ are single predictors, which are partial effects of the variable $x_j$.
+The generic notation
+\begin{equation*}
+    f_j(x_j)
+\end{equation*}
+may represent different types of predictor effects, such as classical linear effects $x_j\beta_j$, smooth non-linear effects constructed via regression splines, spatial effects or random effects of the explanatory variable $x_j$, and so on. 
+%\todo[inline]{add citations on base learners here?}
+The component-wise effects will typically be built up by additive estimation of base-learners, and statistical boosting is one way to perform this additive estimation.
+These algorithms typically estimate $f(\x)$ by estimating component-wise effects for each component $j$, and these are in turn build up by estimation of base-learners $h_1(\cdot),\ldots,h_p(\cdot)$.
+This structure is perfect for boosting in a high-dimensional setting, because it allows for component-wise boosting, which we will discuss in this section.
+
 % add this to component-wise
 \subsection{Problems in high dimensions}
 In modern biomedical statistics, it is crucial to be able to handle high-dimensional data.
@@ -546,15 +603,15 @@ One such technique, which can cope with the $p\gg N$ situation, is a version of 
 The key idea of the component-wise approach to gradient boosting is to add the effect of only one variable at a time, instead of adding a small effect from all variables, as is the case in the generic FGD algorithm (Algorithm \ref{algo:fgd}).
 Component-wise gradient boosting is an algorithm which works very well in these settings.
 In fact, Buhlmann believes that it is mainly in the case of high-dimensional predictors that boosting has a substantial advantage over classical approaches \citep{buhlmann2006}.
-The component-wise approach was first proposed in \citep{buhlmann-yu}, and component-wise boosting is a very active field of research \citep{buhlmann2006, mayr14a, mayr14b, mayr17}.
+The component-wise approach was first proposed by \citet{buhlmann-yu}, and component-wise boosting is actively being researched and built upon \citep{buhlmann2006, mayr14a, mayr14b, mayr17, thomas2018}.
 Consider yet again the case where we have a data set $D=(\x_i,y_i)_{i=1}^N$, where $\x_i\in\R^p$ are covariate vectors of a high dimension $p$, and $N$ is the number of observations.
-Specifically, we are in a setting where $p>N$.
-We want to finding the parameter $\theta$ which minimizes the empirical risk of a chosen loss function $\rho$ on the data set,
+Specifically, we are in the $p\gg N$ setting.
+We want to find the parameter $\hat{\theta}$ that minimizes the empirical risk of a chosen loss function $\rho$ on the data set,
 \begin{equation*}
-    \hat{\theta}=\argmin_{\theta}\err(\theta)=\argmin_{\theta}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
+    \hat{\theta}=\argmin_{\theta}\err(\theta)=\argmin_{\theta}\frac{1}{N}\sum_{i=1}^n\rho(\y_i,\theta(\x_i)),
 \end{equation*}
 where the parameter $\theta$ is a predictor $\theta\colon\R^p\to\R$.
-However, we will now let $\theta$ be an additive predictor, meaning it is a sum of partial effects of covariates,
+However, we will now let $\theta$ be an additive predictor, as in \eqref{eq:gam}, so it is a sum of partial effects of covariates,
 \begin{equation*}
     \theta(\x)=\beta_0+\sum_{j=1}^p f_j(x_j).
 \end{equation*}
@@ -562,17 +619,17 @@ These partial effects of the covariates will be estimated by component-wise lear
 
 \subsection{The component-wise boosting algorithm}
 The structure of the component-wise boosting algorithm is very much the same as the generic functional gradient boosting algorithm (Algorithm \ref{algo:fgd}), but with some additional steps.
-As mentioned, instead of using a base learner which incorporates all predictors, we use a set $\mathcal{H}$ of base learners consisting of a separate base learner for each component of the covariates.
+Instead of using a base learner which incorporates all predictors, we use a set $\mathcal{H}$ of base learners consisting of a separate base learner for each component of the covariates.
 The learners typically share the same structure, i.e., they are the same base learner, applied to different covariates.
 For example, if we use a linear least squares model as base learners, the set of base learners would be
 \begin{equation*}
     \mathcal{H}=\{h_1(\x;\beta_j)\}_{j=1}^p=\{\beta_j x_j\}_{j=1}^p
 \end{equation*}
 It is not necessarily the case that the learners have the same structure, it is also possible to include e.g. spline learners for some components, and least squares for others.
-However, in the following, we will assume that each component only has one base learner, and that it is the same structure, which simplifies our notation a bit.
+However, in the following, we will assume that each component only has one base learner, and that these have the same structure, which simplifies our notation a bit.
 
 The initialization of the algorithm is the same as in the FGD algorithm:
-We first initialize the additive predictor $\hat{\theta}^{[0]}$ to a constant $\beta_0$.
+We first initialize the additive predictor $\hat{\theta}^{[0]}$ to a constant $\beta_0$, i.e. it does not use any covariate effects.
 We then iterate.
 In a given iteration $m$, we first construct the generalized residuals, by calculating the negative gradient.
 Here we insert the additive predictor from the previous step, namely $\hat{\theta}^{[m-1]}$,
@@ -580,64 +637,53 @@ Here we insert the additive predictor from the previous step, namely $\hat{\thet
     \u^{[m-1]}=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \hat{\theta}(\x_i)\right)_{i=1}^N.
 \end{equation*}
 Note that this calculation is exactly like in the generic gradient boosting algorithm.
-While the generic FGD algorithm here only estimated a single base learner, in the component-wise we estimate all base learners separately.
-We obtain $p$ estimated functions
+While the generic FGD algorithm (Algorithm \ref{algo:fgd}) only estimated a single base learner, in the component-wise version we estimate a base learner for each component separately.
+We thus obtain $p$ estimated functions
 \begin{equation*}
     \hat{h}_1^{[m]}(\cdot),\,\hat{h}_2^{[m]}(\cdot),\,\ldots,\,\hat{h}_p^{[m]}(\cdot).
 \end{equation*}
 These estimated functions can again be viewed as approximations of the negative gradient vector, or equivalently the projection of the negative gradient vector onto the space spanned by the component-wise base learner.
 However, these are projections onto only one dimension of the covariate space.
-We wish to reduce the error $\err$ as much as possible, and so we select the covariate which has a corresponding estimated base learner which explains as much as possible of the variation in $\u^{[m-1]}$.
-To select the best-fitting base-learner, we select the one with the smallest residual sum of squares error
+We wish to reduce the training error $\err$ as much as possible, and so we select the covariate with the corresponding estimated base learner that explains as much as possible of the variation in $\u^{[m-1]}$.
+We do this by selecting the one with the smallest residual sum of squares (RSS) error
 \begin{equation*}
-    j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\right)^2.
+    j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\left(\x_i\right)\right)^2.
 \end{equation*}
 Note that this makes sense from a linear algebra perspective:
-Choosing the one with minimal RSS means that we choose the one with the smallest projection error, or the one with the most signal.
+Choosing the one with minimal RSS means that we choose the one component with the smallest projection error.
 We add this best-fitting base-learner $h_{j^{[m]}}^{[m]}$ to the current model, with a pre-specified step length of $\nu$, again typically set to 0.1, for the purpose of regularization.
 Hence the model after iteration $m$ is
 \begin{equation*}
     \hat{\theta}^{[m]}(\cdot)\gets \hat{\theta}^{[m-1]}(\cdot)+\nu\cdot\hat{h}^{[m]}_{j^{[m]}}.
 \end{equation*}
-Seen from a component-wise perspective, we update the predictor of the selected component,
-\begin{equation*}
-    \hat{f}_{j^{[m]}}^{[m]}(\cdot)\gets \hat{f}_{j^{[m]}}^{[m-1]}(\cdot)+\nu\cdot\hat{h}^{[m]}_{j^{[m]}},
-\end{equation*}
-\todo[inline]{This should be better!}
-and for all other components $j\in\{j\colon j\neq j^{[m]},\,j=1,2,\ldots,p\}$, the update in iteration $m$ is simply
-to keep the predictor from the last iteration
-\begin{equation*}
-    \hat{f}_{j}^{[m]}(\cdot)\gets \hat{f}_{j}^{[m-1]}.
-\end{equation*}
-We continue iterating until the iteration number $m$ reaches the pre-specified stopping iteration $m_{\text{stop}}$.
-We will discuss selection of $\mstop$ in Section \ref{sec:stop}.
+We only add an effect of the selected component, $j^{[m]}$, and for all other components $j\in\{j\colon j\neq j^{[m]},\,j=1,2,\ldots,p\}$, the effects are the same as in $\hat{\theta}^{[m-1]}$.
+We continue iterating until the iteration number $m$ reaches the pre-specified stopping iteration $m_{\text{stop}}$, discussed in subsection \ref{sec:stop}.
 The final additive predictor becomes
 \begin{equation*}
     \hat{\theta}=\hat{\theta}^{[m_{\text{stop}}]}=\beta_0 + \sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_{j^{[m]}}^{[m]}(\cdot).
 \end{equation*}
 Note that any base-learner $h_j$ can be selected at multiple iterations.
 The partial effect of the variable $x_j$ is the sum of the estimated corresponding base learner in all iterations where it was selected.
-Hence each $\hat{\theta}_j^{[\mstop]}(x_j)$ can be seen as
-i.e.,
+Hence the component-wise effect $\hat{f}_j^{[\mstop]}(x_j)$ of each covariate $j$ can be seen as
 \begin{equation*}
-    \hat{\theta}_j(x_j)=\sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_j^{[m]}(x_j)\indicator\left(j^{[m]}=j\right),
+    \hat{f}_j(x_j)=\sum_{m=1}^{m_{\text{stop}}}\nu\cdot\hat{h}_j^{[m]}(x_j)\indicator\left(j^{[m]}=j\right),
 \end{equation*}
 where $\indicator(\cdot)$ is an indicator function.
 Hence the resulting additive predictor is a sum of component-wise predictors in the GAM form of
 \begin{equation*}
-    \hat{\eta}(\x)=\beta_0+\sum_{j=1}^p \hat{f}_j(x_j).
+    \hat{\btheta}(\x)=\beta_0+\sum_{j=1}^p \hat{f}_j(x_j).
 \end{equation*}
 For a schematic overview of the algorithm, see Algorithm \ref{algo:component-wise}.
-This algorithm has been implemented in R as \verb|mboost| \citep{mboost, mboost1, mboost2}, and it contains many different base learners which can be included in the model.
+This algorithm has been implemented in R as \verb|mboost| \citep{mboost, mboost1, mboost2}, which contains many different base learners and loss functions.
 
 \begin{algorithm}
 \caption{Component-wise gradient boosting}\label{algo:component-wise}
 \begin{enumerate}
     \item
-        Start with a data set $D=\{x_i, y_i\}_{i=1}^N$ and a chosen loss function $\rho(y,\theta(x))$, for which we wish to
+        Start with a data set $D=\{\x_i, y_i\}_{i=1}^N$ and a chosen loss function $\rho(y,\theta(\x))$, for which we wish to
         minimize the empirical risk, i.e., the loss function evaluated on the samples,
         \begin{equation*}
-            \hat{\theta}=\argmin_{\theta}\err(\theta)=\argmin_{\theta}\frac{1}{N}\sum_{i=1}^N\rho(y_i,\theta(x_i)).
+            \hat{\theta}=\argmin_{\theta}\err(\theta)=\argmin_{\theta}\frac{1}{N}\sum_{i=1}^N\rho(y_i,\theta(\x_i)).
         \end{equation*}
     \item
         Set iteration counter $m$ to 0.
@@ -656,7 +702,7 @@ This algorithm has been implemented in R as \verb|mboost| \citep{mboost, mboost1
     \item
         Compute the negative gradient vector, i.e., the generalized residuals after the previous iteration of the boosted model,
         \begin{equation*}
-            \u^{[m-1]}=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \hat{\theta}(x_i))\right)_{i=1}^N.
+            \u^{[m-1]}=\left(-\frac{\partial}{\partial \theta}\rho(y_i, \hat{\theta}(\x_i))\right)_{i=1}^N.
         \end{equation*}
     \item
         For each base learner $h_j\in\mathcal{H},j=1,\ldots,p$, estimate $\hat{h}_{j}^{[m]}$ by fitting $(\x_i,u_i)_{i=1}^N$ using the base learner $h_j(\cdot)$.
@@ -667,7 +713,7 @@ This algorithm has been implemented in R as \verb|mboost| \citep{mboost, mboost1
     \item
         Select the best-fitting component $j^{[m]}$, i.e., with lowest RSS,
         \begin{equation*}
-            j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\right)^2.
+            j^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_i-\hat{h}_j^{[m]}\left(\x_{i}\right)\right)^2.
         \end{equation*}
     \item
         \label{last-step}
@@ -701,109 +747,22 @@ This is because some predictors are more correlated with the output than others.
 
 %\citep{mayr-hofner}.
 
-\section{Selecting the iteration number $\mstop$}
-\label{sec:stop}
-As we have mentioned in subsection \ref{subsec:iterations}, the crucial tuning parameter in boosting is the number of iterations, $\mstop$. 
-Stopping a boosting procedure early enough will lead to variable selection and shrinks the parameter estimates toward zero.
-In the case of $p<N$, with $m\to\infty$, the parameters in boosting will converge towards the maximum likelihood estimates \citep{DeBin2016}, i.e., minimizing the in-sample error.
-We are, on the other hand, interested in minimizing the test error $\Err(\theta)$ with respect to $\theta$.
-When using a gradient boosting algorithm, we do so on a data set $D$.
-We choose an appropriate loss function, we specify base learners, and we specify a learning rate.
-When these four factors are fixed, the parameter path will be deterministic.
-This means that running the boosting algorithm the same number of steps $m$ several times will lead to the same $\hat{\theta}^{[m]}$.
-There is no randomness in the estimates.
-This is quite obvious if we think about it, because at any given step, the algorithm selects the component and learner which leads to the best decrease in training error, and there is nothing random in that.
-The point of this is that we can view the test error of an estimated boosting model $\hat{\theta}^{[m]}$ as a function of the number of iterations used to produce it, i.e.,
-\begin{equation}\label{test-error-m}
-    \Err(m)=\Err(\hat{\theta}^{[m]}).
-\end{equation}
-There exists an $m$ which minimizes $\Err(m)$.
-Many authors state that the algorithm should be stopped early, but do not go further into the details.
-What we want is therefore a good method for approximating $\Err(m)$.
-This can be done in a number of ways.
-Common model selection criteria such as the Akaike Information Criteria (AIC) may be used, however the AIC is dependent on estimates of the model's degrees of freedom. 
-Initial versions of boosting used it, but practice showed that AIC-based stopping rules lead to overfitting \citep{mayr-hofner}.
-For $\text{L}_2\text{Boost}$, \citet{buhlmann2007} suggest that $\df(m)=\trace(B_m)$ is a good approximation.
-Here $B_m$ is the hat matrix resulting from the boosting algorithm.
-This was, however, shown by \citet{hastie2007} to always underestimate the actual degrees of freedom.
-\citet{mayr-hofner} propose a sequential stopping rule using subsampling.
-However this is computationally very expensive and not really used in practice.
-None of these rules, in other words, are optimal to use.
-Instead, cross-validation, a general and very common method for selection of tuning parameters in statistics, is what is used in almost all cases \citep{mayr14a,mayr14b,mayr17}.
-Cross-validation is flexible and easy to implement.
-It is somewhat computationally demanding, because it requires several full runs of the boosting algorithm, but it is otherwise quite simple.
-We now give an explanation of this procedure.
-
-%\subsection{Other selection methods}
-%The number of iterations in the boosting procedure, $M$, is a tuning parameter. It acts as a regularizer. AIC, etc.
-
-\subsection{K-fold cross-validation}\label{subsec:K-fold}
-K-fold cross-validation \citep{lachenbruch}, or simply cross-validation, is a general method for estimating the test error and therefore commonly used for selection of penalty or tuning parameters.
-In cross-validation, the data are randomly split into K rougly equally sized folds.
-For a given fold $k$, all folds except $k$ act as the training data and used to estimate the model.
-The resulting model is then evaluated on the unseen data, namely the observations belonging to fold $k$.
-This procedure is repeated for all $k=1,\ldots,K$.
-An estimate of the test error is obtained by averaging over the test errors evaluated in each left-out fold.
-Let $\kappa(k)$ be the set of indices for fold $k$.
-The cross-validated estimate for a given $m$ then becomes
-\begin{equation*}
-    \CV(m)=\frac{1}{K}\sum_{k=1}^K\sum_{i\in\kappa(k)}\rho(y_i,\hat{y}_i^{-\kappa(k)}).
-\end{equation*}
-$\CV(m)$ is an estimate of the test error of gradient boosting as a function of the iteration number $m$ \eqref{test-error-m}.
-For each iteration $m$, we calculate the estimate of the cross-validated prediction error $\CV(m)$.
-We choose $\mstop$ to be the minimizer of this error,
-\begin{equation*}
-    \mstop=\argmin_{m}\CV(m).
-\end{equation*}
-Typical values for $K$ are 5 or 10, but in theory one can choose any number. The extreme case is $K=N$, called leave-one-out cross-validation, where all but one observation is used for training and the model is evaluated on the observation that was left out. In this case, the outcome is deterministic, since there is no randomness when dividing into folds.
-
-\subsection{Stratified cross-validation}
-When dividing an already small number of survival data observations into $K$ folds, we might risk getting folds without any observed deaths, or in any case, very few. In stratified cross validation, we do not divide the folds entirely at random, but rather, try to divide the data such that there is an equal amount of uncensored data in each fold.
-As before, let $\kappa(k)$ be the set of indices for fold $k$.
-Divide the observed data into $K$ folds, as with usual cross validation, to get an index set $\kappa_{\delta=1}(k)$ for a given $k$. 
-Similarly, divide the censored data into $K$ folds, obtaining $\kappa_{\delta=0}(k)$.
-Finally, $\kappa(k)$ is the union of these sets: $\kappa(k)=\kappa_{\delta=1}(k)\cup\kappa_{\delta=0}(k)$.
-For a detailed description of 10-fold cross-validation issues in the presence of censored data, see \citet{kohavi}.
-
-\subsection{Repeated cross-validation}\label{subsec:repeated-cv}
-The randomness inherent in the cross-validation splits has an effect on the resulting $\mstop$.
-This is true in general, but it is especially true for real-life survival data, because such data sets typically have small effective sample sizes (number of observed events).
-We can easily imagine that we can end up with quite different values for $\mstop$ for two different splits of the data, depending on which folds the events end up in.
-It has been very effectively demonstrated that the split of the folds has a large impact on the choice of $\mstop$ \citep{seibold}.
-To reduce the impact of this issue, \citet{seibold} suggest to repeat the cross-validation scheme a few times and average the results.
-They show that repeating the cross-validation procedure even only 5 times effectively averages out the randomness.
-In other words, we divide the data into $K$ folds, and repeat this $J$ times.
-Now let $\kappa(j, k)$ be the $k$-th fold in the $j$-th split.
-We end up with a new estimate for the prediction error,
-\begin{equation*}
-    \RCV(m)=\frac{1}{J}\sum_{j=1}^J\frac{1}{K}\sum_{k=1}^K\sum_{i\in\kappa(j,k)}\rho(y_i,\hat{y}_i^{-\kappa(j,k)}).
-\end{equation*}
-Again, $\RCV(m)$ is also an estimate of \eqref{test-error-m}, but with less variance due to averaging several results.
-As before, we choose $\mstop$ to be the minimizer of this error,
-\begin{equation*}
-    \mstop=\argmin_{m}\RCV(m).
-\end{equation*}
-To carry out this in practice when using a boosting algorithm, we let the boosting algorithm run for $m=1$ to $m=M$, where $M$ is a large number that we are sure will result in a overfitted model.
-Thus we ensure that we find the minimizing $m$, and not a local minimum.
-
 \section{Multidimensional boosting}
-A limitation of the boosting methods we have described so far, as well as of $L_1$-penalized estimation such as the lasso method \citep{lasso}, is that they are designed for statistical problems involving a one-dimensional prediction function.
+A limitation of the boosting methods we have described so far, is that they are designed for statistical problems involving a one-dimensional prediction function, i.e. a probability distribution where we only one parameter.
 By only considering such functions, we are restricted to estimating models which only model a single quantity of interest, which is almost always the mean.
 In many applications, modelling only one parameter will not be sufficient \citep{kneib2013}.
-We want to be able to estimate more general models, in which more quantities, e.g. the drift and the threshold of the models described in section \ref{sec:FHT}, can be explained by covariates.
-To properly estimate such an FHT model, we therefore need a more general gradient boosting algorithm which is able to estimate several parameters.
-Typical examples of multidimensional estimation problems are classification with multiple outcome categories and regression models for count data.
+We want to be able to estimate more general models, in which more quantities, e.g. the drift and the threshold of the FHT model with a Wiener health process (see section \ref{sec:FHT}), can be explained by covariates.
+To properly estimate such an FHT model, we therefore need a more general gradient boosting algorithm which is able to estimate several parameters simultaneously.
+Examples of multidimensional estimation problems are classification with multiple outcome categories and regression models for count data.
 Another example is estimating models in the GAMLSS family \citep{gamlss}.
 GAMLSS, which refer to ``generalized additive models for location, scale and shape,'' are a family of models that relates not only the mean, but all parameters of the outcome distribution to the available covariates.
 GAMLSS are in this sense an extension of GAM models \citep{gam-book}.
 A gradient boosting algorithm called \textit{gamboostLSS} was developed for boosting such models \citep{gamboostlss-paper}.
 The algorithm framework used in \textit{gamboostLSS} is inspired by the multidimensional boosting algorithm first introduced in \citet{schmid}.
-We will here explain the \textit{gamboostLSS} algorithm, as presented in \citet{gamboostlss-paper}.
+We will in the next section explain the \textit{gamboostLSS} algorithm, as presented in \citet{gamboostlss-paper}, but first we give a brief explanation of the two versions of multidimensional boosting.
 
-There are two versions of the multidimensional gradient boosting algorithm.
-One, which originated first, is now referred to as cyclical, and the other is the noncyclical version.
-%We will now give a brief summary of these two.
-In the cyclical version, each parameter dimension is updated with a component-wise learner.
+The two versions are the cyclical version, which originated first, and the noncyclical version.
+In the cyclical version, each parameter dimension is updated with a component-wise learner, in a cyclical fashion, i.e., we first select a component to add to the additive predictor of parameter 1, then parameter 2, and so on.
 In the noncyclical version, only one parameter dimension is updated, specifically the parameter dimension update that leads to the best decrease in training error (log-likelihood).
 The cyclical version is somewhat more stable in the variable selection, but it requires a vector of stopping iterations $\boldsymbol{m_{\text{stop}}}$, to be found by grid search \citep{thomas2018}.
 Thus, it is much faster to use the noncyclical version.
@@ -814,10 +773,10 @@ Traditional GAMs \citep{gam-book} are typically restricted to modelling the cond
 GAMLSS, on the other hand, allows for regression of each distribution parameter on the covariates.
 Common distribution parameters are location, scale, skewness and kurtosis, but degrees of freedom (of a $t$-distribution) and zero inflation probabilities can be modelled as well \citep{gamboostlss-paper, gamboostLSS-manual}.
 Thus, in the GAMLSS approach, the full conditional distribution of a multiparameter model is related to a set of predictor variables of interest.
-Similarly to in GAMs, in GAMLSS the structure of each predictor is assumed to be additive.
+Similarly to in GAMs, in GAMLSS the structure of each predictor is assumed to be additive, which means it fits perfectly with a component-wise boosting approach.
 Hence a wide variety of functional predictors can be included in each predictor.
 Examples include non-parametric terms based on penalized splines, varying-coefficient terms and spatial and subject-specific terms for repeated measurements.
-The estimation of GAMLSS coefficients is usually based on penalized likelihood maximization; for details on fitting procedures, see \citet{gamlss}.
+The estimation of GAMLSS coefficients is usually based on penalized likelihood maximization \citep[see]{gamlss}.
 
 \subsection{GAMLSS}\label{subsec:GAMLSS}
 The GAMLSS model class assumes observations $y_i$ for $i=1,2,\ldots,N$ that are conditonally independent given a set of covariates and after having accounted for spatiotemporal effects.
@@ -872,7 +831,7 @@ Denoting estimates of the prediction functions as $\hat{\eta}_k$, estimates of t
 \end{equation*}
 for all $k=1,2,\ldots,K$, i.e., $\hat{\btheta}=\left(\theta_1,\theta_2,\ldots,\theta_K\right)$ is an estimate of $\btheta$.
 After the original GAMLSS paper \citep{gamlss}, a penalized likelihood approach based on modified versions of the backfitting algorithm for GAM estimation was developed by the same authors \citep{gamlssR}.
-Later, however, a gradient boosting algorithm, called \textit{gamboostLSS}, was developed \citep{gamboostlss-paper}.
+Later, however, a gradient boosting algorithm, called \textit{gamboostLSS}, was developed \citep{gamboostlss-paper}, which allowed fitting GAMLSS to high-dimensional data.
 The algorithm \textit{gamboostLSS} uses a strategy for multidimensional boosting proposed by \citet{schmid}.
 \citet{thomas2018} later coined the term ``cyclical'' to describe it and here we use this notation.
 
@@ -884,7 +843,7 @@ This boosting iteration can in principle be the same as in the generic FGD algor
 The \textit{gamboostLSS} algorithm \citep{gamboostlss-paper}, however, uses the component-wise base learner strategy, introduced in section \ref{sec:component}.
 This allows for model fitting in high-dimensional contexts.
 To use the gradient boosting approach for a multidimensional prediction function, we need to have existing partial derivatives of the loss function with respect to each predictor.
-Again since we are doing a gradient descent step, we as usual use the \textit{negative} derivative.
+Again since we are doing a gradient descent step, we as usual use the negative derivative.
 These negative partial derivatives are
 \begin{equation*}
     -\frac{\partial}{\partial\eta_k}\rho(y_i,\boldeta(x_i))=\frac{\partial}{\partial\eta_k}\log(\psi(y_i|\btheta(x_i))),
@@ -900,7 +859,8 @@ This yields
 \end{align*}
 Like in other gradient boosting algorithms, we need base learners.
 We specify component-wise base learners for \textit{each} distribution parameter.
-In principle, these might be different, but one usually chooses the same type for all, only letting the base learners differ in which component and which parameter they affect.
+In principle, these might be different, but we here use the same type for all, only letting the base learners differ in which component and which parameter they affect.
+This simplifies the notation.
 In other words, in general we have a set of base learners
 \begin{equation*}
     \mathcal{H}_{k}=\{h_{k,1},h_{k,2}\ldots,h_{k,p_1}\}
@@ -919,6 +879,7 @@ In the $k$-th step of iteration $m$, i.e. after having cycled through until comp
 \begin{equation*}
     \hat{\boldeta}_{k-1}^{[m]}=\left(\hat{\eta}_1^{[m]},\hat{\eta}_2^{[m]},\ldots,\hat{\eta}_{k-1}^{[m]},\hat{\eta}_{k}^{[m-1]},\hat{\eta}_{k+1}^{[m-1]},\ldots,\hat{\eta}_{K}^{[m-1]}\right).
 \end{equation*}
+Note the superscripts, which reflect the fact that we are ``in the middle of'' an iteration.
 Here the additive predictors of the preceding parameter dimensions, $1,2,\ldots,k-1$, have been updated in the current iteration $m$.
 Hence they are denoted with the current iteration, as $\hat{\eta}_1^{[m]}$, $\hat{\eta}_2^{[m]}$, until $\hat{\eta}_{k-1}^{[m]}$.
 The following dimensions $k+1,\ldots,K$ have not been updated in iteration $m$, and hence they are denoted with iteration $m-1$:
@@ -927,22 +888,19 @@ The following dimensions $k+1,\ldots,K$ have not been updated in iteration $m$, 
 \end{equation*}
 We are in this step going to update dimension $k$, i.e., going from $\hat{\eta}_{k}^{[m-1]}$ to $\hat{\eta}_{k}^{[m]}$.
 We calculate a vector of generalized residuals for dimension $k$ by calculating the $k$-th partial derivative and inserting the current estimated vector of additive predictors $\hat{\boldeta}_{k-1}^{[m]}$, and evaluating it at the observations $x_1,x_2,\ldots,x_N$.
-This yields the generalized residual vector
+This yields the vector of negative derivatives,
 \begin{align*}
     \u_k^{[m-1]}&=(u_{k,1}^{[m-1]},u_{k,2}^{[m-1]},\ldots,u_{k,N}^{[m-1]})\\
     &=\left(-\frac{\partial}{\partial \eta_k}\rho(\hat{\eta}_1^{[m]}(\x_i),\hat{\eta}_2^{[m]}(\x_i),\ldots,\hat{\eta}_{k-1}^{[m]}(\x_i),\hat{\eta}_{k+1}^{[m-1]}(\x_i),\ldots,\hat{\eta}_{K}^{[m-1]}(\x_i))\right)_{i=1}^N \\
     &=\left(-\frac{\partial}{\partial \eta_k}\rho(y,\hat{\boldeta}^{[m]}_{k-1}(\x_i))\right)_{i=1}^N.
 \end{align*}
 Again, like in a regular component-wise boosting algorithm, we fit all component-wise base learners separately to this residual vector $\u_k^{[m-1]}$.
-Of these learners, select the best fitting component $j_k^{[m]}$ like previously, by selecting the estimated learner which fits best according to RSS,
+Of these learners, we select the best fitting component $j_k^{[m]}$, by selecting the estimated learner which fits best according to RSS,
 \begin{equation*}
-    j_k^{[m]}=\argmin_{j\in\{1,2,\ldots,p_k\}}\sum_{i=1}^N \left(u_{k,i}^{[m-1]}-\hat{h}_{k,j}^{[m]}\right)^2.
+    j_k^{[m]}=\argmin_{j\in\{1,2,\ldots,p_k\}}\sum_{i=1}^N \left(u_{k,i}^{[m-1]}-\hat{h}_{k,j}^{[m]}\left(\x_i\right)\right)^2.
 \end{equation*}
-We update the additive predictor in dimension $k$ by the usual
-\begin{equation*}
-    \hat{f}_k^{[m]}\gets\hat{f}_k^{[m-1]}+\nu\cdot \hat{h}^{[m]}_{j_k^{[m]}}(\cdot).
-\end{equation*}
-A schematic representation of the updating process using this algorithm in a given iteration $m$ follows:
+Hence only an effect of covariate $j$ is added to the $k$-th parameter.
+A schematic representation of the updating process using this algorithm in a given iteration $m$ follows, where we denote the possible effect of covariate $j$ in iteration $m$ by $\hat{f}_j^{[m]}$.
 \begin{align*}
     \frac{\partial}{\eta_1}\rho\left(y,\eta_1^{[m-1]},\eta_2^{[m-1]},\eta_3^{[m-1]},\ldots,\eta_{K-1}^{[m-1]},\eta_K^{[m-1]}\right)
     \xlongrightarrow{\text{calculate}}\u_{1}^{[m-1]}
@@ -965,7 +923,7 @@ For a schematic overview of this cyclical multidimensional boosting algorithm, s
 Note that this algorithm resembles the backfitting strategy of \citet{hastie1986}.
 In both backfitting and this multidimensional boosting strategy, components are updated successively by using estimates of the other components as offset values.
 In backfitting, a completely new estimate of $f^*$ is determined in every iteration.
-In gradient boosting, however, the estimates are only slightly modified in each iteration, and the number of iterations is parameter specific, and is pre-specified.
+In gradient boosting, however, the estimates are only slightly modified in each iteration, by adding an increment to the current estimate. Furthermore, the number of iterations in boosting is pre-specified, while backfitting continues until convergence.
 
 \subsection{Tuning parameters}
 The main tuning parameters in the cyclical multidimensional gradient boosting algorithm are the stopping iterations $\boldsymbol{m}_{\text{stop}}=m_{\text{stop},1},\ldots,m_{\text{stop},K}$.
@@ -1016,7 +974,7 @@ On each tuple, we should use cross-validation, as usual, and the next subsection
     \item
         Select the component of $\x$ with the best-fitting base learner, according to RSS,
         \begin{equation*}
-            j_k^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_{k,i}-\hat{h}_{k,j}^{[m]}\right)^2.
+            j_k^{[m]}=\argmin_{j\in\{1,2,\ldots,p\}}\sum_{i=1}^N \left(u_{k,i}-\hat{h}_{k,j}^{[m]}\left(\x_{i}\right)\right)^2.
         \end{equation*}
     \item
         Update the predictor for parameter $k$ in component $j^{[m]}$ by
@@ -1064,11 +1022,11 @@ We want to find the best configuration $\boldsymbol{M}$ of all such tuples, i.e.
 Like in subsection \ref{subsec:K-fold}, we must calculate the estimate of the cross-validated prediction error for each given configuration $\boldsymbol{m}$, obtaining the prediction error $\CV(\boldsymbol{m})$.
 We choose $\boldsymbol{m}_{\text{stop}}$ to be the minimizer of this error,
 \begin{equation*}
-    \boldsymbol{m}_{\text{stop}}=\argmin_{\boldsymbol{m}}\CV(\boldsymbol{m}).
+    \boldsymbol{m}_{\text{stop}}=\argmin_{\boldsymbol{M}}\CV(\boldsymbol{M}).
 \end{equation*}
 
 \section{Noncyclical component-wise multidimensional boosting algorithm}
-In the cyclical algorithm seen previously in Algorithm \ref{algo:multi-cyclical}, the different $m_{\text{stop},j}$ parameters are not independent of each other, and hence they have to be jointly optimized.
+In the cyclical algorithm (Algorithm \ref{algo:multi-cyclical}), the different $m_{\text{stop},j}$ parameters are not independent of each other, and hence they have to be jointly optimized.
 As we saw in the previous subsection (\ref{grid-search}), the usually applied \textit{grid search} for such parameters scales exponentially with the number of parameters $K$.
 This can quickly become very computationally demanding.
 \citet{thomas2018} developed a new algorithm for fitting GAMLSS models, in which only one scalar tuning parameter $m_{\text{stop}}$ is needed because only one parameter is chosen in each boosting iteration.
@@ -1076,21 +1034,22 @@ This can quickly become very computationally demanding.
 Compared to the cyclical algorithm in \textit{gamboostLSS} \citep{gamboostlss-paper}, this noncyclical algorithm obtains faster variable tuning and equal prediction results on simulation studies carried out \citep{thomas2018}.
 We will now explain the necessary adjustments that this algorithm makes.
 
-\subsection{Gradients are not comparable across parameters}
+\subsection{Selection of which parameter to update}
 In the cyclical algorithm, we always boost all parameters in the same iteration.
 Therefore we do not need to choose between parameters.
 However, if we want to choose one parameter in each boosting iteration, we need to be able to find out which of the parameters would lead to the best increase in performance in this iteration.
 We are already doing this for choosing which component-wise learner to use for each parameter $\theta_k$.
-We choose the base learner with the best residual-sum-of-squares (RSS), with respect to the negative gradient vector $u_k^{[m-1]}$.
+We choose the base learner with the best RSS, with respect to the negative gradient vector $u_k^{[m-1]}$.
 We called this the inner loss.
-We cannot naïvely extend this criterion to compare between two parameters, say, $\theta_1$ and $\theta_2$, because the parameters have different scales \citep{thomas2018}, and therefore (in general) the scale of their respective generalized residual vectors will not be comparable.
+We cannot, however, naïvely extend this criterion to compare between two parameters, say, $\theta_1$ and $\theta_2$, because the parameters have different scales \citep{thomas2018}, and therefore in general the scale of their respective generalized residual vectors will not be comparable.
 It is simply not the case that the parameter with the least RSS causes the best decrease in loss.
 We therefore need a different approach to compare between parameters.
 In the noncyclical algorithm, we still choose the component-wise base learner which best fits according to the RSS, for each parameter $\theta_k$,
 \begin{equation*}
     \hat{h}_{k,j}(\cdot).
 \end{equation*}
-After having done so, we calculate the potential improvement in the loss function, which we denote $\Delta\rho_{k}$,
+After having done so, however, we do something new.
+We now calculate the potential improvement in the loss function, which we denote $\Delta\rho_{k}$,
 \begin{equation*}
     \Delta\rho_{k}=R\left(\hat{\boldeta}^{[m-1]}+\nu\cdot\hat{h}_{k,j_{k}^{[m]}}\right),
 \end{equation*}
@@ -1102,16 +1061,16 @@ We call this $k^{[m]}$ and it is
 \end{equation*}
 We incorporate only the best-fitting learner corresponding for that parameter into the full boosting model, so the model after iteration $m$ is
 \begin{equation*}
-    \hat{\boldeta}^{[m]}\gets \hat{\boldeta}^{[m-1]}+\nu\cdot\hat{h}^{[m]}_{k,j_k^{[m]}}(\cdot).
+    \hat{\eta}^{[m]}_{k^{[m]}}\gets \hat{eta}_{k^{[m]}}^{[m-1]}+\nu\cdot\hat{h}^{[m]}_{k,j_k^{[m]}}(\cdot).
 \end{equation*}
-For all $k\in\{k\colon k\neq k^{[m]}, k=1,2,\ldots,K\}$ we do not update their parameter $\theta_k$,
+For all $k\in\{k\colon k\neq k^{[m]}, k=1,2,\ldots,K\}$ we do not change their additive predictors in iteration $m$, i.e.,
 \begin{equation*}
     \hat{\eta}_{k}^{[m]}\gets\hat{\eta}_{k}^{[m-1]}.
 \end{equation*}
 
-\subsection{Criterion for selecting component-wise learner}
-In the previous subsection, we used RSS, or what we called the inner loss.
-It makes sense to use this because we choose the component with the best explanation of the error terms.
+\subsection{Selecting component-wise learner with outer loss}
+In the previous subsection, we used RSS, or what we called the inner loss, to select which covariate to add for each parameter.
+It makes sense to use this because this means we choose the component with the best explanation of the error terms.
 It is, however, not the same criterion that is used to choose between parameters, which might be problematic.
 \citet{thomas2018} therefore propose using the loss function $\rho$ directly to choose between component-wise learners as well.
 They call this the ``outer loss.''
@@ -1120,12 +1079,9 @@ In this case, when choosing a component-wise learner for parameter $k$, we choos
     j^{[m]}=\argmin_{j} \err\left(\hat{\boldeta}^{[m-1]} + \nu\cdot \hat{h}^{[m]}_{k,j} \right)
 \end{equation*}
 The individual component-wise learners are still estimated by their usual method, i.e., calculating the negative gradient of the generalized residuals and using the base learner to estimate the models.
+Whether we want to use the inner or the outer loss is a choice for us to make, however, \citet{thomas2018} find that using the outer loss yields the same models as the inner loss.
 A schematic overview of the algorithm is given in algorithm \ref{algo:multi-noncyclical}.
-
-\subsection{Advantages with noncyclical}
-For the noncyclical algorithm, the fact that the optimal number of boosting steps, $m_{\text{stop}}$, is always a scalar value, is a major advantage.
-Finding this tuning parameter can be done fairly quickly with standard cross validation schemes, and most importantly, it scales with with the number of parameters.
-We therefore choose to use the noncyclical version to construct a gradient boosting algorithm for the FHT model discussed in chapter 2.
+In the next chapter, we explain the main work of our thesis, namely a multidimensional boosting algorithm for FHT models.
 
 \begin{algorithm}
 \caption{Multidimensional noncyclical component-wise gradient boosting}
