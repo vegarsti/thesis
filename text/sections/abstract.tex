@@ -1,7 +1,6 @@
 \abstractintoc % Add abstract to Table of Contents  
 \abstractnum   % Format abstract like a chapter
                % Remove if abstract should not be on its own page
-
 \begin{abstract}
 In this thesis, we consider models for survival data with high-dimensional explanatory covariates.
 Specifically, we consider a typical setting in which both genomic data and clinical data are used to model the survival.
@@ -16,5 +15,6 @@ Within such a model, it is sensible to assign genomic data to the initial level,
 To estimate parameters in a first hitting time model with a Wiener health process, we implement a gradient boosting algorithm which we call \textit{FHTBoost}.
 Boosting multivariate distributions is complex, and may be computationally intensive, but based on recent advances, we are able to make do with one tuning parameter.
 We perform a simulation study where the implemented algorithm manages to achieve good variable selection and model fit.
-Finally, FHTBoost is applied to a data set of neuroblastoma, where it achieves a predictive power, measured by Brier score, that is comparable to a Cox model.
+Finally, \textit{FHTBoost} is applied to a survival data set where covariates consist of clinical and genetic data of children diagnosed with neuroblastoma.
+As measured by Brier score, the \textit{FHTBoost} estimated model achieves a predictive power that is slightly worse, but comparable to a Cox model.
 \end{abstract}

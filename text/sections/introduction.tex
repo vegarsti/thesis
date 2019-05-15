@@ -1,9 +1,9 @@
 \chapter{Introduction and outline of the thesis}
 \label{sec:intro}
-Survival data are data that is concerned with the time to an event.
-We typically study a cohort of patients after a cancer surgery, and we record the time to a possible recurrence of the cancer, or we study the time it takes from a child from a set of parents is born until a second child is born.
+In this thesis, we discuss problems related to survival data, which are data that describes the time to an event.
+We can, for example, study a cohort of patients after a cancer surgery, and record the time to a possible recurrence of the cancer, or study the time between the births of the first and the second child for a set of parents.
 If the event happens, we record the observed time.
-Not all statistical units experience an event during the time in which the study is conducted.
+However, not all statistical units experience an event during the time in which the study is conducted.
 For some of them we only know the last time that is recorded, e.g. at the latest check-up.
 These observations are right-censored, and add some complications in the data analysis.
 
@@ -12,52 +12,51 @@ One of its characteristics is that it models the hazard.
 The hazard of an individual at a time $t$ is the probability that the individual experiences an event, given that the event has not happened yet, in the infinitesimal time interval at $t$.
 A key underlying assumption of the Cox model is that individuals have proportional hazards at all times, i.e. the ratio of their hazards does not change over time.
 This assumption is not always valid, and there is a need for more flexible models.
-Among several options, in this thesis we will focus on first hitting time models (FHT) \citep{leewhitmore2006}.
+Among several options, in this thesis we will focus on first hitting time (FHT) models \citep{leewhitmore2006}.
 Instead of modeling the hazard, the main idea of FHT models is to model the underlying process of an individual before an event occurs.
 To model its life, so to speak.
-The FHT model framework is a rich and flexible modeling framework, where we specify a stochastic process and an appropriate threshold, barrier, or boundary, depending on the association we wish to evoke.
-When the process hits the barrier, or crosses the boundary, the event is triggered.
+The FHT model framework is rich and flexible, requiring the specification of a stochastic process and an appropriate threshold.
+The threshold is also called barrier or boundary, depending on what associations we wish to evoke.
+When the process hits the threshold, the event is triggered.
 The time to event is therefore the time that passes from the process starts until it hits the barrier.
 For certain choices of processes, there exist fully parameterized expressions which can be used in regression.
 This is the case for the Wiener process with initial level and drift, which leads to a bivariate probability distribution.
-As usual, the parameters of this distribution are related to explanatory variables, in a regression setup with additive predictors.
+As usual, the parameters of this distribution may be related to explanatory variables, in a regression setup with additive predictors.
 
 An important part of modern biomedical statistics is the ability to deal with high-dimensional data, for example genetic data.
-Genetic data are nowadays widely available, and typical data sets include gene expressions from genes numbering in the tens of thousands.
-Such data are called high-dimensional data, because there are usually more variables than observations.
-A scenario where the number of covariates $p$, is much larger than the number of predictors, $n$, also often referred to as the $p\gg n$ scenario.
+Data sets including gene expressions from tens of thousands of genes are now widely available, and creating new ones is increasingly cheap.
+We refer to data of this size as high-dimensional data, and because there are usually more variables $p$ than observations $N$, we often refer to this setting as the $p\gg N$ setting.
+In such a setting, it is very easy to overfit.
 One can think of the genes from one individual as one point in a high-dimensional space where each gene spans one dimension.
-Somewhat counterintuitively, virtually all points in high-dimensional space will be far apart.
-Especially if there are few points in this space compared with the number of dimensions of the space, it makes it very easy for statistical models to overfit, i.e. to explain the variation in the data in a way that is not really true.
-Furthermore, estimated models that are overfit would not carry over predictive power to unseen data of a similar kind.
-Many classical statistical models are simply unable to use so many predictors, at least directly.
+Counterintuitively, virtually all points in high-dimensional space, such as this gene space, will be far apart.
+This makes it very easy for statistical models to overfit, i.e., to explain too much of the variability in the data, so that not only the systematic part is modeled, but also the randomness inherent to the specific dataset.
+As a consequence, the overfitted model does not have the same predictive ability when used on unseen data.
+Moreover, many tools in the statistics toolbox, such as regular maximum likelihood estimation, become unfeasible, and many classical statistical models are simply unable to use so many predictors, at least directly.
 
 When it comes to survival analysis, there are models which extend Cox regression to such settings.
-They perform empirically well, but it is somewhat unclear how the check the proportional hazards assumption.
+They perform well empirically, but it is somewhat unclear how to verify that the proportional hazards assumption is satisfied.
 In contrast, there do not exist similar extensions for the FHT model.
-To the best of our knowledge, there has been no attempt at developing methods for first hitting time regression in a high-dimensional setting.
-In this thesis we try to fill this gap by developing a boosting algoritm which allows fitting a FHT model with high-dimensional data.
-Gradient boosting is an algorithmical framework that has been very successful in high-dimensional ($p\gg n$) scenarios.
+To the best of our knowledge, there has been no attempt at developing methods for regression with FHT models in a high-dimensional setting.
+A further advantage of a FHT model with regard to a Cox model in this setting, is the possibility to have a meaningful way to combine low-dimensional data, such as clinical data, and high-dimensional data, such as genetic data, in a prediction model.
+Gradient boosting \citep{friedman2001} is an algorithmical framework that has been very successful in high-dimensional ($p\gg N$) scenarios \citep{buhlmann-yu, mayr14a, mayr17}.
+These algorithms iteratively create complex estimates by adding together small regularized increments.
+They can therefore be used to estimate additive predictors such as those common in our FHT model.
+Furthermore, boosting algorithms also perform data-driven variable selection, which is necessary in a $p\gg N$ setting, in each step only adding effects from one covariate.
+Thus, in this thesis we try to fill the gap in FHT regression, by developing a gradient boosting algorithm which allows fitting a FHT model with high-dimensional data.
+We now give a brief outline of the contents of the thesis.
 
-It originated at the end of the 20th century in the field of machine learning.
-\citet{friedman2001} later provided a statistical view.
-Gradient boosting algorithms are iterative algorithms for performing regularized minimization of a loss function, which can very well be a negative log likelihood function.
-Gradient boosting is still very much an active field of research, and various methods exist for model fitting.
-Most traditional gradient boosting algorithms are concerned with modelling one parameter.
-The Wiener FHT model we use is a bivariate model, and we can therefore not use the lasso, nor can we use the standard gradient boosting methods.
-In more recent years, however, gradient boosting methods for regression of parameters beyond the mean have also been introduced.
-
-In Chapter 2, we discuss the survival analysis setting, Cox regression, and FHT models.
-These are first discussed in general, before addressing in detail the specific case where we use a Wiener process.
-In Chapter 3, we discuss gradient boosting, including recent methods for estimating multidimensional models \citep{thomas2018}.
-The main result of this thesis can be found in Chapter 4, where we develop a multidimensional, component-wise gradient boosting algorithm to fit the bivariate FHT model with Wiener processes, which we call \textit{FHTBoost}.
-We implement this boosting algorithm entirely from scratch.
+In Chapter 2, we first discuss the survival analysis setting and Cox regression.
+We then discuss FHT models, first in general, and then in more detail the specific case where we use a Wiener process.
+In Chapter 3, we discuss gradient boosting, including recent methods for estimating multivariate models \citep{schmid, thomas2018}.
+The main result of this thesis can be found in Chapter 4, where we develop a multidimensional component-wise gradient boosting algorithm to fit the bivariate FHT model with Wiener processes, which we call \textit{FHTBoost}.
+We implement the boosting algorithm from scratch.
 Using \textit{FHTBoost}, we can estimate the linear additive predictors of the FHT model.
-
 Chapter 5 explains evaluation measures that we then use in subsequent Chapters.
-In Chapter 6, we perform a simulation study where we verify that \textit{FHTBoost} manages to estimate the parameters of the FHT model.
+Specifically, these are variable selection measures, and the Brier score, which can be used to compare the predictive power of different statistical models, allowing us to compare Cox model estimates with FHT model estimates.
+In Chapter 6, we perform a simulation study where we verify that \textit{FHTBoost} manages to select informative covariates and estimate  correct parameters.
+estimate and select informative parameters in the FHT model.
 We consider two scenarios, one with uncorrelated data, and a more realistic scenario with highly correlated data.
-Chapter 7 looks at a survival data set consisting children diagnosed with neuroblastoma.
+Chapter 7 looks at a survival data set with clinical and genetic data from children diagnosed with neuroblastoma.
 We estimate an FHT model on this data, and discuss the results.
 We then compare its predictive performance with that of a boosted Cox regression.
 Finally, we provide a conclusion and some ideas for future work.
