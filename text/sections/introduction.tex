@@ -42,7 +42,7 @@ Gradient boosting \citep{friedman2001} is an algorithmical framework that has be
 These algorithms iteratively create complex estimates by adding together small regularized increments.
 They can therefore be used to estimate additive predictors such as those common in our FHT model.
 Furthermore, boosting algorithms also perform data-driven variable selection, which is necessary in a $p\gg N$ setting, in each step only adding effects from one covariate.
-Thus, in this thesis we try to fill the gap in FHT regression, by developing a gradient boosting algorithm which allows fitting a FHT model with high-dimensional data.
+Thus, in this thesis we try to fill the gap in FHT regression, by developing a gradient boosting algorithm which allows fitting a FHT model to high-dimensional data.
 We now give a brief outline of the contents of the thesis.
 
 In Chapter 2, we first discuss the survival analysis setting and Cox regression.
@@ -53,10 +53,9 @@ We implement the boosting algorithm from scratch.
 Using \textit{FHTBoost}, we can estimate the linear additive predictors of the FHT model.
 Chapter 5 explains evaluation measures that we then use in subsequent Chapters.
 Specifically, these are variable selection measures, and the Brier score, which can be used to compare the predictive power of different statistical models, allowing us to compare Cox model estimates with FHT model estimates.
-In Chapter 6, we perform a simulation study where we verify that \textit{FHTBoost} manages to select informative covariates and estimate  correct parameters.
-estimate and select informative parameters in the FHT model.
+In Chapter 6, we perform a simulation study where we verify that \textit{FHTBoost} manages to select informative covariates.
 We consider two scenarios, one with uncorrelated data, and a more realistic scenario with highly correlated data.
-Chapter 7 looks at a survival data set with clinical and genetic data from children diagnosed with neuroblastoma.
+In Chapter 7, we analyze a survival data set with clinical and genetic data from children diagnosed with neuroblastoma.
 We estimate an FHT model on this data, and discuss the results.
 We then compare its predictive performance with that of a boosted Cox regression.
 Finally, we provide a conclusion and some ideas for future work.

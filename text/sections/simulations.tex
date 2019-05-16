@@ -118,8 +118,8 @@ Given all blocks and their correlations, we are able to construct a covariance m
 For the genes and clinical measurements not belong to any block, their correlation is 0.
 Hence if no blocks are specified, the data will simply be uncorrelated.
 
-We were so fortunate as to receive an implementation of this algorithm from our supervisor Riccardo de Bin, which generates matrices $\X$ and $\Z$ with the structure explained above.
-The code for this is given in the Appendix, in \ref{code:generate-correlated-data}.
+We were so fortunate as to receive an implementation of this algorithm from the thesis supervisor Riccardo de Bin, which generates matrices $\X$ and $\Z$ with the structure explained above.
+The code for this is used in a manuscript by de Bin that is not yet published, and it is given in the Appendix, in \ref{code:generate-correlated-data}.
 Briefly, the code works such that it sets up the covariance matrix, and then draws the matrices from a normal distribution.
 Afterwards, noise is added to all elements in the genetic matrix $\X$, both multiplicative noise and additive noise.
 Algorithm \ref{algo:clinical-sim} contains a schematic overview of this.

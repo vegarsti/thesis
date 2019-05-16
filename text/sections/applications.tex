@@ -73,6 +73,7 @@ These covariates will not be penalized, and hence they will be included in the f
 We therefore in this chapter, in addition to the regular CoxBoost model, estimate a mandatory CoxBoost model, where we treat clinical covariates as mandatory.
 To estimate the survival probabilities given these models, we use the method discussed in subsection \ref{subsec:cox-surv-prob}.
 We now discuss the results from one split of the data into training and test sets.
+Finally, note that we did not verify that the proportional hazards assumption is true for this data, so although the performance may be good, the theoretical assumptions may not hold in this case.
 
 \section{A single split of the data set}
 Due to the lack of data, \citet{bovelstad2009} generated 50 random splits of training and test sets from the merged data set.

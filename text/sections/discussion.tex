@@ -39,7 +39,10 @@ It achieved a mean score of 0.069.
 We also compared these to FHT models where we only estimated one of the parameters, i.e. only using clinical covariates or only using genetic covariates, but these performed worse than those above.
 
 There are several interesting directions for further work which would build on our contribution.
-One is to apply \textit{FHTBoost} on other high-dimensional survival data sets.
+In the simulation studies in this thesis, although the genetic data is large, it is only a small part that is informative, i.e., it is sparse.
+This makes it easier, in a sense, for the boosting algorithm to select both clinical and genetic data.
+It is not clear what would happen if the number of informative predictors in the genetic data was large, would it still select clinical covariates as well?
+A necessary extension of the work in this thesis is to apply \textit{FHTBoost} on more high-dimensional survival data sets.
 This would allow for a broader assessment of its usefulness and predictive power in realistic high-dimensional settings.
 Furthermore, due to the flexibility of both the FHT framework and gradient boosting, it would easily be possible to use other FHT models, such as the inverse Gamma (see subsection \ref{subsec:fht-examples}), in \textit{FHTBoost}.
 By implementing functions to calculate the log-likelihood and partial derivatives, \textit{FHTBoost} would be able to estimate the parameters in these other FHT models.
